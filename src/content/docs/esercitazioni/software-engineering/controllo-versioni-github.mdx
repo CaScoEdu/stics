@@ -2,7 +2,8 @@
 title: Controllo delle Versioni con GitHub
 description: Impara a utilizzare Git e GitHub direttamente da Visual Studio Code, creando una pagina web e gestendo versioni multilingua tramite i branch.
 ---
-import { Aside, Icon, LinkButton, Steps } from "@astrojs/starlight/components";
+
+import { Aside, Card, Icon, LinkButton, Steps } from "@astrojs/starlight/components";
 
 <LinkButton
   href="https://youtu.be/rk78qW9ce2M"
@@ -103,16 +104,21 @@ Staging, commit e pubblicazione sul cloud. VS Code permette di gestire il flusso
 
 ## 5. Lavorare con i Branch: Italiano vs Inglese
 
-Flusso completo: Modifica → Staging → Commit su branch differenti. I rami (_branch_) consentono di sviluppare funzionalità parallele senza intaccare il ramo principale (`main`).
+Flusso completo: **Modifica → Staging → Commit** su branch differenti.
+I rami (_branch_) consentono di sviluppare funzionalità parallele senza intaccare il ramo principale (`main`).
 
 ### 1. Branch per la versione Italiana (`versione-italiana`)
 
 - Clicca in basso a sinistra sulla barra di stato di VS Code dove vedi scritto `main`.
 - Seleziona **Crea nuovo branch...** (Create new branch...), digita `versione-italiana` e premi **Invio**.
 - Nel file `index.html`, modifica il testo principale all'interno del tag `<h1>`:
-  ```html
-  <h1>Ciao Mondo</h1>
+
+  ```diff lang="html"
+
+  -<h1>Hello World</h1>
+  +<h1>Ciao Mondo</h1>
   ```
+
 - **Staging:** Nella scheda _Controllo Codice Sorgente_, clicca sul **`+`** accanto a `index.html` per aggiungere la modifica allo staging.
 - **Commit & Publish:** Scrivi il messaggio `Traduzione in italiano`, fai clic su **Commit** e infine su **Pubblica Branch**.
 
@@ -121,31 +127,36 @@ Flusso completo: Modifica → Staging → Commit su branch differenti. I rami (_
 - Torna sul ramo principale: clicca in basso a sinistra su `versione-italiana` e seleziona nuovamente `main` dall'elenco. Noterai che il file `index.html` torna alla versione iniziale!
 - Crea un nuovo branch chiamato `versione-inglese` seguendo la stessa procedura.
 - Aggiungi un dettaglio in inglese nel file `index.html`:
-  ```html
+  ```diff lang="html"
   <h1>Hello World</h1>
-  <p>Welcome to my first versioned website!</p>
+  +<p>Welcome to my first versioned website!</p>
   ```
 - **Staging:** Clicca sul pulsante **`+`** accanto al file `index.html` per effettuare lo staging delle modifiche.
 - **Commit & Publish:** Inserisci il messaggio `Aggiornamento versione inglese`, fai **Commit** e infine **Pubblica Branch**.
 
 ---
 
-## Verificare che i branch siano effettivamente diversi
+## 6. Verificare che i branch siano effettivamente diversi
 
 Per verificare la vera "magia" di Git e confermare che le due versioni coesistono nello stesso progetto senza sovrascriversi, segui queste verifiche:
 
 ### In locale su VS Code:
 
-- Clicca sul nome del branch in basso a sinistra sulla barra di stato di VS Code.
-- Seleziona `versione-italiana`: osserva il file `index.html` nell'editor, vedrai comparire il testo _"Ciao Mondo"_.
-- Clicca di nuovo e seleziona `versione-inglese`: vedrai il file trasformarsi istantaneamente mostrando _"Hello World"_ e il nuovo paragrafo.
-
+<Steps>
+  1. Clicca sul nome del branch in basso a sinistra sulla barra di stato di VS
+  Code. 2. Seleziona `versione-italiana`: osserva il file `index.html`
+  nell'editor, vedrai comparire il testo _"Ciao Mondo"_. 3. Clicca di nuovo e
+  seleziona `versione-inglese`: vedrai il file trasformarsi istantaneamente
+  mostrando _"Hello World"_ e il nuovo paragrafo.
+</Steps>
 ### Online su GitHub:
-
-- Apri la pagina del tuo repository su [github.com](https://github.com).
-- In alto a sinistra sopra l'elenco dei file, fai clic sul menu a tendina con la voce `main` (o _Branches_).
-- Seleziona `versione-italiana` o `versione-inglese` per navigare tra i vari rami: vedrai che il codice del file `index.html` cambia istantaneamente a seconda del ramo selezionato!
-
+<Steps>
+  1. Apri la pagina del tuo repository su [github.com](https://github.com). 2.
+  In alto a sinistra sopra l'elenco dei file, fai clic sul menu a tendina con la
+  voce `main` (o _Branches_). 3. Seleziona `versione-italiana` o
+  `versione-inglese` per navigare tra i vari rami: vedrai che il codice del file
+  `index.html` cambia istantaneamente a seconda del ramo selezionato!
+</Steps>
 <Aside type="tip" title="Ottimo lavoro!">
   Ora hai configurato il tuo ambiente di lavoro locale con VS Code e hai capito
   come gestire lo sviluppo parallelo tramite i branch su GitHub.

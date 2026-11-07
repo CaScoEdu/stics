@@ -1,11 +1,6 @@
 ---
 title: Version Control with GitHub
 description: Learn to use Git and GitHub directly from Visual Studio Code by creating a web page and managing multilingual versions with branches.
-sidebar:
-  order: 1
-tags:
-  - software-engineering
-  - github
 ---
 
 import { Aside, Icon, LinkButton, Steps } from "@astrojs/starlight/components";
@@ -25,7 +20,7 @@ In this lesson, you will learn to use **Git** and **GitHub** directly from Visua
 
 :::note[Prerequisites]
 
-- **Visual Studio Code** installed on your computer.
+- **Visual Studio Code** already installed on your computer.
 - An email address (work, school, or personal) to register your account.
   :::
 
@@ -37,8 +32,8 @@ Register your developer profile:
 
 <Steps>
   1. Go to [github.com](https://github.com) and click **Sign up**. 2. Enter your
-  email address, create a secure password, and choose a username. 3. Complete
-  the verification and enter the confirmation code sent to your email.
+  email, create a secure password, and choose a username. 3. Complete the
+  verification and enter the confirmation code sent to your email.
 </Steps>
 ---
 
@@ -52,7 +47,7 @@ Download and install Git from the official website [git-scm.com](https://git-scm
 
 ### Configuring Your Name and Email
 
-Open a terminal (or the VS Code integrated terminal) and run the following commands, replacing the values with the information associated with your GitHub account:
+Open the terminal (or the VS Code integrated terminal) and run the following commands, replacing the values with the information associated with your GitHub account:
 
 ```bash
 # Git user configuration
@@ -90,7 +85,7 @@ Set up the site's initial file:
 
 ## 4. Initializing and Publishing to GitHub
 
-Staging, committing, and publishing to the cloud. VS Code lets you manage the Git workflow through an intuitive graphical interface:
+Stage, commit, and publish to the cloud. VS Code lets you manage the Git workflow through an intuitive graphical interface:
 
 <Steps>
   1. Click the **Source Control** icon in the left sidebar (or use the shortcut
@@ -98,7 +93,7 @@ Staging, committing, and publishing to the cloud. VS Code lets you manage the Gi
   **Initialize Repository**. 3. **Stage your changes:** Hover over `index.html`
   in the *Changes* list and click the **`+`** button (**Stage Changes**). The
   file will move to the *Staged Changes* section. 4. Enter a commit message in
-  the text field at the top (e.g., `First commit: Hello World`) and click
+  the text field at the top (e.g. `First commit: Hello World`) and click
   **Commit**. 5. Click **Publish Branch**. 6. If prompted, authorize VS Code to
   access your GitHub account and select **Publish to GitHub public repository**.
 </Steps>
@@ -106,52 +101,61 @@ Staging, committing, and publishing to the cloud. VS Code lets you manage the Gi
 
 ## 5. Working with Branches: Italian vs. English
 
-Complete workflow: edit → stage → commit on different branches. Branches let you develop parallel versions without affecting the main branch (`main`).
+Complete workflow: **Edit → Stage → Commit** on different branches.
+Branches let you develop features in parallel without affecting the main branch (`main`).
 
 ### 1. Branch for the Italian version (`italian-version`)
 
-- Click `main` in the bottom-left corner of the VS Code status bar.
+- Click `main` in the lower-left corner of the VS Code status bar.
 - Select **Create new branch...**, enter `italian-version`, and press **Enter**.
-- In `index.html`, change the heading text inside the `<h1>` tag:
-  ```html
-  <h1>Ciao Mondo</h1>
+- In `index.html`, change the main text inside the `<h1>` tag:
+
+  ```diff lang="html"
+
+  -<h1>Hello World</h1>
+  +<h1>Ciao Mondo</h1>
   ```
-- **Staging:** In the _Source Control_ view, click the **`+`** next to `index.html` to stage the change.
+
+- **Stage:** In the _Source Control_ view, click the **`+`** next to `index.html` to stage the change.
 - **Commit & Publish:** Enter the message `Italian translation`, click **Commit**, and then click **Publish Branch**.
 
 ### 2. Branch for the English version (`english-version`)
 
-- Return to the main branch: click `italian-version` in the bottom-left corner and select `main` from the list. Notice that `index.html` returns to its initial version!
+- Return to the main branch: click `italian-version` in the lower-left corner and select `main` from the list. Notice that `index.html` returns to its initial version!
 - Create a new branch called `english-version` using the same procedure.
-- Add some English text to `index.html`:
-  ```html
+- Add a detail in English to `index.html`:
+  ```diff lang="html"
   <h1>Hello World</h1>
-  <p>Welcome to my first versioned website!</p>
+  +<p>Welcome to my first versioned website!</p>
   ```
-- **Staging:** Click the **`+`** button next to `index.html` to stage your changes.
-- **Commit & Publish:** Enter the message `Update English version`, click **Commit**, and then click **Publish Branch**.
+- **Stage:** Click the **`+`** button next to `index.html` to stage the changes.
+- **Commit & Publish:** Enter the message `English version update`, click **Commit**, and then click **Publish Branch**.
 
 ---
 
-## Verify That the Branches Are Different
+## 6. Verifying That the Branches Are Different
 
-To see the real "magic" of Git and confirm that the two versions coexist in the same project without overwriting each other, follow these steps:
+To see the real "magic" of Git and confirm that both versions coexist in the same project without overwriting each other, perform these checks:
 
 ### Locally in VS Code:
 
-- Click the branch name in the bottom-left corner of the VS Code status bar.
-- Select `italian-version`: look at `index.html` in the editor and you will see the text _"Ciao Mondo"_.
-- Click again and select `english-version`: the file will instantly change to show _"Hello World"_ and the new paragraph.
-
-### On GitHub:
-
-- Open your repository on [github.com](https://github.com).
-- Above the file list in the top-left area, click the dropdown labeled `main` (or _Branches_).
-- Select `italian-version` or `english-version` to browse the branches: the code in `index.html` will change depending on the branch you select!
-
+<Steps>
+  1. Click the branch name in the lower-left corner of the VS Code status bar.
+  2. Select `italian-version`: look at `index.html` in the editor and you will
+  see the text _"Ciao Mondo"_. 3. Click again and select `english-version`: the
+  file will instantly change to show _"Hello World"_ and the new paragraph.
+</Steps>
+### Online on GitHub:
+<Steps>
+  1. Open your repository page on [github.com](https://github.com). 2. At the
+  top left, above the file list, click the dropdown labeled `main` (or
+  _Branches_). 3. Select `italian-version` or `english-version` to browse the
+  branches: you will see the code in `index.html` change instantly depending on
+  the selected branch!
+</Steps>
 <Aside type="tip" title="Great job!">
   You have now configured your local VS Code environment and learned how to
-  manage parallel development with GitHub branches.
+  manage parallel development with branches on GitHub.
 </Aside>
 
 ###

@@ -32,14 +32,11 @@ export default defineConfig({
       social: [
         { icon: 'linkedin', label: 'LinkedIn', href: 'https://www.linkedin.com/in/carloscocco/' },
         { icon: 'youtube', label: 'YouTube', href: 'https://www.youtube.com/@stics-edu' },
+        { icon: 'github', label: 'GitHub', href: 'https://github.com/carloscocco/stics' },
       ],
       sidebar: [
         {
-          label: 'Iniziamo',
-          translations: {
-            'en': 'Get Started'
-          },
-          items: [{ autogenerate: { directory: 'iniziamo' } }]
+          slug: 'iniziamo'
         },
         {
           label: 'Esercitazioni',
