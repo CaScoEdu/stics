@@ -2,8 +2,12 @@
 import { defineConfig } from 'astro/config';
 import starlight from '@astrojs/starlight';
 
+const NETLIFY_PREVIEW_SITE = 'https://stics.netlify.app/';
+const site = NETLIFY_PREVIEW_SITE;
+
 // https://astro.build/config
 export default defineConfig({
+  site,
   integrations: [
     starlight({
       title: 'stics',
@@ -22,6 +26,7 @@ export default defineConfig({
         // English docs in `src/content/docs/en/`
         en: {
           label: 'English',
+          lang: 'en',
         },
       },
       social: [
