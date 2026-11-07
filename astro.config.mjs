@@ -16,6 +16,7 @@ export default defineConfig({
         dark: './src/assets/dark-logo.svg',
         replacesTitle: true,
       },
+      favicon: '/images/stics.svg',
       defaultLocale: 'root',
       locales: {
         // Italian docs in `src/content/docs/`
@@ -32,7 +33,7 @@ export default defineConfig({
       social: [
         { icon: 'linkedin', label: 'LinkedIn', href: 'https://www.linkedin.com/in/carloscocco/' },
         { icon: 'youtube', label: 'YouTube', href: 'https://www.youtube.com/@stics-edu' },
-        { icon: 'github', label: 'GitHub', href: 'https://github.com/carloscocco/stics' },
+        { icon: 'github', label: 'GitHub', href: 'https://github.com/CaScoEdu/stics' },
       ],
       sidebar: [
         {
