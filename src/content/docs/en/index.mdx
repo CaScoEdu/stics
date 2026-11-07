@@ -1,0 +1,29 @@
+---
+title: STICS - Computer Science and Information Technology
+description: Notes, Exercises, Projects.
+template: splash
+sidebar:
+  hidden: true # 👈 This hides the page from the sidebar
+hero:
+  title: Welcome to STICS
+  tagline: An interactive learning platform dedicated to Computer Science and Information Technology.
+  actions:
+  - text: Get started
+    link: /it/iniziamo/
+    icon: right-arrow
+    variant: primary
+---
+
+import { Card, CardGrid } from "@astrojs/starlight/components";
+
+<CardGrid cohort>
+  <Card title="Exercises" icon="laptop">
+    Short lab exercises{" "}
+  </Card>
+  <Card title="Hands-on projects" icon="puzzle">
+    Projects to complete in multiple steps
+  </Card>
+  <Card title="Notes" icon="pencil">
+    Short lessons and interesting facts
+  </Card>
+</CardGrid>

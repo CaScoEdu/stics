@@ -1,0 +1,8 @@
+tags:
+  github:
+    label: "github"
+    description: "GitHub"
+    color: "red"
+
+defaults:
+  color: "#6b7280"

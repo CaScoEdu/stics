@@ -1,0 +1,39 @@
+---
+title: Basi dell'Informatica
+description: Modulo didattico step-by-step per creare una mappa vettoriale SVG animata con JavaScript, Fetch API ed algoritmi su grafi.
+sidebar:
+  order: 1
+---
+
+import { Card, CardGrid, LinkCard } from '@astrojs/starlight/components';
+
+In questo percorso pratico realizzeremo un'applicazione web interattiva per la navigazione all'interno di un campus o plesso scolastico.
+
+:::tip[Obiettivi Didattici]
+Imparerai a integrare la grafica vettoriale **SVG**, a strutturare un'architettura **PWA** con supporto offline, ad orchestrare dati esterni via **Fetch API** e ad implementare l'algoritmo di **Dijkstra** per il calcolo dei percorsi minimi.
+:::
+
+## 🚀 Lezioni del Percorso
+
+<CardGrid>
+  <LinkCard
+    title="1. Grafica Vettoriale SVG"
+    description="Inserimento di SVG inline nel DOM, gestione dei tag <path>, stilizzazione CSS e layout reattivo."
+    href="./01-grafica-svg/"
+  />
+  <LinkCard
+    title="2. Interattività e Script Esterno"
+    description="Creazione di popup, menu a tendina degli edifici e separazione della logica in script.js."
+    href="/it/laboratorio/mappa-campus/02-script-interattivita/"
+  />
+  <LinkCard
+    title="3. Caricamento Dinamico con fetch()"
+    description="Disaccoppiamento di dati e grafica: caricamento di mappa.svg e locali.json."
+    href="/it/laboratorio/mappa-campus/03-fetch-json/"
+  />
+  <LinkCard
+    title="4. Grafi e Algoritmo di Dijkstra"
+    description="Modellazione dei percorsi, calcolo del tragitto minimo ed animazione CSS della linea di percorso."
+    href="/it/laboratorio/mappa-campus/04-grafo-dijkstra/"
+  />
+</CardGrid>
