@@ -1,0 +1,22 @@
+---
+// src/components/BadgeList.astro
+import { Badge } from "@astrojs/starlight/components";
+
+interface Props {
+  badgeTextList: string[];
+}
+
+const { badgeTextList } = Astro.props;
+
+const variants = ["note", "success", "tip", "caution", "danger"] as const;
+---
+
+<!-- Aumentato il gap (es. gap-4 o gap-6) per distanziare di più i badge -->
+<div style="display: flex; flex-wrap: wrap; gap: 1rem; margin: 1rem 0;">
+  {
+    badgeTextList.map((badgeText, index) => {
+      const currentVariant = variants[index % variants.length];
+      return <Badge text={badgeText} variant={currentVariant} size="large" />;
+    })
+  }
+</div>

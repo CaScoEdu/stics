@@ -17,6 +17,9 @@ export default defineConfig({
         replacesTitle: true,
       },
       favicon: '/images/stics.svg',
+      customCss: [
+        './src/styles/custom.css', // Percorso del tuo file CSS globale
+      ],
       defaultLocale: 'root',
       locales: {
         // Italian docs in `src/content/docs/`
@@ -44,14 +47,37 @@ export default defineConfig({
           translations: {
             'en': 'Practical Labs',
           },
-          items: [{ autogenerate: { directory: 'esercitazioni' } }]
+          items: [
+            {
+              label: 'Software Engineering',
+              translations: {
+                en: 'Software Engineering',
+              },
+              items: [{ autogenerate: { directory: 'esercitazioni/software-engineering' } }]
+            },
+            {
+              label: 'Sviluppo Front End',
+              translations: {
+                en: 'Front End Development',
+              },
+              items: [{ autogenerate: { directory: 'esercitazioni/sviluppo-front-end' } }],
+            },
+          ]
         },
         {
-          label: 'Progetti Pratici',
+          label: 'Progetti',
           translations: {
             'en': 'Practical Projects',
           },
-          items: [{ autogenerate: { directory: 'progetti' } }]
+          items: [
+            {
+              label: 'Mappa Interattiva',
+              translations: {
+                en: 'Interactive Map',
+              },
+              items: [{ autogenerate: { directory: 'progetti/mappa-interattiva' } }],
+            }
+          ]
         },
         {
           label: 'Appunti',

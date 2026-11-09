@@ -1,0 +1,182 @@
+---
+title: Esecuzione asincrona e Fetch API
+description: tbd
+---
+
+import { Aside, Badge, Card, Icon, LinkButton, Steps } from "@astrojs/starlight/components";
+
+<Card title="Labs" icon="laptop">
+  <Badge text="Sviluppo Front End" size="large" />
+  ---
+  <Icon name="github" size="2rem" label="GitHub" color="DeepSkyBlue"/>
+
+---
+
+In this lesson, you will learn to use **Git** and **GitHub**
+directly from *Visual Studio Code (VS Code)*.
+We will create a basic web page, publish it online to a remote repository, and manage two versions of the site (Italian and English) using _branches_.
+
+---
+<LinkButton
+  href="https://youtu.be/rk78qW9ce2M"
+  variant="primary"
+  icon="youtube"
+  iconPlacement="end"
+>
+  watch the introductory video
+</LinkButton>
+
+:::note[Prerequisites]
+
+- **Visual Studio Code** installed on your computer.
+- An *email address* (work, school, or personal) to register your account.
+  :::
+
+---
+</Card>
+
+<Card>
+## 1. Create a GitHub Account
+  <Icon name="github" size="2rem" label="GitHub" color="DeepSkyBlue"/>
+
+
+Register your developer profile:
+
+<Steps>
+  1. Go to [github.com](https://github.com) and click **Sign up**.
+  2. Enter your email, create a secure password, and choose a username.
+  3. Complete the verification and enter the confirmation code you received by email.
+</Steps>
+</Card>
+---
+<Card>
+## 2. Install and Configure Git
+
+An essential prerequisite for managing files locally.
+
+### Installation
+
+Download and install Git from the official website [git-scm.com](https://git-scm.com) (you can accept the default options in the setup wizard).
+
+### Configure Your Name and Email
+
+Open the terminal (or the VS Code integrated terminal) and run the following commands, replacing the values with the information associated with your GitHub account:
+
+```bash
+# Git user configuration
+git config --global user.name "my username"
+git config --global user.email "email@example.com"
+```
+</Card>
+---
+<Card>
+
+## 3. Create a Local Project in VS Code
+  <Icon name="vscode" size="2rem" label="vscode" color="DeepSkyBlue" />
+
+
+Set up the initial file for the website:
+
+<Steps>
+1. Open VS Code and create a new folder on your computer called `my-first-repo`.
+2. Open the folder in VS Code by selecting **File > Open Folder...**.
+3. Create a new file called `index.html` and add this starter code:
+</Steps>
+
+```html
+<!DOCTYPE html>
+<html lang="it">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>My First Project</title>
+  </head>
+  <body>
+    <h1>Hello World</h1>
+  </body>
+</html>
+```
+</Card>
+---
+<Card>
+## 4. Initialize and Publish to GitHub
+  <Icon name="github" size="2rem" label="GitHub" color="DeepSkyBlue"/>
+
+
+Stage, commit, and publish to the cloud. VS Code lets you manage the Git workflow using an intuitive graphical interface:
+
+<Steps>
+  1. Click the **Source Control** icon in the left sidebar (or use the shortcut `Ctrl+Shift+G` on Windows/Linux or `Cmd+Shift+G` on Mac).
+  2. Click **Initialize Repository**.
+  3. **Stage your changes:** Hover over `index.html` in the *Changes* list and click the **`+`** button (Stage Changes). The file will move to the *Staged Changes* section.
+  4. Enter a commit message in the text field at the top (e.g., `First commit: Hello World`) and click **Commit**.
+  5. Click **Publish Branch**.
+  6. If prompted, authorize VS Code to access your GitHub account and select **Publish to GitHub public repository**.
+</Steps>
+</Card>
+---
+<Card>
+## 5. Work with Branches: Italian vs. English
+
+Complete workflow: **Edit → Stage → Commit** on different branches.
+Branches let you develop features in parallel without affecting the main branch (`main`).
+<Card>
+### 1. Branch for the Italian version (`italian-version`)
+
+- Click `main` in the bottom-left corner of the VS Code status bar.
+- Select **Create new branch...**, enter `italian-version`, and press **Enter**.
+- In `index.html`, change the main text inside the `<h1>` tag:
+
+  ```diff lang="html"
+
+  -<h1>Hello World</h1>
+  +<h1>Ciao Mondo</h1>
+  ```
+
+- **Stage:** In the _Source Control_ view, click the **`+`** next to `index.html` to stage the change.
+- **Commit & Publish:** Enter the message `Italian translation`, click **Commit**, and then click **Publish Branch**.
+</Card>
+<Card>
+### 2. Branch for the English version (`english-version`)
+
+- Return to the main branch: click `italian-version` in the bottom-left corner and select `main` from the list. Notice that `index.html` returns to its initial version!
+- Create a new branch called `english-version` using the same procedure.
+- Add a detail in English to `index.html`:
+  ```diff lang="html"
+  <h1>Hello World</h1>
+  +<p>Welcome to my first versioned website!</p>
+  ```
+- **Stage:** Click the **`+`** button next to `index.html` to stage the changes.
+- **Commit & Publish:** Enter the message `English version update`, click **Commit**, and then click **Publish Branch**.
+</Card>
+</Card>
+---
+<Card>
+## 6. Verify That the Branches Are Different
+
+To see the real "magic" of Git and confirm that both versions coexist in the same project without overwriting each other, perform these checks:
+
+### Locally in VS Code:
+  <Icon name="vscode" size="2rem" label="vscode" color="DeepSkyBlue"/>
+
+
+<Steps>
+  1. Click the branch name in the bottom-left corner of the VS Code status bar.
+  2. Select `italian-version`: in the editor, `index.html` will show the text _"Ciao Mondo"_.
+  3. Click again and select `english-version`: the file will instantly change to show _"Hello World"_ and the new paragraph.
+</Steps>
+### Online on GitHub:
+  <Icon name="github" size="2rem" label="GitHub" color="DeepSkyBlue"/>
+
+<Steps>
+  1. Open your repository page on [github.com](https://github.com).
+  2. Above the file list in the top-left, click the dropdown labeled `main` (or _Branches_).
+  3. Select `italian-version` or `english-version` to browse the branches: the code in `index.html` will change instantly depending on the selected branch!
+</Steps>
+</Card>
+<Aside type="tip" title="Great job!">
+  You have now set up your local development environment with VS Code and learned
+  how to manage parallel development using branches on GitHub.
+</Aside>
+
+###

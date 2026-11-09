@@ -1,0 +1,17 @@
+---
+// src/components/Mermaid.astro
+interface Props {
+  chart: string;
+}
+
+const { chart } = Astro.props;
+---
+
+<div class="mermaid my-4 flex justify-center">
+  {chart}
+</div>
+
+<script type="module">
+  import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs';
+  mermaid.initialize({ startOnLoad: true, theme: 'default' });
+</script>

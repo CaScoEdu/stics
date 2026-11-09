@@ -1,0 +1,296 @@
+---
+title: "Creazione Mappa SVG"
+description: "Primo passo del progetto Mappa Campus: realizzazione della struttura grafica vettoriale in SVG all'interno della pagina HTML e separazione degli stili visivi nel file style.css."
+---
+
+import {
+  Aside,
+  Badge,
+  Card,
+  Icon,
+  LinkButton,
+  Steps,
+} from "@astrojs/starlight/components";
+import CustomPageHeader from './src/components/CustomPageHeader.astro';
+import IconGroup from './src/components/IconGroup.astro';
+
+<CustomPageHeader 
+    pageType="Projects" 
+    pageTypeIcon="puzzle" 
+    badgeTextList={["Mappa Interattiva", "Passo 1"]}
+    techIconList={["seti:html", "seti:css", "vscode","github"]}
+    asideIntroTitle="Introduzione"
+    youTubeLink="https://youtu.be/dESwU9GzFBc"
+    youTubeText="guarda il video introduttivo"
+    asidePrerequisitesTitle="Prerequisiti"
+>
+<p slot="intro">
+Primo passo del progetto Mappa Campus: realizzazione della struttura grafica vettoriale in SVG all'interno della pagina HTML e separazione degli stili visivi nel file <code>style.css</code>.
+
+</p>
+<p slot="prerequisites">
+- **Visual Studio Code** già installato sul computer.
+</p>
+</CustomPageHeader>
+
+<Card>
+Nella seguente figura, è visualizzata la mappa che andremo a realizzare.
+
+  <svg viewBox="0 0 800 600" width="100%" height="auto" style="border: 2px solid #ccc; border-radius: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.1);">
+ 
+    <g id="layer-terreno">
+      <rect x="0" y="0" width="800" height="600" fill="#7ec850" />
+    </g>
+    <g id="layer-percorsi">
+      <rect x="50" y="270" width="700" height="60" fill="#d1d5db" rx="4" />
+      <rect x="180" y="80" width="50" height="440" fill="#d1d5db" rx="4" />
+    </g>
+    <g id="layer-edifici">
+      
+      <g id="edificio-uffici">
+        <rect x="70" y="80" width="100" height="140" fill="#1e3a8a" rx="6" />
+        <text x="120" y="150"  style="font-size: 14px;
+      font-weight: bold;
+      fill: #ffffff;
+      text-anchor: middle;
+      dominant-baseline: middle;">Uffici</text>
+      </g>
+
+      <g id="edificio-aule">
+        <rect x="70" y="380" width="100" height="140" fill="#2563eb" rx="6" />
+        <text x="120" y="450" style="font-size: 14px;
+      font-weight: bold;
+      fill: #ffffff;
+      text-anchor: middle;
+      dominant-baseline: middle;">Aule</text>
+      </g>
+
+      <g id="edificio-laboratori">
+        <rect x="630" y="80" width="100" height="140" fill="#7c3aed" rx="6" />
+        <text x="680" y="150" style="font-size: 14px;
+      font-weight: bold;
+      fill: #ffffff;
+      text-anchor: middle;
+      dominant-baseline: middle;">Laboratori</text>
+      </g>
+
+      <g id="edificio-mensa">
+        <rect x="240" y="180" width="140" height="80" fill="#ea580c" rx="6" />
+        <text x="310" y="220" style="font-size: 14px;
+      font-weight: bold;
+      fill: #ffffff;
+      text-anchor: middle;
+      dominant-baseline: middle;">Mensa</text>
+      </g>
+
+      <g id="edificio-palestra">
+        <rect x="630" y="380" width="100" height="140" fill="#dc2626" rx="6" />
+        <text x="680" y="450" style="font-size: 14px;
+      font-weight: bold;
+      fill: #ffffff;
+      text-anchor: middle;
+      dominant-baseline: middle;">Palestra</text>
+      </g>
+
+</g>
+  </svg>
+
+<Aside>
+  L'SVG è completamente vettoriale e si adatta automaticamente alle dimensioni
+  dello schermo del lettore.
+</Aside>
+</Card>
+---
+<Card>
+
+### 1. Organizzazione in Layer (Z-Order)
+
+In SVG l'ordine di scrittura del codice stabilisce l'ordine di sovrapposizione visiva degli elementi sullo schermo:
+
+- Il primo elemento scritto sta sullo sfondo.
+- Gli elementi successivi vengono disegnati al di sopra.
+
+Raggruppiamo gli elementi della mappa in tre layer logici principali 
+usando il tag `<g>` (group):
+
+```html
+<svg
+  viewBox="0 0 800 600"
+  xmlns="[http://www.w3.org/2000/svg](http://www.w3.org/2000/svg)"
+>
+  <!-- Layer 1: Terreno (Sfondo) -->
+  <g id="layer-terreno">...</g>
+
+  <!-- Layer 2: Percorsi Pedonali -->
+  <g id="layer-percorsi">...</g>
+
+  <!-- Layer 3: Edifici del Campus -->
+  <g id="layer-edifici">...</g>
+</svg>
+```
+
+</Card>
+
+<Card>
+
+### 2. Creazione del file di stile `style.css`
+  <Icon name="seti:css" size="2rem" label="css" color="DeepSkyBlue"/>
+
+
+Per mantenere un'architettura web pulita, separiamo il layout grafico dalle regole stilistiche. Crea un file chiamato `style.css` nella stessa cartella del progetto e incolla il seguente codice:
+
+```css
+//style.css
+/* stili generali della pagina */
+body {
+  font-family:
+    system-ui,
+    -apple-system,
+    sans-serif;
+  background-color: #f8fafc;
+  margin: 0;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+h1 {
+  color: #0f172a;
+  margin-bottom: 20px;
+}
+
+/* Stile del contenitore SVG */
+svg {
+  background-color: #ffffff;
+  border: 2px solid #cbd5e1;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  max-width: 100%;
+  height: auto;
+}
+
+/* Stile per le etichette di testo sugli edifici */
+.label {
+  font-size: 14px;
+  font-weight: bold;
+  fill: #ffffff;
+  text-anchor: middle;
+  dominant-baseline: middle;
+  pointer-events: none;
+}
+```
+
+</Card>
+
+<Card>
+
+### 3. Codice del file `index.html`
+  <Icon name="seti:html" size="2rem" label="html" color="DeepSkyBlue"/>
+
+
+Crea il file `index.html`, collegando il foglio di stile esterno `style.css` nell'intestazione ed inserendo la mappa SVG all'interno del body:
+
+```html
+//index.html
+<!DOCTYPE html>
+<html lang="it">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Mappa Campus Universitario - Lezione 1</title>
+    <!-- Collegamento al file CSS esterno -->
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <h1>🗺️ Mappa del Campus Universitario</h1>
+
+    <!-- Struttura Mappa SVG Embedded -->
+    <svg
+      viewBox="0 0 800 600"
+      width="800"
+      height="600"
+      xmlns="[http://www.w3.org/2000/svg](http://www.w3.org/2000/svg)"
+    >
+      <!-- LAYER 1: TERRENO (Prato verde) -->
+      <g id="layer-terreno">
+        <rect x="0" y="0" width="800" height="600" fill="#7ec850" />
+      </g>
+
+      <!-- LAYER 2: PERCORSI PEDONALI -->
+      <g id="layer-percorsi">
+        <rect x="50" y="270" width="700" height="60" fill="#d1d5db" rx="4" />
+        <rect x="180" y="80" width="50" height="440" fill="#d1d5db" rx="4" />
+        <rect x="570" y="80" width="50" height="440" fill="#d1d5db" rx="4" />
+      </g>
+
+      <!-- LAYER 3: EDIFICI DEL CAMPUS -->
+      <g id="layer-edifici">
+        <!-- Uffici Amministrativi -->
+        <g id="edificio-uffici">
+          <rect x="70" y="80" width="100" height="140" fill="#1e3a8a" rx="6" />
+          <text x="120" y="150" class="label">Uffici</text>
+        </g>
+
+        <!-- Edificio Aule -->
+        <g id="edificio-aule">
+          <rect x="70" y="380" width="100" height="140" fill="#2563eb" rx="6" />
+          <text x="120" y="450" class="label">Aule</text>
+        </g>
+
+        <!-- Laboratori -->
+        <g id="edificio-laboratori">
+          <rect x="630" y="80" width="100" height="140" fill="#7c3aed" rx="6" />
+          <text x="680" y="150" class="label">Laboratori</text>
+        </g>
+
+        <!-- Mensa -->
+        <g id="edificio-mensa">
+          <rect x="240" y="180" width="140" height="80" fill="#ea580c" rx="6" />
+          <text x="310" y="220" class="label">Mensa</text>
+        </g>
+
+        <!-- Palestra -->
+        <g id="edificio-palestra">
+          <rect
+            x="630"
+            y="380"
+            width="100"
+            height="140"
+            fill="#dc2626"
+            rx="6"
+          />
+          <text x="680" y="450" class="label">Palestra</text>
+        </g>
+      </g>
+    </svg>
+  </body>
+</html>
+```
+
+</Card>
+
+<Card>
+
+    ### 4. Esercizi e Salvataggio del Controllo Versioni (Git / VSC)
+      <Icon name="vscode" size="2rem" label="vscode" color="DeepSkyBlue"/>
+
+- **Nuovo Edificio:** Aggiungi al layer degli edifici un rettangolo per la **Biblioteca** al centro del campus.
+- **Personalizzazione CSS:** Apri `style.css` e modifica i colori di riempimento degli edifici o aggiungi un bordo arrotondato personalizzato.
+- **Salvataggio del primo branch su Git / GitHub:**
+
+<Card>
+  <Icon name="github" size="2rem" label="GitHub" color="DeepSkyBlue"/>
+
+Apri il pannello **Source Control** di VS Code (`Ctrl + Shift + G`):
+
+<Steps>
+      1. Crea un nuovo branch denominato `lezione-1`.
+      2. Esegui il commit dei file con il messaggio: `"Completata Lezione 1: Mappa SVG e style.css"`.
+      3. Effettua il **Publish Branch / Sync** per sincronizzare la lezione sul tuo repository GitHub.
+</Steps>
+</Card>
+</Card>
+<Aside type="tip" title="Ottimo lavoro!">
+  Hai completato con successo la prima lezione del progetto Mappa Campus. Ora puoi procedere con la seconda lezione, che introdurrà l'interattività locale e il menu a tendina.
+</Aside>

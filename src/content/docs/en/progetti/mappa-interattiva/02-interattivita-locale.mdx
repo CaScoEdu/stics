@@ -1,0 +1,251 @@
+---
+title: "Local Interactivity and an External JavaScript File"
+description: "In this lesson, we create a new development branch, add a dropdown menu for selecting buildings, and move the JavaScript logic into the external script.js file."
+---
+
+import {
+    Aside,
+    Badge,
+    Card,
+    Icon,
+    LinkButton,
+    Steps,
+} from "@astrojs/starlight/components";
+
+import CustomPageHeader from './src/components/CustomPageHeader.astro';
+import IconGroup from './src/components/IconGroup.astro';
+
+<CustomPageHeader 
+    pageType="Projects" 
+    pageTypeIcon="puzzle" 
+    badgeTextList={["Interactive Map", "Step 2"]}
+    techIconList={["seti:html","seti:css","seti:javascript", "vscode","github"]}
+    asideIntroTitle="Introduction"
+    youTubeLink="https://youtu.be/S_NmBI4Nr3Y"
+    youTubeText="watch the introductory video"
+    asidePrerequisitesTitle="Prerequisites"
+>
+<p slot="intro">
+Second step of the Campus Map project.
+
+In this lesson, we create a new development branch, add a dropdown menu for selecting buildings, and move the JavaScript logic into the external file.
+
+</p>
+<p slot="prerequisites">
+- **Visual Studio Code** installed on your computer.
+</p>
+</CustomPageHeader>
+
+<Card>
+
+## 1. Create the `lesson-2` Working Branch
+
+<Icon name="github" size="2rem" label="GitHub" color="DeepSkyBlue" />
+
+Before writing any new code, create a dedicated branch to isolate this lesson's changes:
+
+<Steps>
+  1. Open the Source Control panel in VS Code (`Ctrl + Shift + G`). 2. Click
+  the current branch name in the bottom-left corner (or at the top of the panel)
+  and select `Create new branch...`. 3. Enter the new branch name: `lesson-2`
+  and press Enter.
+</Steps>
+You are now working on a copy independent from Lesson 1, ready to be developed further!
+
+</Card>
+
+<Card>
+
+## 2. Update `style.css` (Hover Effects and the `active` Class)
+
+<Icon name="seti:css" size="2rem" label="css" color="DeepSkyBlue" />
+
+At the end of your `style.css` file, add the visual rules for the hover cursor
+and the highlighting effect (a yellow border and glow) when a building is selected:
+
+```css
+//style.css
+/* Hover effect on all building groups */
+#layer-edifici > g {
+  cursor: pointer;
+  transition: opacity 0.2s ease;
+}
+#layer-edifici > g:hover {
+  opacity: 0.85;
+}
+/* Style applied by JavaScript to the SELECTED building */
+.active rect {
+  stroke: #facc15 !important; /* Bright yellow */
+  stroke-width: 5px !important;
+  filter: drop-shadow (0px 0px 10px #facc15);
+}
+```
+
+</Card>
+
+<Card>
+
+## 3. Create `script.js` and Use `document.getElementById()`
+
+<Icon
+  name="seti:javascript"
+  size="2rem"
+  label="javascript"
+  color="DeepSkyBlue"
+/>
+
+Create a new file named `script.js` in the project's root folder.
+
+In it, we'll add functions that use `document.getElementById()` to retrieve the
+SVG element corresponding to the selected building and apply the `.active` class:
+
+```javascript
+//script.js
+// Called when the dropdown menu changes
+function highlightBuildingFromMenu() {
+  clearPreviousSelection();
+  const selectMenu = document.getElementById("building-select");
+    const idSelezionato = selectMenu.value;
+    if (idSelezionato) {
+        // Use getElementById to find the SVG element in the DOM
+        const buildingElement = document.getElementById(selectedId);
+        if (buildingElement) {
+          buildingElement.classList.add("active");
+        }
+    }
+}
+
+// Called when a building on the SVG map is clicked directly
+function selectFromMap(buildingId) {
+  const selectMenu = document.getElementById("building-select");
+  selectMenu.value = buildingId;
+  highlightBuildingFromMenu();
+}
+
+// Helper function to clear the previous selection
+function clearPreviousSelection() {
+  const activeBuilding = document.querySelector(".active");
+  if (activeBuilding) {
+    activeBuilding.classList.remove("active");
+    }
+}
+```
+</Card>
+---
+<Card>
+## 4. Update `index.html` (Menu and JavaScript Link)
+<Icon
+  name="seti:html"
+  size="2rem"
+  label="html"
+  color="DeepSkyBlue"
+/>
+
+Update `index.html` by adding a control panel with a `<select>` dropdown,
+adding `onclick` attributes to the SVG buildings, and linking `script.js` before
+the closing `body` tag:
+
+```html
+//index.html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Interactive Campus Map - Lesson 2</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <h1>🗺️ Interactive Campus Map</h1>
+
+  <!-- CONTROL PANEL WITH DROPDOWN MENU -->
+  <div style="margin-bottom: 15px; background: white; padding: 10px; border-radius: 8px; border: 1px solid #cbd5e1;">
+    <label for="building-select"><strong>🔍 Highlight a Building:</strong></label>
+    <select id="building-select" onchange="highlightBuildingFromMenu()" style="padding: 6px; border-radius: 4px; border: 1px solid #0284c7;">
+      <option value="">-- Select a destination --</option>
+      <option value="edificio-uffici">Administration Offices</option>
+      <option value="edificio-aule">Classroom Building</option>
+      <option value="edificio-laboratori">Laboratories</option>
+      <option value="edificio-mensa">Campus Cafeteria</option>
+      <option value="edificio-palestra">Gym</option>
+    </select>
+  </div>
+
+  <svg viewBox="0 0 800 600" width="800" height="600" xmlns="http://www.w3.org/2000/svg">
+    
+    <g id="layer-terreno">
+      <rect x="0" y="0" width="800" height="600" fill="#7ec850" />
+    </g>
+
+    <g id="layer-percorsi">
+      <rect x="50" y="270" width="700" height="60" fill="#d1d5db" rx="4" />
+      <rect x="180" y="80" width="50" height="440" fill="#d1d5db" rx="4" />
+      <rect x="570" y="80" width="50" height="440" fill="#d1d5db" rx="4" />
+    </g>
+
+    <!-- Add onclick events connected to JavaScript -->
+    <g id="layer-edifici">
+      <g id="edificio-uffici" onclick="selectFromMap('edificio-uffici')">
+        <rect x="70" y="80" width="100" height="140" fill="#1e3a8a" rx="6" />
+        <text x="120" y="150" class="label">Offices</text>
+      </g>
+
+      <g id="edificio-aule" onclick="selectFromMap('edificio-aule')">
+        <rect x="70" y="380" width="100" height="140" fill="#2563eb" rx="6" />
+        <text x="120" y="450" class="label">Classrooms</text>
+      </g>
+
+      <g id="edificio-laboratori" onclick="selectFromMap('edificio-laboratori')">
+        <rect x="630" y="80" width="100" height="140" fill="#7c3aed" rx="6" />
+        <text x="680" y="150" class="label">Laboratories</text>
+      </g>
+
+      <g id="edificio-mensa" onclick="selectFromMap('edificio-mensa')">
+        <rect x="240" y="180" width="140" height="80" fill="#ea580c" rx="6" />
+        <text x="310" y="220" class="label">Cafeteria</text>
+      </g>
+
+      <g id="edificio-palestra" onclick="selectFromMap('edificio-palestra')">
+        <rect x="630" y="380" width="100" height="140" fill="#dc2626" rx="6" />
+        <text x="680" y="450" class="label">Gym</text>
+      </g>
+    </g>
+
+  </svg>
+
+  <!-- Link to the external JavaScript file -->
+  <script src="script.js"></script>
+
+</body>
+</html>
+```
+
+</Card>
+
+---
+
+<Card>
+## 5. Final Commit and Sync (Git / GitHub)
+<Icon
+  name="github"
+  size="2rem"
+  label="github"
+  color="DeepSkyBlue"
+/>
+
+Now that Lesson 2 is complete and tested in the browser, save your work to the repository:
+<Steps>
+1. Return to the `Source Control` tab in VS Code.
+2. Check that the modified and new files appear (`index.html`, `style.css`, `script.js`).
+3. Enter a clear commit message in the text box, for example:
+  "Completed Lesson 2: Local interactivity, dropdown menu, and script.js".
+4. Click the `Commit` button.
+5. Click `Publish Branch` (or `Sync Changes`) to push the new `lesson-2` branch and its commits to your GitHub remote repository.
+</Steps>
+</Card>
+<Aside type="tip" title="Great job!">
+Congratulations! You have successfully completed the second step of the Campus Map project.
+You can now move on to the third step.
+</Aside>
+

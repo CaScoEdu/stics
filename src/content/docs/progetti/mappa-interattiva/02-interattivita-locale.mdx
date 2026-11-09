@@ -1,0 +1,252 @@
+---
+title: "Interattività locale e script JS esterno"
+description: "In questa lezione creiamo un nuovo branch di sviluppo, aggiungiamo un menu a tendina per selezionare gli edifici e separiamo la logica JavaScript nel file esterno script.js"
+---
+
+import {
+  Aside,
+  Badge,
+  Card,
+  Icon,
+  LinkButton,
+  Steps,
+} from "@astrojs/starlight/components";
+
+import CustomPageHeader from './src/components/CustomPageHeader.astro';
+import IconGroup from './src/components/IconGroup.astro';
+
+<CustomPageHeader 
+    pageType="Projects" 
+    pageTypeIcon="puzzle" 
+    badgeTextList={["Mappa Interattiva", "Passo 2"]}
+    techIconList={["seti:html","seti:css","seti:javascript", "vscode","github"]}
+    asideIntroTitle="Introduzione"
+    youTubeLink="https://youtu.be/S_NmBI4Nr3Y"
+    youTubeText="guarda il video introduttivo"
+    asidePrerequisitesTitle="Prerequisiti"
+>
+<p slot="intro">
+Secondo passo del progetto Mappa Campus.
+
+In questa lezione creiamo un nuovo branch di sviluppo, aggiungiamo un menu a tendina per selezionare gli edifici e separiamo la logica JavaScript nel file esterno
+
+</p>
+<p slot="prerequisites">
+- **Visual Studio Code** già installato sul computer.
+</p>
+</CustomPageHeader>
+
+<Card>
+
+## 1. Creazione del Branch di Lavoro `lezione-2`
+
+<Icon name="github" size="2rem" label="GitHub" color="DeepSkyBlue" />
+
+Prima di iniziare a scrivere il nuovo codice, creiamo un branch dedicato per isolare le modifiche di questa lezione:
+
+<Steps>
+  1. Apri il pannello Source Control in VS Code (`Ctrl + Shift + G`). 2. Clicca
+  sul nome del branch corrente in basso a sinistra (o in alto nel pannello) e
+  seleziona `Crea un nuovo branch...` (`Create new branch...`). 3. Digita il
+  nome del nuovo branch: `lezione-2` e premi Invio.
+</Steps>
+Ora stai lavorando su una copia indipendente dalla Lezione 1 pronta per essere
+evoluta!
+
+</Card>
+
+<Card>
+
+## 2. Aggiornamento di `style.css` (Effetti Hover e Classe `attivo`)
+
+<Icon name="seti:css" size="2rem" label="css" color="DeepSkyBlue" />
+
+Aggiungiamo in fondo al tuo file `style.css` le regole visive per il cursore al
+passaggio del mouse e l'effetto di evidenziazione (bordo giallo e bagliore)
+quando un edificio viene selezionato:
+
+```css
+//style.css
+/* Effetto hover su tutti i gruppi edificio */
+#layer-edifici > g {
+  cursor: pointer;
+  transition: opacity 0.2s ease;
+}
+#layer-edifici > g:hover {
+  opacity: 0.85;
+}
+/* Stile applicato all'edificio SELEZIONATO tramite JS */
+.attivo rect {
+  stroke: #facc15 !important; /* Giallo acceso */
+  stroke-width: 5px !important;
+  filter: drop-shadow (0px 0px 10px #facc15);
+}
+```
+
+</Card>
+
+<Card>
+
+## 2. Creazione del file `script.js` e uso di `document.getElementById()`
+
+<Icon
+  name="seti:javascript"
+  size="2rem"
+  label="javascript"
+  color="DeepSkyBlue"
+/>
+
+Crea un nuovo file denominato `script.js` nella cartella principale del progetto.
+
+Al suo interno inseriremo la funzione che sfrutta `document.getElementById()`
+per recuperare l'elemento SVG corrispondente all'edificio scelto e applicargli la classe `.attivo`:
+
+```javascript
+//script.js
+// Funzione invocata al cambio del menu a tendina
+function evidenziaEdificioDaMenu() {
+    rimuoviSelezione Precedente();
+    const selectMenu = document.getElementById("select-edificio");
+    const idSelezionato = selectMenu.value;
+    if (idSelezionato) {
+        // sfruttiamo getElementById per trovare l'elemento SVG nel DOM
+        const elementoEdificio = document.getElementById(idSelezionato);
+        if (elementoEdificio) {
+            elementoEdificio.classList.add("attivo");
+        }
+    }
+}
+
+// Funzione invocata cliccando direttamente un edificio sulla mappa SVG
+function selezionaDaMappa (idEdificio) {
+    const selectMenu = document.getElementById("select-edificio");
+    selectMenu.value = idEdificio;
+    evidenziaEdificioDaMenu();
+}
+
+// Funzione di servizio per pulire la selezione precedente
+function rimuovi SelezionePrecedente() {
+    const edificioAttivo = document.querySelector(".attivo");
+    if (edificioAttivo) {
+        edificioAttivo.classList.remove("attivo");
+    }
+}
+```
+</Card>
+---
+<Card>
+## 3. Aggiornamento di `index.html` (Menu e Collegamento JS)
+<Icon
+  name="seti:html"
+  size="2rem"
+  label="html"
+  color="DeepSkyBlue"
+/>
+
+Modifichiamo il file `index.html` inserendo un pannello di controllo con il menu a tendina `<select>`, aggiungendo gli
+attributi `onclick` ai vari edifici SVG e collegando il file `script.js` prima della chiusura del `body`:
+
+```html
+//index.html
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mappa Campus Interattiva - Lezione 2</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <h1>🗺️ Mappa del Campus Interattiva</h1>
+
+  <!-- PANNELLO DI CONTROLLO CON MENU A TENDINA -->
+  <div style="margin-bottom: 15px; background: white; padding: 10px; border-radius: 8px; border: 1px solid #cbd5e1;">
+    <label for="select-edificio"><strong>🔍 Evidenzia Edificio:</strong></label>
+    <select id="select-edificio" onchange="evidenziaEdificioDaMenu()" style="padding: 6px; border-radius: 4px; border: 1px solid #0284c7;">
+      <option value="">-- Seleziona una destinazione --</option>
+      <option value="edificio-uffici">Uffici Amministrativi</option>
+      <option value="edificio-aule">Edificio Aule</option>
+      <option value="edificio-laboratori">Laboratori</option>
+      <option value="edificio-mensa">Mensa Campus</option>
+      <option value="edificio-palestra">Palestra</option>
+    </select>
+  </div>
+
+  <svg viewBox="0 0 800 600" width="800" height="600" xmlns="http://www.w3.org/2000/svg">
+    
+    <g id="layer-terreno">
+      <rect x="0" y="0" width="800" height="600" fill="#7ec850" />
+    </g>
+
+    <g id="layer-percorsi">
+      <rect x="50" y="270" width="700" height="60" fill="#d1d5db" rx="4" />
+      <rect x="180" y="80" width="50" height="440" fill="#d1d5db" rx="4" />
+      <rect x="570" y="80" width="50" height="440" fill="#d1d5db" rx="4" />
+    </g>
+
+    <!-- Aggiunta degli eventi onclick collegati a JavaScript -->
+    <g id="layer-edifici">
+      <g id="edificio-uffici" onclick="selezionaDaMappa('edificio-uffici')">
+        <rect x="70" y="80" width="100" height="140" fill="#1e3a8a" rx="6" />
+        <text x="120" y="150" class="label">Uffici</text>
+      </g>
+
+      <g id="edificio-aule" onclick="selezionaDaMappa('edificio-aule')">
+        <rect x="70" y="380" width="100" height="140" fill="#2563eb" rx="6" />
+        <text x="120" y="450" class="label">Aule</text>
+      </g>
+
+      <g id="edificio-laboratori" onclick="selezionaDaMappa('edificio-laboratori')">
+        <rect x="630" y="80" width="100" height="140" fill="#7c3aed" rx="6" />
+        <text x="680" y="150" class="label">Laboratori</text>
+      </g>
+
+      <g id="edificio-mensa" onclick="selezionaDaMappa('edificio-mensa')">
+        <rect x="240" y="180" width="140" height="80" fill="#ea580c" rx="6" />
+        <text x="310" y="220" class="label">Mensa</text>
+      </g>
+
+      <g id="edificio-palestra" onclick="selezionaDaMappa('edificio-palestra')">
+        <rect x="630" y="380" width="100" height="140" fill="#dc2626" rx="6" />
+        <text x="680" y="450" class="label">Palestra</text>
+      </g>
+    </g>
+
+  </svg>
+
+  <!-- Collegamento al file JavaScript esterno -->
+  <script src="script.js"></script>
+
+</body>
+</html>
+```
+
+</Card>
+
+---
+
+<Card>
+## 4. Commit e Sincronizzazione Finale (Git / GitHub)
+<Icon
+  name="github"
+  size="2rem"
+  label="github"
+  color="DeepSkyBlue"
+/>
+
+Ora che la Lezione 2 è completa e testata nel browser, salviamo il lavoro nel repository:
+<Steps>
+1. Torna nella scheda `Source Control` di VS Code.
+2. Verifica che compaiano i file modificati e creati (`index.html`, `style.css`, `script.js`).
+3. Scrivi un messaggio di commit chiaro nel box di testo, ad esempio:
+"Completata Lezione 2: Interattività locale, menu a tendina e script.js".
+4. Clicca sul pulsante `Commit`.
+5. Clicca su `Publish Branch` (o `Sync Changes`) per caricare il nuovo branch `lezione-2` e i relativi commit sul tuo repository remoto su GitHub.
+</Steps>
+</Card>
+<Aside type="tip" title="Ottimo lavoro!">
+Congratulazioni! Hai completato con successo il secondo passo del progetto Mappa Campus. 
+Ora puoi procedere con il terzo passo.
+</Aside>
+

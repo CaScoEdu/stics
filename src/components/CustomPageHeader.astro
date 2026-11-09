@@ -1,0 +1,61 @@
+---
+import type { StarlightIcon } from "@astrojs/starlight/types";
+import IconGroup from "./IconGroup.astro";
+import BadgeList from "./BadgeList.astro";
+
+interface Props {
+  pageType: string;
+  pageTypeIcon: StarlightIcon;
+  badgeTextList?: string[];
+  techIconList?: StarlightIcon[];
+  asideIntroTitle?: string;
+  youTubeLink?: string;
+  youTubeText?: string;
+  asidePrerequisitesTitle?: string;
+}
+const {
+  pageType,
+  pageTypeIcon,
+  badgeTextList = [],
+  techIconList = [],
+  asideIntroTitle,
+  youTubeLink,
+  youTubeText,
+  asidePrerequisitesTitle,
+} = Astro.props;
+
+import { Aside, Card, LinkButton } from "@astrojs/starlight/components";
+---
+
+<Card title={pageType} icon={pageTypeIcon}>
+  {badgeTextList.length > 0 && <BadgeList badgeTextList={badgeTextList} />}
+  {techIconList.length > 0 && <IconGroup techIconList={techIconList} />}
+
+  {
+    asideIntroTitle && (
+      <Aside type="tip" title={asideIntroTitle}>
+        <slot name="intro" />
+      </Aside>
+    )
+  }
+
+  {
+    youTubeLink && youTubeText && (
+      <LinkButton
+        href={youTubeLink}
+        variant="primary"
+        icon="youtube"
+        iconPlacement="end"
+      >
+        {youTubeText}
+      </LinkButton>
+    )
+  }
+  {
+    asidePrerequisitesTitle && (
+      <Aside title={asidePrerequisitesTitle}>
+        <slot name="prerequisites" />
+      </Aside>
+    )
+  }
+</Card>

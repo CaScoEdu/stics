@@ -1,0 +1,29 @@
+---
+// src/components/IconGroup.astro
+import { Icon } from "@astrojs/starlight/components";
+import type { StarlightIcon } from "@astrojs/starlight/types";
+
+interface Props {
+  techIconList: StarlightIcon[];
+}
+
+const { techIconList } = Astro.props;
+---
+
+<div class="icon-group">
+  {
+    techIconList.map((techIcon) => (
+      <Icon name={techIcon} size="2rem" label={techIcon} color="DeepSkyBlue" />
+    ))
+  }
+</div>
+
+<style>
+  .icon-group {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    align-items: center;
+    margin: 1rem 0;
+  }
+</style>
