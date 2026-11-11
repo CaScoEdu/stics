@@ -1,0 +1,233 @@
+---
+title: "Project: Space Dashboard"
+description: "Applying JavaScript asynchronous execution and the Fetch API."
+---
+
+import {
+    Aside,
+    Badge,
+    Card,
+    Icon,
+    LinkButton,
+    LinkCard,
+    Steps,
+    TabItem,
+    Tabs
+} from "@astrojs/starlight/components";
+import Mermaid from "@/components/Mermaid.astro";
+import CustomPageHeader from '@/components/CustomPageHeader.astro';
+import IconGroup from '@/components/IconGroup.astro';
+
+<CustomPageHeader 
+    pageType="Labs" 
+    pageTypeIcon="laptop" 
+    badgeTextList={["Front-End Development", "Intermediate", "Fetch, Async/Await"]}
+    techIconList={["seti:html", "seti:javascript", "vscode"]}
+    asideIntroTitle="In this exercise ..."
+    asidePrerequisitesTitle="Prerequisites"
+>
+<p slot="intro">
+We'll build the onboard dashboard for a space mission (**Ares-IV**) to download
+and display logs asynchronously from external text files (`.txt`) using the Fetch API.
+</p>
+<p slot="prerequisites">
+- Basic knowledge of **HTML5, CSS3, and the JavaScript DOM**.
+- **Visual Studio Code** with the **Live Server** extension installed.
+- Study the lesson [Asynchronous Execution and the Fetch API](./esecuzione-asincrona-e-fetch-api) to understand the fundamentals.
+</p>
+</CustomPageHeader>
+
+---
+<Card>
+## Step 1: The HTML Structure (`index.html`)
+
+Let's start by creating the user interface.
+The HTML defines the control buttons and the console panel
+where the download status and log text will appear.
+
+```html
+//index.html
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <title>Mission Ares-IV - Flight Log</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <h1>🚀 Mission Ares-IV: Flight Log</h1>
+  <p>Select a log to download from the central server:</p>
+  
+  <!-- Control buttons -->
+  <button id="btn-log1">Day 1 Log</button>
+  <button id="btn-log2">Day 42 Log</button>
+  <button id="btn-errore">Test Error (404)</button>
+
+  <!-- Display console -->
+  <div class="console">
+    <strong>Connection Status:</strong> <span id="stato">Waiting...</span>
+    <hr>
+    <div id="log">No data loaded.</div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
+```
+
+### HTML explanation
+Each of the three buttons has a unique ID so JavaScript can attach event handlers to it.
+- <code>#stato</code> will display loading progress messages (e.g., "In progress...", "OK", "Error").
+- <code>#log</code> will contain the text downloaded from the text file.
+ </Card> 
+---
+<Card>
+## Step 2: The Visual Style (<code>style.css</code>)
+Let's create a separate <code>style.css</code> file to give the page
+the look of a real onboard terminal.
+
+```css
+//style.css
+body {
+  background-color: #0d1117;
+  color: #58a6ff;
+  font-family: monospace;
+  padding: 20px;
+}
+
+.console {
+  border: 1px solid #30363d;
+  padding: 15px;
+  border-radius: 6px;
+  background-color: #161b22;
+  margin-top: 15px;
+}
+
+button {
+  background-color: #238636;
+  color: white;
+  border: none;
+  padding: 10px 15px;
+  margin-right: 8px;
+  cursor: pointer;
+  border-radius: 4px;
+}
+
+button:hover {
+  background-color: #2ea043;
+}
+
+#log {
+  margin-top: 15px;
+  white-space: pre-wrap;
+  color: #c9d1d9;
+}
+```
+### CSS explanation
+- <code>font-family: monospace</code> mimics command terminal fonts.
+- <code>white-space: pre-wrap</code> on the <code>#log</code> container is essential: it preserves line breaks (<code>\n</code>) from the text file when displayed.
+
+</Card>
+
+<Card>
+## Step 3: The Data Files (Flight Logs)
+Create two text files in the same project folder:
+
+:::tip[log1.txt]
+[DATE: 12.04.2045]
+Liftoff from the Earth base successful.
+All engines are operating at 100%. The journey to Mars has begun without incident.
+:::
+
+:::tip[log2.txt]
+[DATE: 24.05.2045]
+Anomaly detected in navigation sector 4.
+Sensors indicate an unidentified signal. Immediate investigation requested.
+:::
+</Card>
+
+---
+
+<Card>
+## Step 4: The JavaScript Logic (<code>app.js</code>)
+Let's build the script logic by dividing it into conceptual blocks.
+
+### Snippet A: Declaring the asynchronous function
+```javascript
+// Use the 'async' keyword to enable 'await' inside the function
+async function caricaLog(nomeFile) {
+const elementoStato = document.getElementById('stato');
+const elementoLog = document.getElementById('log');
+// Loading code...
+}
+```
+:::tip[Spiegazione]
+The `async` keyword tells the browser that this function performs asynchronous operations and returns a `Promise`.
+:::
+
+---
+
+### Snippet B: The HTTP request with `await fetch()`
+```javascript
+// 1. Start the error-handling block
+try {
+    elementoStato.textContent = `Downloading ${nomeFile}...`;
+    
+    // 2. Send the request and WAIT for the response headers
+    const response = await fetch(nomeFile);
+    
+    // 3. Check whether the file exists on the server (e.g., HTTP 200 OK)
+    if (!response.ok) {
+    throw new Error(`File not found (HTTP status: ${response.status})`);
+    }
+}
+```
+:::tip[Spiegazione]
+`await fetch()` pauses execution inside the function until the server responds, without blocking the web page.
+If the file does not exist (e.g., `404`), `response.ok` will be `false`, and we manually throw an error with `throw`.
+:::
+
+---
+### Snippet C: Converting to text and updating the DOM
+```javascript
+// 4. WAIT for the entire file content to be read as text
+    const testo = await response.text();
+    
+    // 5. Update the interface with the received data
+    elementoStato.textContent = 'Connection completed successfully.';
+    elementoLog.textContent = testo;
+    
+  } catch (errore) {
+    // Handle network issues or a missing file
+    elementoStato.textContent = 'TRANSMISSION ERROR!';
+    elementoLog.textContent = errore.message;
+  }
+}
+```
+:::tip[Spiegazione]
+`await response.text()` is needed because the response body arrives as a stream.
+A second `await` is required to finish reading the text.
+:::
+
+---
+
+### Snippet D: Attaching Event Listeners to the Buttons
+
+```javascript
+// Connect the function to the interface buttons
+document.getElementById('btn-log1').addEventListener('click', () => caricaLog('log1.txt'));
+document.getElementById('btn-log2').addEventListener('click', () => caricaLog('log2.txt'));
+document.getElementById('btn-errore').addEventListener('click', () => caricaLog('log-inesistente.txt'));
+```
+
+</Card>
+
+:::caution[Beware of `CORS`issues (`Live Server`)]
+Reference: [`CORS`](https://en.wikipedia.org/wiki/Cross-origin_resource_sharing).
+If you open `index.html` by double-clicking it (using the `file:///` protocol), the browser will block `fetch` for security reasons.
+Remember to run the project through a local server (e.g., the `Live Server` extension for `Visual Studio Code`).
+:::
+
+:::tip[Practice exercise]
+Add a fourth button called `"Day 100 Log"` and create the corresponding `log100.txt` file to verify that the system works correctly.
+:::

@@ -8,6 +8,7 @@ import {
     Badge,
     Card,
     Icon,
+    IconGroup,
     LinkButton,
     LinkCard,
     Steps,
@@ -35,15 +36,17 @@ nel modo più semplice e sintetico possibile
 </p>
 <p slot="prerequisites">
 - **Visual Studio Code** già installato sul computer.
+- conoscenza di base di `JavaScript`, vedi [W3schools tutorial Javascript](https://www.w3schools.com/js/)
 </p>
 </CustomPageHeader>
 
-<Card>
-## 1. Il codice essenziale `index.html`
-<IconGroup techIconList={["vscode","seti:html"]} />
+---
 
+## 1. Il codice essenziale `index.html`
+
+<IconGroup techIconList={["vscode","seti:html"]} />
 Creiamo un file `index.html`  e un file `hello.txt` nella stessa cartella:
-</Card>
+
 
 <Tabs>
 
@@ -149,3 +152,43 @@ l'esecuzione dell'istruzione `fetch`.
 
 diagramma fatto con [Mermaid](https://mermaid.live/edit#pako:eNqNk1FvmzAQx7-K5b60EokgaQjjYdOW9GnaVrVTpQ3y4NkHWAUfso1SluS719jJNm0v4wXu7nf_-3PgA-UogOa0anHPG6Yt-botFXHXo3XRdfEkjbQEVSsVEGNRw-6GzGZvyQeNewNFuJFeoxi4NbvQfM5O3MbJFO-FINJCZ4hFwl3mzE1FT22BSwGHB2Bi9EwD_JngYN-dAhmAiT1-BOiJabDvpaqP51n_UN_AHMk9G4s7ZUGTno0dKEsEWCbbi09X9-OfWCvF4f7MMM6htyAus33Vi37GI3kAq8fiscE9Aa1Rkw6MYTWcJX3Zizq5v_u9qQ2qSuqu-KKFM8ZDBOKykhCHraCC6-Kuc46JBg6yt7ubUgXQ2LGF8JlIJds2v4KsWsGbyFiNz5Bf3S5ZfLv-E570_pcNpgNcVdUS4l9w9SPjcUwjWmspaG71ABHtQDufLqSHSaaktoEOSpq7Rw1ieJlxbFGXtFQn19oz9R2xu3RrHOqG5hVrjYuGXjALW8lqzX4joNy-NjgoS_OVV6D5gb7QfLlO5mm2SBbJOk5WaZpEdHTZ1TzOsjTN0sS92nKRniL604-M59naCYCQ7n_-FA6APwenV1CD_oo/)
 </Card>
+
+<Card>
+## 3. Diagramma di Deployment
+Vediamo dove risiedono i file durante l'esecuzione reale 
+o all'interno di un ambiente come `CodePen/OneCompiler`.
+
+
+<Mermaid chart={`
+  flowchart LR
+    subgraph Client ["Client: Browser dell'Utente"]
+        subgraph Sandbox ["Ambiente Sandbox / iFrame"]
+            HTML["Interfaccia HTML & DOM"]
+            ENGINE["Engine JavaScript (V8)"]
+        end
+    end
+
+    subgraph ServerHost ["Server Web / Host File"]
+        TXT["File di testo: hello.txt"]
+    end
+
+    HTML -->|Esegue lo script| ENGINE
+    ENGINE -->|1. Request: Fetch HTTP GET| TXT
+    TXT -->|2. Response 200: Hello World!| ENGINE
+    ENGINE -->|3. Aggiorna output.textContent| HTML
+`} />
+
+diagramma fatto con [Mermaid](https://mermaid.live/edit#pako:eNqNk1FvmzAQx7-K5b60EokgaQjjYdOW9GnaVrVTpQ3y4NkHWAUfso1SluS719jJNm0v4wXu7nf_-3PgA-UogOa0anHPG6Yt-botFXHXo3XRdfEkjbQEVSsVEGNRw-6GzGZvyQeNewNFuJFeoxi4NbvQfM5O3MbJFO-FINJCZ4hFwl3mzE1FT22BSwGHB2Bi9EwD_JngYN-dAhmAiT1-BOiJabDvpaqP51n_UN_AHMk9G4s7ZUGTno0dKEsEWCbbi09X9-OfWCvF4f7MMM6htyAus33Vi37GI3kAq8fiscE9Aa1Rkw6MYTWcJX3Zizq5v_u9qQ2qSuqu-KKFM8ZDBOKykhCHraCC6-Kuc46JBg6yt7ubUgXQ2LGF8JlIJds2v4KsWsGbyFiNz5Bf3S5ZfLv-E570_pcNpgNcVdUS4l9w9SPjcUwjWmspaG71ABHtQDufLqSHSaaktoEOSpq7Rw1ieJlxbFGXtFQn19oz9R2xu3RrHOqG5hVrjYuGXjALW8lqzX4joNy-NjgoS_OVV6D5gb7QfLlO5mm2SBbJOk5WaZpEdHTZ1TzOsjTN0sS92nKRniL604-M59naCYCQ7n_-FA6APwenV1CD_oo/)
+</Card>
+
+<Aside type="tip" title="Ottimo lavoro!">
+Hai realizzato una pagina HTML che carica `hello.txt` con `fetch`,
+ gestendo la risposta e gli eventuali errori. 
+ Hai inoltre seguito il flusso asincrono nei 
+ diagrammi dei componenti e di deployment.
+ Ottimo lavoro: sei pronto per la pagina successiva, **Progetto Dashboard Spaziale**!
+</Aside>
+
+
+
+
