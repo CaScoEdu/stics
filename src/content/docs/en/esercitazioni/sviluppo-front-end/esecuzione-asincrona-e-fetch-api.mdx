@@ -1,182 +1,193 @@
 ---
-title: Esecuzione asincrona e Fetch API
-description: tbd
+title: Asynchronous Execution and the Fetch API
+description: JavaScript asynchronous execution and the Fetch API.
 ---
 
-import { Aside, Badge, Card, Icon, LinkButton, Steps } from "@astrojs/starlight/components";
+import {
+    Aside,
+    Badge,
+    Card,
+    Icon,
+    IconGroup,
+    LinkButton,
+    LinkCard,
+    Steps,
+    TabItem,
+    Tabs
+} from "@astrojs/starlight/components";
+import Mermaid from "@/components/Mermaid.astro";
+import CustomPageHeader from '@/components/CustomPageHeader.astro';
+import IconGroup from '@/components/IconGroup.astro';
 
-<Card title="Labs" icon="laptop">
-  <Badge text="Sviluppo Front End" size="large" />
-  ---
-  <Icon name="github" size="2rem" label="GitHub" color="DeepSkyBlue"/>
 
----
-
-In this lesson, you will learn to use **Git** and **GitHub**
-directly from *Visual Studio Code (VS Code)*.
-We will create a basic web page, publish it online to a remote repository, and manage two versions of the site (Italian and English) using _branches_.
-
----
-<LinkButton
-  href="https://youtu.be/rk78qW9ce2M"
-  variant="primary"
-  icon="youtube"
-  iconPlacement="end"
+<CustomPageHeader 
+    pageType="Labs" 
+    pageTypeIcon="laptop" 
+    badgeTextList={["Front-End Development", "Asynchronous Execution", "Fetch API"]}
+    techIconList={["seti:html", "seti:javascript", "vscode"]}
+    asideIntroTitle="In this exercise ..."
+    youTubeLink="https://youtu.be/R4HCYWLVHZQ"
+    youTubeText="guarda il video introduttivo"
+    asidePrerequisitesTitle="Prerequisites"
 >
-  watch the introductory video
-</LinkButton>
-
-:::note[Prerequisites]
-
+<p slot="intro">
+... we'll see how asynchrony works in JavaScript
+in the simplest and most concise way possible.
+</p>
+<p slot="prerequisites">
 - **Visual Studio Code** installed on your computer.
-- An *email address* (work, school, or personal) to register your account.
-  :::
+- basic knowledge of `JavaScript`, see [W3schools tutorial Javascript](https://www.w3schools.com/js/)
+
+</p>
+</CustomPageHeader>
 
 ---
-</Card>
 
-<Card>
-## 1. Create a GitHub Account
-  <Icon name="github" size="2rem" label="GitHub" color="DeepSkyBlue"/>
+## 1. The Essential `index.html` Code
 
-
-Register your developer profile:
-
-<Steps>
-  1. Go to [github.com](https://github.com) and click **Sign up**.
-  2. Enter your email, create a secure password, and choose a username.
-  3. Complete the verification and enter the confirmation code you received by email.
-</Steps>
-</Card>
----
-<Card>
-## 2. Install and Configure Git
-
-An essential prerequisite for managing files locally.
-
-### Installation
-
-Download and install Git from the official website [git-scm.com](https://git-scm.com) (you can accept the default options in the setup wizard).
-
-### Configure Your Name and Email
-
-Open the terminal (or the VS Code integrated terminal) and run the following commands, replacing the values with the information associated with your GitHub account:
-
-```bash
-# Git user configuration
-git config --global user.name "my username"
-git config --global user.email "email@example.com"
-```
-</Card>
----
-<Card>
-
-## 3. Create a Local Project in VS Code
-  <Icon name="vscode" size="2rem" label="vscode" color="DeepSkyBlue" />
+<IconGroup techIconList={["vscode","seti:html"]} />
+Create an `index.html` file and a `hello.txt` file in the same folder:
 
 
-Set up the initial file for the website:
+<Tabs>
 
-<Steps>
-1. Open VS Code and create a new folder on your computer called `my-first-repo`.
-2. Open the folder in VS Code by selecting **File > Open Folder...**.
-3. Create a new file called `index.html` and add this starter code:
-</Steps>
-
+<TabItem label="index.html" icon="seti:html" >
 ```html
 <!DOCTYPE html>
 <html lang="it">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>My First Project</title>
-  </head>
-  <body>
-    <h1>Hello World</h1>
-  </body>
+<head>
+    <meta charset="UTF-8">
+    <title>Intro Async Fetch</title>
+</head>
+<body>
+
+    <button onclick="loadMessage()">Load "Hello World"</button>
+
+    <!-- A minimal container for displaying the text -->
+    <div id="output">Waiting for a click...</div>
+
+    <script>
+    // 1. 'async' makes the function asynchronous
+    async function loadMessage() {
+        const output = document.getElementById('output');
+
+        try {
+        // 2. 'await fetch' retrieves the resource without blocking
+        const response = await fetch('hello.txt');
+
+        // 3. Check whether the file was found (e.g. 200 OK)
+        if (!response.ok) {
+            throw new Error('File not found!');
+        }
+
+        // 4. 'await' waits for the response body to be converted to text
+        const text = await response.text();
+
+        // 5. Add the text to the DOM (without an alert)
+        output.textContent = text;
+
+        } catch (error) {
+        // Handle network issues or missing files
+        output.textContent = 'Error: ' + error.message;
+        }
+    }
+    </script>
+
+</body>
 </html>
 ```
-</Card>
----
-<Card>
-## 4. Initialize and Publish to GitHub
-  <Icon name="github" size="2rem" label="GitHub" color="DeepSkyBlue"/>
+</TabItem>
+<TabItem label="hello.txt" icon="document">
+```txt
+Hello World!
+```
+</TabItem>
+</Tabs>
 
+<Aside type="tip" title="Tips">
+- Read the `index.html` file and its self-explanatory comments
+to understand how `fetch` works with JavaScript.
 
-Stage, commit, and publish to the cloud. VS Code lets you manage the Git workflow using an intuitive graphical interface:
-
-<Steps>
-  1. Click the **Source Control** icon in the left sidebar (or use the shortcut `Ctrl+Shift+G` on Windows/Linux or `Cmd+Shift+G` on Mac).
-  2. Click **Initialize Repository**.
-  3. **Stage your changes:** Hover over `index.html` in the *Changes* list and click the **`+`** button (Stage Changes). The file will move to the *Staged Changes* section.
-  4. Enter a commit message in the text field at the top (e.g., `First commit: Hello World`) and click **Commit**.
-  5. Click **Publish Branch**.
-  6. If prompted, authorize VS Code to access your GitHub account and select **Publish to GitHub public repository**.
-</Steps>
-</Card>
----
-<Card>
-## 5. Work with Branches: Italian vs. English
-
-Complete workflow: **Edit → Stage → Commit** on different branches.
-Branches let you develop features in parallel without affecting the main branch (`main`).
-<Card>
-### 1. Branch for the Italian version (`italian-version`)
-
-- Click `main` in the bottom-left corner of the VS Code status bar.
-- Select **Create new branch...**, enter `italian-version`, and press **Enter**.
-- In `index.html`, change the main text inside the `<h1>` tag:
-
-  ```diff lang="html"
-
-  -<h1>Hello World</h1>
-  +<h1>Ciao Mondo</h1>
-  ```
-
-- **Stage:** In the _Source Control_ view, click the **`+`** next to `index.html` to stage the change.
-- **Commit & Publish:** Enter the message `Italian translation`, click **Commit**, and then click **Publish Branch**.
-</Card>
-<Card>
-### 2. Branch for the English version (`english-version`)
-
-- Return to the main branch: click `italian-version` in the bottom-left corner and select `main` from the list. Notice that `index.html` returns to its initial version!
-- Create a new branch called `english-version` using the same procedure.
-- Add a detail in English to `index.html`:
-  ```diff lang="html"
-  <h1>Hello World</h1>
-  +<p>Welcome to my first versioned website!</p>
-  ```
-- **Stage:** Click the **`+`** button next to `index.html` to stage the changes.
-- **Commit & Publish:** Enter the message `English version update`, click **Commit**, and then click **Publish Branch**.
-</Card>
-</Card>
----
-<Card>
-## 6. Verify That the Branches Are Different
-
-To see the real "magic" of Git and confirm that both versions coexist in the same project without overwriting each other, perform these checks:
-
-### Locally in VS Code:
-  <Icon name="vscode" size="2rem" label="vscode" color="DeepSkyBlue"/>
-
-
-<Steps>
-  1. Click the branch name in the bottom-left corner of the VS Code status bar.
-  2. Select `italian-version`: in the editor, `index.html` will show the text _"Ciao Mondo"_.
-  3. Click again and select `english-version`: the file will instantly change to show _"Hello World"_ and the new paragraph.
-</Steps>
-### Online on GitHub:
-  <Icon name="github" size="2rem" label="GitHub" color="DeepSkyBlue"/>
-
-<Steps>
-  1. Open your repository page on [github.com](https://github.com).
-  2. Above the file list in the top-left, click the dropdown labeled `main` (or _Branches_).
-  3. Select `italian-version` or `english-version` to browse the branches: the code in `index.html` will change instantly depending on the selected branch!
-</Steps>
-</Card>
-<Aside type="tip" title="Great job!">
-  You have now set up your local development environment with VS Code and learned
-  how to manage parallel development using branches on GitHub.
+- Click the "Load Hello World" button to run the script.
+- Try it in Visual Studio Code using the Live Server extension.
+- You can also try it on CodePen below.
 </Aside>
 
-###
+<p class="codepen" data-theme-id="-3" data-height="300" 
+data-pen-title="fetch Hello World" data-version="2" data-default-tab="html,result" 
+data-slug-hash="GgrwzxR" data-user="Scocco" style="height: 300px; box-sizing: border-box; display: flex; align-items: center; justify-content: center; border: 2px solid; margin: 1em 0; padding: 1em;">
+  <span>See the Pen <a href="https://codepen.io/editor/Scocco/pen/019fb763-a3d1-7076-82e7-5012c4756bff">
+  fetch Hello World</a> by Carlo (<a href="https://codepen.io/Scocco">@Scocco</a>)
+  on <a href="https://codepen.io">CodePen</a>.</span>
+</p>
+<script async src="https://public.codepenassets.com/embed/index.js"></script>
+
+---
+
+<Card>
+
+## 2. Component Diagram
+Let's see which logical components interact during the execution
+of the `fetch` statement.
+
+<Mermaid chart={`
+  flowchart TD
+    subgraph Browser ["Browser (Client)"]
+        DOM["Elemento DOM (#output)"]
+        JS["Async JS Function\n(loadMessage)"]
+        FETCH["Fetch API Engine"]
+    end
+
+    subgraph Server ["Server Web"]
+        FILE["Text file\n(hello.txt)"]
+    end
+
+    DOM -->|"1. Click event"| JS
+    JS -->|"2. await fetch(hello.txt)"| FETCH
+    FETCH -->|"3. HTTP GET request"| FILE
+    FILE -->|"4. Response with text"| FETCH
+    FETCH -->|"5. Returns Response"| JS
+    JS -->|"6. output.textContent = text"| DOM
+`} />
+
+Diagram created with [Mermaid](https://mermaid.live/edit#pako:eNqNk1FvmzAQx7-K5b60EokgaQjjYdOW9GnaVrVTpQ3y4NkHWAUfso1SluS719jJNm0v4wXu7nf_-3PgA-UogOa0anHPG6Yt-botFXHXo3XRdfEkjbQEVSsVEGNRw-6GzGZvyQeNewNFuJFeoxi4NbvQfM5O3MbJFO-FINJCZ4hFwl3mzE1FT22BSwGHB2Bi9EwD_JngYN-dAhmAiT1-BOiJabDvpaqP51n_UN_AHMk9G4s7ZUGTno0dKEsEWCbbi09X9-OfWCvF4f7MMM6htyAus33Vi37GI3kAq8fiscE9Aa1Rkw6MYTWcJX3Zizq5v_u9qQ2qSuqu-KKFM8ZDBOKykhCHraCC6-Kuc46JBg6yt7ubUgXQ2LGF8JlIJds2v4KsWsGbyFiNz5Bf3S5ZfLv-E570_pcNpgNcVdUS4l9w9SPjcUwjWmspaG71ABHtQDufLqSHSaaktoEOSpq7Rw1ieJlxbFGXtFQn19oz9R2xu3RrHOqG5hVrjYuGXjALW8lqzX4joNy-NjgoS_OVV6D5gb7QfLlO5mm2SBbJOk5WaZpEdHTZ1TzOsjTN0sS92nKRniL604-M59naCYCQ7n_-FA6APwenV1CD_oo/)
+</Card>
+
+<Card>
+## 3. Deployment Diagram
+Let's see where the files reside during actual execution
+or in an environment such as `CodePen/OneCompiler`.
+
+
+<Mermaid chart={`
+  flowchart LR
+    subgraph Client ["Client: User's Browser"]
+        subgraph Sandbox ["Sandbox / iFrame Environment"]
+            HTML["HTML Interface & DOM"]
+            ENGINE["JavaScript Engine (V8)"]
+        end
+    end
+
+    subgraph ServerHost ["Web Server / File Host"]
+        TXT["Text file: hello.txt"]
+    end
+
+    HTML -->|Runs the script| ENGINE
+    ENGINE -->|1. Request: Fetch HTTP GET| TXT
+    TXT -->|2. Response 200: Hello World!| ENGINE
+    ENGINE -->|3. Updates output.textContent| HTML
+`} />
+
+Diagram created with [Mermaid](https://mermaid.live/edit#pako:eNqNk1FvmzAQx7-K5b60EokgaQjjYdOW9GnaVrVTpQ3y4NkHWAUfso1SluS719jJNm0v4wXu7nf_-3PgA-UogOa0anHPG6Yt-botFXHXo3XRdfEkjbQEVSsVEGNRw-6GzGZvyQeNewNFuJFeoxi4NbvQfM5O3MbJFO-FINJCZ4hFwl3mzE1FT22BSwGHB2Bi9EwD_JngYN-dAhmAiT1-BOiJabDvpaqP51n_UN_AHMk9G4s7ZUGTno0dKEsEWCbbi09X9-OfWCvF4f7MMM6htyAus33Vi37GI3kAq8fiscE9Aa1Rkw6MYTWcJX3Zizq5v_u9qQ2qSuqu-KKFM8ZDBOKykhCHraCC6-Kuc46JBg6yt7ubUgXQ2LGF8JlIJds2v4KsWsGbyFiNz5Bf3S5ZfLv-E570_pcNpgNcVdUS4l9w9SPjcUwjWmspaG71ABHtQDufLqSHSaaktoEOSpq7Rw1ieJlxbFGXtFQn19oz9R2xu3RrHOqG5hVrjYuGXjALW8lqzX4joNy-NjgoS_OVV6D5gb7QfLlO5mm2SBbJOk5WaZpEdHTZ1TzOsjTN0sS92nKRniL604-M59naCYCQ7n_-FA6APwenV1CD_oo/)
+</Card>
+
+<Aside type="tip" title="Great job!">
+You've created an HTML page that loads `hello.txt` with `fetch`,
+handling the response and any errors. You also followed the asynchronous flow
+in the component and deployment diagrams.
+Great work: you're ready for the next page, **Space Dashboard Project**!
+</Aside>
+
+
+
+
