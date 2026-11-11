@@ -1,0 +1,151 @@
+---
+title: Esecuzione Asincrona e fetch API
+description: esecuzione asincrona JavaScript e fetch API.
+---
+
+import {
+    Aside,
+    Badge,
+    Card,
+    Icon,
+    LinkButton,
+    LinkCard,
+    Steps,
+    TabItem,
+    Tabs
+} from "@astrojs/starlight/components";
+import Mermaid from "@/components/Mermaid.astro";
+import CustomPageHeader from '@/components/CustomPageHeader.astro';
+import IconGroup from '@/components/IconGroup.astro';
+
+
+<CustomPageHeader 
+    pageType="Labs" 
+    pageTypeIcon="laptop" 
+    badgeTextList={["Sviluppo Front End", "Esecuzione Asincrona", "Fetch API"]}
+    techIconList={["seti:html", "seti:javascript", "vscode"]}
+    asideIntroTitle="In questa esercitazione ..."
+    youTubeLink="https://youtu.be/R4HCYWLVHZQ"
+    youTubeText="guarda il video introduttivo"
+    asidePrerequisitesTitle="Prerequisiti"
+>
+<p slot="intro">
+... vedremo come funziona l'asincronia in JavaScript
+nel modo più semplice e sintetico possibile
+</p>
+<p slot="prerequisites">
+- **Visual Studio Code** già installato sul computer.
+</p>
+</CustomPageHeader>
+
+<Card>
+## 1. Il codice essenziale `index.html`
+<IconGroup techIconList={["vscode","seti:html"]} />
+
+Creiamo un file `index.html`  e un file `hello.txt` nella stessa cartella:
+</Card>
+
+<Tabs>
+
+<TabItem label="index.html" icon="seti:html" >
+```html
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <title>Intro Async Fetch</title>
+</head>
+<body>
+
+    <button onclick="caricaMessaggio()">Carica "Hello World"</button>
+
+    <!-- Contenitore minimale dove stampare il testo -->
+    <div id="output">In attesa del click...</div>
+
+    <script>
+    // 1. 'async' rende la funzione asincrona
+    async function caricaMessaggio() {
+        const output = document.getElementById('output');
+
+        try {
+        // 2. 'await fetch' scarica la risorsa in modo non bloccante
+        const response = await fetch('hello.txt');
+
+        // 3. Controllo se il file è stato trovato (es. 200 OK)
+        if (!response.ok) {
+            throw new Error('File non trovato!');
+        }
+
+        // 4. 'await' attende la conversione del corpo della risposta in testo
+        const testo = await response.text();
+
+        // 5. Inseriamo il testo nel DOM (senza alert)
+        output.textContent = testo;
+
+        } catch (errore) {
+        // Gestione di eventuali problemi di rete o file mancanti
+        output.textContent = 'Errore: ' + errore.message;
+        }
+    }
+    </script>
+
+</body>
+</html>
+```
+</TabItem>
+<TabItem label="hello.txt" icon="document">
+```txt
+Hello World!
+```
+</TabItem>
+</Tabs>
+
+<Aside type="tip" title="Suggerimenti">
+- Leggi il file `index.html` con i commenti autoesplica
+ivi per il funzionamento
+del fetch con JavaScript.
+
+- Clicca il pulsante "Carica Hello World" per attivare lo script.
+- Provalo nel tuo ambiente di Visual Studio Code con l'estensione Live Server-
+- Puoi anche provarlo nella piattaforma Codepen qui sotto.
+</Aside>
+
+<p class="codepen" data-theme-id="-3" data-height="300" 
+data-pen-title="fetch Hello World" data-version="2" data-default-tab="html,result" 
+data-slug-hash="GgrwzxR" data-user="Scocco" style="height: 300px; box-sizing: border-box; display: flex; align-items: center; justify-content: center; border: 2px solid; margin: 1em 0; padding: 1em;">
+  <span>See the Pen <a href="https://codepen.io/editor/Scocco/pen/019fb763-a3d1-7076-82e7-5012c4756bff">
+  fetch Hello World</a> by Carlo (<a href="https://codepen.io/Scocco">@Scocco</a>)
+  on <a href="https://codepen.io">CodePen</a>.</span>
+</p>
+<script async src="https://public.codepenassets.com/embed/index.js"></script>
+
+---
+
+<Card>
+
+## 2. Diagramma dei Componenti
+Vediamo quali componenti logici interagiscono tra loro durante 
+l'esecuzione dell'istruzione `fetch`.
+
+<Mermaid chart={`
+  flowchart TD
+    subgraph Browser ["Browser (Client)"]
+        DOM["Elemento DOM (#output)"]
+        JS["Funzione Async JS\n(caricaMessaggio)"]
+        FETCH["Fetch API Engine"]
+    end
+
+    subgraph Server ["Server Web"]
+        FILE["File di testo\n(hello.txt)"]
+    end
+
+    DOM -->|"1. Evento click"| JS
+    JS -->|"2. await fetch(hello.txt)"| FETCH
+    FETCH -->|"3. Chiamata HTTP GET"| FILE
+    FILE -->|"4. Risposta col testo"| FETCH
+    FETCH -->|"5. Restituisce Response"| JS
+    JS -->|"6. output.textContent = testo"| DOM
+`} />
+
+diagramma fatto con [Mermaid](https://mermaid.live/edit#pako:eNqNk1FvmzAQx7-K5b60EokgaQjjYdOW9GnaVrVTpQ3y4NkHWAUfso1SluS719jJNm0v4wXu7nf_-3PgA-UogOa0anHPG6Yt-botFXHXo3XRdfEkjbQEVSsVEGNRw-6GzGZvyQeNewNFuJFeoxi4NbvQfM5O3MbJFO-FINJCZ4hFwl3mzE1FT22BSwGHB2Bi9EwD_JngYN-dAhmAiT1-BOiJabDvpaqP51n_UN_AHMk9G4s7ZUGTno0dKEsEWCbbi09X9-OfWCvF4f7MMM6htyAus33Vi37GI3kAq8fiscE9Aa1Rkw6MYTWcJX3Zizq5v_u9qQ2qSuqu-KKFM8ZDBOKykhCHraCC6-Kuc46JBg6yt7ubUgXQ2LGF8JlIJds2v4KsWsGbyFiNz5Bf3S5ZfLv-E570_pcNpgNcVdUS4l9w9SPjcUwjWmspaG71ABHtQDufLqSHSaaktoEOSpq7Rw1ieJlxbFGXtFQn19oz9R2xu3RrHOqG5hVrjYuGXjALW8lqzX4joNy-NjgoS_OVV6D5gb7QfLlO5mm2SBbJOk5WaZpEdHTZ1TzOsjTN0sS92nKRniL604-M59naCYCQ7n_-FA6APwenV1CD_oo/)
+</Card>
