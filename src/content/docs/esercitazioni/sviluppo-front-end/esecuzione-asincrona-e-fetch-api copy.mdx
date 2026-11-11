@@ -1,0 +1,76 @@
+---
+title: "Progetto: Dashboard Spaziale"
+description: "Applicazione dell'esecuzione asincrona JavaScript e fetch API."
+---
+
+import {
+    Aside,
+    Badge,
+    Card,
+    Icon,
+    LinkButton,
+    LinkCard,
+    Steps,
+    TabItem,
+    Tabs
+} from "@astrojs/starlight/components";
+import Mermaid from "@/components/Mermaid.astro";
+import CustomPageHeader from '@/components/CustomPageHeader.astro';
+import IconGroup from '@/components/IconGroup.astro';
+
+<CustomPageHeader 
+    pageType="Labs" 
+    pageTypeIcon="laptop" 
+    badgeTextList={["Sviluppo Front End", "Intermedio", "Fetch, Async/Await"]}
+    techIconList={["seti:html", "seti:javascript", "vscode"]}
+    asideIntroTitle="In questa esercitazione ..."
+    youTubeLink="https://youtu.be/R4HCYWLVHZQ"
+    youTubeText="guarda il video introduttivo"
+    asidePrerequisitesTitle="Prerequisiti"
+>
+<p slot="intro">
+Realizzeremo la dashboard di bordo di una missione spaziale (Ares-IV) per scaricare e visualizzare diari di bordo asincroni da file di testo esterni tramite le Fetch API[cite: 1, 2].
+</p>
+<p slot="prerequisites">
+- **HTML5, CSS3 e JavaScript DOM** di base[cite: 1].
+- **Visual Studio Code** con estensione **Live Server** installata.
+</p>
+</CustomPageHeader>
+
+## 1. Introduzione al Progetto
+
+In questa lezione realizzeremo la dashboard di bordo di una missione spaziale (**Ares-IV**). Il programma deve poter scaricare i diari di bordo memorizzati sul server in file di testo esterni (`.txt`) e visualizzarli a schermo senza ricaricare la pagina.
+
+---
+
+## 2. Passo 1: La Struttura HTML (`index.html`)
+
+Iniziamo creando l'interfaccia utente. L'HTML definisce i pulsanti di controllo e il riquadro di console dove compariranno lo stato del download e il testo del diario[cite: 2].
+
+```html
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <title>Missione Ares-IV - Registro di Bordo</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <h1>🚀 Missione Ares-IV: Log di Bordo</h1>
+  <p>Seleziona una registrazione da scaricare dal server centrale:</p>
+  
+  <!-- Pulsanti di controllo -->
+  <button id="btn-log1">Registro Giorno 1</button>
+  <button id="btn-log2">Registro Giorno 42</button>
+  <button id="btn-errore">Test Errore (404)</button>
+
+  <!-- Console di visualizzazione -->
+  <div class="console">
+    <strong>Stato Connessione:</strong> <span id="stato">In attesa...</span>
+    <hr>
+    <div id="log">Nessun dato caricato.</div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>

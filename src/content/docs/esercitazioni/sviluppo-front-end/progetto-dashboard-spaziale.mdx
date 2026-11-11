@@ -1,0 +1,246 @@
+---
+title: "Progetto: Dashboard Spaziale"
+description: "Applicazione dell'esecuzione asincrona JavaScript e fetch API."
+---
+
+import {
+    Aside,
+    Badge,
+    Card,
+    Icon,
+    LinkButton,
+    LinkCard,
+    Steps,
+    TabItem,
+    Tabs
+} from "@astrojs/starlight/components";
+import Mermaid from "@/components/Mermaid.astro";
+import CustomPageHeader from '@/components/CustomPageHeader.astro';
+import IconGroup from '@/components/IconGroup.astro';
+
+<CustomPageHeader 
+    pageType="Labs" 
+    pageTypeIcon="laptop" 
+    badgeTextList={["Sviluppo Front End", "Intermedio", "Fetch, Async/Await"]}
+    techIconList={["seti:html", "seti:javascript", "vscode"]}
+    asideIntroTitle="In questa esercitazione ..."
+    asidePrerequisitesTitle="Prerequisiti"
+>
+<p slot="intro">
+Realizzeremo la dashboard di bordo di una missione spaziale (**Ares-IV**) 
+per scaricare e visualizzare diari di bordo asincroni da file di testo esterni 
+ (`.txt`) tramite le Fetch API.
+</p>
+<p slot="prerequisites">
+- **HTML5, CSS3 e JavaScript DOM** di base.
+- **Visual Studio Code** con estensione **Live Server** installata.
+- studio della lezione [Esecuzione Asincrona e Fetch API](./esecuzione-asincrona-e-fetch-api) per comprendere i concetti di base.
+</p>
+</CustomPageHeader>
+
+---
+<Card>
+## Passo 1: La Struttura HTML (`index.html`)
+
+Iniziamo creando l'interfaccia utente. 
+L'HTML definisce i pulsanti di controllo e il riquadro 
+di console dove compariranno lo stato del download e il testo del diario.
+
+```html
+//index.html
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <title>Missione Ares-IV - Registro di Bordo</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <h1>🚀 Missione Ares-IV: Log di Bordo</h1>
+  <p>Seleziona una registrazione da scaricare dal server centrale:</p>
+  
+  <!-- Pulsanti di controllo -->
+  <button id="btn-log1">Registro Giorno 1</button>
+  <button id="btn-log2">Registro Giorno 42</button>
+  <button id="btn-errore">Test Errore (404)</button>
+
+  <!-- Console di visualizzazione -->
+  <div class="console">
+    <strong>Stato Connessione:</strong> <span id="stato">In attesa...</span>
+    <hr>
+    <div id="log">Nessun dato caricato.</div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
+```
+
+### Spiegazione dell'HTML
+I tre pulsanti hanno ciascuno un id univoco per poter agganciare
+gli eventi JavaScript da codice.
+- <code>#stato</code> accoglierà i messaggi di avanzamento del caricamento
+  (es. "In corso...", "Ok", "Errore").
+- <code>#log</code> conterrà il testo effettivo scaricato dal file di testo.   
+ </Card> 
+---
+<Card>
+## Passo 2: Lo Stile Grafico (<code>style.css</code>)
+Creiamo un file separato <code>style.css</code> per dare alla pagina
+ l'aspetto di un vero terminale di bordo. 
+
+```css
+//style.css
+body {
+  background-color: #0d1117;
+  color: #58a6ff;
+  font-family: monospace;
+  padding: 20px;
+}
+
+.console {
+  border: 1px solid #30363d;
+  padding: 15px;
+  border-radius: 6px;
+  background-color: #161b22;
+  margin-top: 15px;
+}
+
+button {
+  background-color: #238636;
+  color: white;
+  border: none;
+  padding: 10px 15px;
+  margin-right: 8px;
+  cursor: pointer;
+  border-radius: 4px;
+}
+
+button:hover {
+  background-color: #2ea043;
+}
+
+#log {
+  margin-top: 15px;
+  white-space: pre-wrap;
+  color: #c9d1d9;
+}
+```
+### Spiegazione del CSS
+- <code>font-family: monospace</code> simula i font dei terminali di comando.   
+- <code>white-space: pre-wrap</code> 
+sul contenitore <code>#log</code> è fondamentale: fa sì che i ritorni a capo
+ (<code>\n</code>) 
+presenti nel file di testo vengano rispettati a schermo.    
+
+</Card>
+
+<Card>
+## Passo 3: I File di Dati (I Diari di Bordo)
+Creiamo nella stessa cartella del progetto due file di testo:   
+
+:::tip[log1.txt]
+[DATA: 12.04.2045]
+Decollo riuscito dalla base terrestre.
+Tutti i motori funzionano al 100%. Il viaggio verso Marte è iniziato senza intoppi.
+:::
+
+:::tip[log2.txt]
+[DATA: 24.05.2045]
+Anomalia rilevata nel settore di navigazione 4.
+I sensori indicano un segnale non identificato. Richiesta verifica immediata.
+:::
+</Card>
+
+---
+
+<Card>
+## Passo 4: La Logica JavaScript (<code>app.js</code>)
+Costruiamo la logica dello script dividendola in blocchi concettuali.
+
+### Snippet A: La dichiarazione della funzione asincrona
+```javascript
+// Usiamo la parola chiave 'async' per abilitare l'uso di 'await' al suo interno
+async function caricaLog(nomeFile) {
+const elementoStato = document.getElementById('stato');
+const elementoLog = document.getElementById('log');
+// Codice di caricamento...
+}
+```
+:::tip[Spiegazione]
+La parola chiave `async` indica al browser
+che questa funzione eseguirà operazioni asincrone e restituirà una `Promise`.
+:::
+
+---
+
+### Snippet B: La richiesta HTTP con `await fetch()`
+```javascript
+// 1. Iniziamo il blocco di controllo degli errori
+try {
+    elementoStato.textContent = `Download di ${nomeFile} in corso...`;
+    
+    // 2. Inviamo la richiesta e ATTENDIAMO gli header della risposta
+    const response = await fetch(nomeFile);
+    
+    // 3. Verifichiamo se il file esiste sul server (es. HTTP 200 OK)
+    if (!response.ok) {
+    throw new Error(`File non trovato (Codice HTTP: ${response.status})`);
+    }
+}
+```
+:::tip[Spiegazione]
+`await fetch()` blocca l'esecuzione interna della funzione 
+finché il server non risponde, senza però bloccare la pagina web.
+Se il file non esiste (es. `404`), 
+`response.ok` sarà `false` e generiamo manualmente un errore con `throw`.
+:::
+
+---
+### Snippet C: La conversione in testo e l'aggiornamento del DOM
+```javascript
+// 4. ATTENDIAMO che l'intero contenuto del file venga letto come testo
+    const testo = await response.text();
+    
+    // 5. Aggiorniamo l'interfaccia con i dati ricevuti
+    elementoStato.textContent = 'Connessione completata con successo.';
+    elementoLog.textContent = testo;
+    
+  } catch (errore) {
+    // Gestione in caso di problemi di rete o file inesistente
+    elementoStato.textContent = 'ERRORE DI TRASMISSIONE!';
+    elementoLog.textContent = errore.message;
+  }
+}
+```
+:::tip[Spiegazione]
+`await response.text()` serve perché il corpo della risposta
+arriva in streaming.
+Serve un secondo `await` per completare la lettura del testo.
+:::
+
+---
+
+### Snippet D: Collegare gli Event Listener ai Pulsanti
+
+```javascript
+// Colleghiamo la funzione ai pulsanti dell'interfaccia
+document.getElementById('btn-log1').addEventListener('click', () => caricaLog('log1.txt'));
+document.getElementById('btn-log2').addEventListener('click', () => caricaLog('log2.txt'));
+document.getElementById('btn-errore').addEventListener('click', () => caricaLog('log-inesistente.txt'));
+```
+
+</Card>
+
+:::caution[Attenzione al blocco `CORS` (`Live Server`)]
+Se si apre il file `index.html` facendo semplicemente doppio clic 
+(protocollo `file:///`), il browser bloccherà la `fetch` per motivi di sicurezza.
+Ricordati di eseguire il progetto tramite un server locale
+ (es. l'estensione `Live Server` di `Visual Studio Code`).
+:::
+
+:::tip[Esercizio di consolidamento per gli studenti]
+Aggiungi un quarto pulsante denominato `"Registro Giorno 100"` 
+e crea il rispettivo file `log100.txt` 
+per verificare il corretto funzionamento del sistema.
+:::
