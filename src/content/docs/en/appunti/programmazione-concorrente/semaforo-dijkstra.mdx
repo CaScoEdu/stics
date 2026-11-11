@@ -1,0 +1,206 @@
+---
+title: "Implementing Mutual Exclusion with Semaphores"
+description: "An introduction to Dijkstra's semaphores, the wait and signal primitives based on integer variable S, and the implementation of mutual exclusion."
+
+---
+
+import {
+    Aside,
+    Badge,
+    Card,
+    Icon,
+    LinkButton,
+    LinkCard,
+    Steps,
+    TabItem,
+    Tabs
+} from "@astrojs/starlight/components";
+import Mermaid from "@/components/Mermaid.astro";
+import CustomPageHeader from '@/components/CustomPageHeader.astro';
+import IconGroup from '@/components/IconGroup.astro';
+
+<CustomPageHeader 
+    pageType="Labs" 
+    pageTypeIcon="rocket" 
+    badgeTextList={["Concurrent Programming"]}
+    asideIntroTitle="In this lesson ..."
+    asidePrerequisitesTitle="Prerequisites"
+>
+<p slot="intro">
+We will analyze how the semaphores introduced by E.W. Dijkstra allow us to manage access to shared resources in mutual exclusion using an integer variable and the wait and signal primitives.
+</p>
+<p slot="prerequisites">
+- Basic concepts of concurrent processes and critical sections.
+</p>
+</CustomPageHeader>
+
+## 1. Semaphores and the Integer Variable S
+
+In 1968, [**Edsger W. Dijkstra**](https://en.wikipedia.org/wiki/Edsger_W._Dijkstra) proposed the use of two fundamental primitives to solve any process interaction and synchronization problem: **wait** and **signal**.
+
+These primitives operate on a **non-negative integer variable S** (called a *semaphore*):
+- **S = 0**: Red semaphore (resource busy or unavailable).
+- **S > 0**: Green semaphore (resource free or events available).
+
+:::note[The Mutex (Binary Semaphore)]
+When the semaphore is used specifically
+for **mutual exclusion** of a resource, it takes binary values (0 or 1) and is commonly called a **Mutex**. By convention, it is initialized to `1` by the operating system (resource initially free).
+:::
+### Further Reading: Who Was Edsger W. Dijkstra?
+
+<Card title="Edsger W. Dijkstra (1930 - 2002)" icon="information">
+  <div style="display: flex; gap: 20px; align-items: center; flex-wrap: wrap;">
+    <div style="flex: 0 0 150px; text-align: center;">
+      <img src="https://upload.wikimedia.org/wikipedia/commons/d/d9/Edsger_Wybe_Dijkstra.jpg" alt="Edsger W. Dijkstra" style="width: 100%; border-radius: 6px; border: 1px solid #30363d;" />
+      <small style="color: #8b949e; display: block; margin-top: 5px;">Source: Wikimedia Commons</small>
+    </div>
+    <div style="flex: 1; min-width: 250px;">
+      <p style="margin-top: 0;">
+        A Dutch computer scientist and mathematician, Dijkstra was one of the most influential figures in the development of modern computer science. In addition to introducing <strong>semaphores</strong> and the <code>wait</code> and <code>signal</code> primitives for concurrent programming, he is famous for the shortest-path algorithm that bears his name (Dijkstra's algorithm).
+      </p>
+      <p style="margin-bottom: 0;">
+        🔗 <a href="https://en.wikipedia.org/wiki/Edsger_W._Dijkstra" target="_blank" rel="noopener noreferrer">Read the full biography on Wikipedia</a>
+      </p>
+    </div>
+  </div>
+</Card>
+---
+
+## 2. The `wait(S)` and `signal(S)` Primitives
+
+To manage access to the shared resource R, processes invoke two operations on the integer variable S:
+
+* **`wait(S)`** (also called the acquisition operation): Checks the state of S. If S < 1, the process blocks or waits. If S >= 1, the process decrements the variable (S--) and accesses the critical section.
+* **`signal(S)`** (also called the release operation): Increments the semaphore variable (S++) to free the resource or wake any waiting processes.
+
+### Flowcharts of the Primitives
+
+<Mermaid chart={`
+flowchart TD
+    subgraph Signal ["signal(S) - Release"]
+        S_START([Start]) --> S_INC["S++ (Free)"] --> S_WAKE["Wake queued process (if any)"] --> S_END([End])
+    end
+    subgraph Wait ["wait(S) - Acquisition"]
+        W_START([Start]) --> W_CHECK{"S < 1 ?"}
+        W_CHECK -- Yes --> W_WAIT["Wait / Suspend"] --> W_CHECK
+        W_CHECK -- No --> W_DEC["S-- (Busy)"] --> W_END([End])
+    end
+
+`} />
+
+---
+## 3. The Classic Protocol for Mutual Exclusion
+
+To protect a shared resource and ensure that only one process can access it at a time, every process that intends to use it must follow a strict standard protocol consisting of three sequential phases:
+<Steps>
+1. **Request the resource (`wait`)**: 
+    The process invokes the `wait(SR)` primitive
+a    to check the semaphore state and acquire access.
+2. **Use the resource**: 
+    The process enters its **critical section**
+    and performs the required operations on the shared resource R.
+3. **Release the resource (`signal`)**:
+    When the operations are complete, the process invokes
+    the `signal(SR)` primitive to restore the free state
+    and allow other processes
+    that may be waiting to proceed.
+</Steps>
+
+## 4. Interactive Simulator and Atomicity Test
+
+You can directly test the behavior of the semaphore and the interaction of concurrent processes (P1, P2, P3) using the interactive simulator below.
+
+:::tip[How to use the simulator]
+* Click the **RUN P1**, **RUN P2**, or **RUN P3** buttons to advance each process through the **Acquisition**, **Use**, and **Release** phases.
+* Observe how the semaphore changes from **FREE** to **BUSY** and how processes remain waiting if the resource is already occupied by another thread.
+* Reflect on what would happen if the control instructions (`while loop`) and assignment (`SR <- BUSY`) were not executed atomically.
+:::
+
+<div class="iframe-container" style="margin: 2rem 0; text-align: center;">
+  <iframe src="/simulatore-mutex.html" width="100%" style="height: 400px !important; border: 1px solid #30363d; border-radius: 8px; background: #f4f4f4; overflow: hidden; display: block;"></iframe>
+</div>
+
+---
+
+## 5. Busy Waiting vs Passive Waiting
+
+In the earliest theoretical implementations, `wait` was executed through a continuous loop (e.g. `while (S < 1) { }`), wasting CPU cycles (*Busy Waiting*).
+
+In modern operating systems, waiting is handled in a **passive** way:
+<Steps>
+1. A **waiting queue Qs** is associated with the semaphore.
+2. If a process executes `wait(S)` and finds S < 1, the operating system **suspends** it, moving it from the *Running* state to the *Waiting* state and inserting its descriptor into the queue Qs.
+3. When another process executes `signal(S)`, the system removes a process from the queue Qs and moves it to the *Ready* state, avoiding any waste of computing resources.
+</Steps>
+---
+
+## 6. The Atomicity Problem and the Critical Section of wait
+To fully understand how a semaphore works, we need to analyze what happens internally during the `wait(S)` operation.
+Acquiring a resource via `wait` requires two distinct actions to be performed in sequence:
+<Steps>
+1. Check the semaphore state (verify whether S is greater than or equal to 1).
+2. Update the semaphore (decrement it or suspend the process if S is less than 1).
+</Steps>
+### What does an "atomic" execution mean?
+To avoid errors, these two operations must be executed atomically (or indivisibly).
+An atomic operation is a block of code that, once started by the processor, must be completed without interruption,
+with no possibility that another process interleaves in the middle.
+### What would happen otherwise?
+If the check and the subsequent update were not atomic,
+serious synchronization flaws could occur.
+Consider this sequence with two concurrent processes (P1 and P2)
+and a semaphore S initialized to 1:
+
+- Process P1 executes the check and finds the semaphore free (S = 1).
+Before it has time to change it to 0 (busy),
+the operating system suspends P1 and assigns the CPU to P2.
+
+- Process P2 also executes the check,
+finds the semaphore free (S = 1)
+and proceeds to occupy it.
+
+- When P1 resumes execution,
+convinced that the resource is free, it occupies it as well.
+
+The result is disastrous: both processes access
+the shared resource simultaneously,
+completely violating the mutual exclusion principle.
+
+### How will we solve this problem?
+In future practical concurrent programming exercises in Java,
+we will see how the language provides native tools
+(such as the `synchronized` keyword or wait/notify blocks) that automatically manage this atomicity at the system level,
+protecting critical sections and avoiding hidden conflicts between threads.
+
+---
+
+## 7. Mutual Exclusion Scheme
+
+Considering two concurrent processes Q1 and Q2 that access a shared resource R
+protected by a semaphore SR initialized to `1`, the code structure is as follows:
+
+```javascript
+// Initialize the semaphore associated with the resource
+SR = 1;
+
+// Concurrent execution of processes Q1 and Q2
+// --- Process Q1 ---
+wait(SR);
+  // === START CRITICAL SECTION (Use of R) ===
+  // ... operations on the resource ...
+  // === END CRITICAL SECTION ===
+signal(SR);
+
+// --- Process Q2 ---
+wait(SR);
+  // === START CRITICAL SECTION (Use of R) ===
+  // ... operations on the resource ...
+  // === END CRITICAL SECTION ===
+signal(SR);
+```
+:::tip[Fundamental property]
+While process `Q1` owns the resource
+(it executed `wait` and has not yet executed `signal`), `Q2`
+which tries to access it will find `SR < 1` and will be blocked,
+thus guaranteeing `mutual exclusion`.
+:::

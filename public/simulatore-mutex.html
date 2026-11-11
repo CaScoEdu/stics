@@ -1,0 +1,189 @@
+<!doctype html>
+<html lang="it">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Simulazione con Semaforo Mutex</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        text-align: center;
+        background-color: #f4f4f4;
+        margin: 10px; /* ridotto */
+      }
+
+      h1 {
+        color: #333;
+        font-size: 22px; /* leggermente più compatto */
+        margin-bottom: 10px;
+      }
+
+      #controls {
+        margin-bottom: 10px; /* ridotto */
+      }
+
+      button {
+        font-size: 16px;
+        margin: 0 10px;
+        padding: 10px 20px;
+        cursor: pointer;
+      }
+
+      #simulation {
+        display: flex;
+        justify-content: center;
+        margin-top: 20px;
+      }
+
+      .panel {
+        width: 190px;
+        padding: 8px; /* ridotto */
+        margin: 0 10px;
+        border: 2px solid #333;
+        border-radius: 10px;
+        background-color: #fff;
+      }
+
+      .semaforo {
+        font-weight: bold;
+        padding: 10px;
+        margin: 10px 0;
+        color: white;
+        text-align: center;
+      }
+
+      .libero {
+        background-color: green;
+      }
+
+      .occupato {
+        background-color: red;
+      }
+
+      ul {
+        list-style-type: none;
+        padding: 0;
+      }
+
+      li {
+        display: flex;
+        align-items: center;
+        margin: 10px 0;
+        font-weight: bold;
+      }
+
+      .process-name {
+        font-weight: normal;
+        margin-right: 10px;
+        color: blue;
+      }
+    </style>
+  </head>
+
+  <body>
+    <h1>Simulazione Mutex con Semaforo</h1>
+
+    <div id="controls">
+      <button onclick="runProcess('P1')">RUN P1</button>
+      <button onclick="runProcess('P2')">RUN P2</button>
+      <button onclick="runProcess('P3')">RUN P3</button>
+    </div>
+
+    <div id="simulation">
+      <div class="panel">
+        <h2>ACQUISIZIONE</h2>
+        <ul id="acquisizione-instructions">
+          <li id="wait-loop">
+            <span class="process-name" id="wait-loop-process"></span> ciclo
+            fintanto che SR = OCCUPATO
+          </li>
+          <div id="semaforo" class="semaforo libero">LIBERO</div>
+          <li id="occupato-assignment">
+            <span class="process-name" id="occupato-assignment-process"></span>
+            SR <- OCCUPATO
+          </li>
+        </ul>
+      </div>
+
+      <div class="panel">
+        <h2>USO</h2>
+        <ul id="uso-instructions">
+          <li><span class="process-name" id="uso-process"></span> USO DI R</li>
+        </ul>
+      </div>
+
+      <div class="panel">
+        <h2>RILASCIO</h2>
+        <ul id="rilascio-instructions">
+          <li>
+            <span class="process-name" id="libero-assignment-process"></span> SR
+            <- LIBERO
+          </li>
+        </ul>
+      </div>
+    </div>
+
+    <script>
+      let semaforo = "LIBERO"; // Stato iniziale del semaforo
+      let processes = {
+        P1: "WAIT_LOOP", // Stato iniziale del processo (ciclo fintanto che SR = OCCUPATO)
+        P2: "WAIT_LOOP",
+        P3: "WAIT_LOOP",
+      };
+
+      function updateUI() {
+        const semaforoDiv = document.getElementById("semaforo");
+        semaforoDiv.textContent = semaforo;
+        semaforoDiv.className = `semaforo ${semaforo.toLowerCase()}`;
+
+        // Resetta le posizioni dei processi
+        document.getElementById("wait-loop-process").textContent = "";
+        document.getElementById("occupato-assignment-process").textContent = "";
+        document.getElementById("uso-process").textContent = "";
+        document.getElementById("libero-assignment-process").textContent = "";
+
+        // Posiziona i processi accanto all'istruzione appropriata
+        for (const [process, state] of Object.entries(processes)) {
+          if (state === "WAIT_LOOP") {
+            document.getElementById("wait-loop-process").textContent +=
+              `${process} `;
+          } else if (state === "OCCUPATO_ASSIGNMENT") {
+            document.getElementById(
+              "occupato-assignment-process",
+            ).textContent += `${process} `;
+          } else if (state === "USO") {
+            document.getElementById("uso-process").textContent += `${process} `;
+          } else if (state === "LIBERO_ASSIGNMENT") {
+            document.getElementById("libero-assignment-process").textContent +=
+              `${process} `;
+          }
+        }
+      }
+
+      function runProcess(process) {
+        switch (processes[process]) {
+          case "WAIT_LOOP":
+            if (semaforo === "LIBERO") {
+              processes[process] = "OCCUPATO_ASSIGNMENT";
+            }
+            break;
+          case "OCCUPATO_ASSIGNMENT":
+            semaforo = "OCCUPATO";
+            processes[process] = "USO";
+            break;
+          case "USO":
+            processes[process] = "LIBERO_ASSIGNMENT";
+            break;
+          case "LIBERO_ASSIGNMENT":
+            semaforo = "LIBERO";
+            processes[process] = "WAIT_LOOP";
+            break;
+        }
+        updateUI();
+      }
+
+      // Inizializzazione interfaccia utente
+      updateUI();
+    </script>
+  </body>
+</html>

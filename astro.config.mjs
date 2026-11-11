@@ -84,7 +84,15 @@ export default defineConfig({
           translations: {
             'en': 'Notes',
           },
-          items: [{ autogenerate: { directory: 'appunti' } }]
+          items: [
+            {
+              label: 'Programmazione Concorrente',
+              translations: {
+                en: 'Concurrent Programming',
+              },
+              items: [{ autogenerate: { directory: 'appunti/programmazione-concorrente' } }],
+            }
+          ]
         },
       ],
       // Registra il componente personalizzato per il footer
