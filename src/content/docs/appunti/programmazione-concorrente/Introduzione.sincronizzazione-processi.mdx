@@ -1,0 +1,171 @@
+---
+title: "Introduzione alla Sincronizzazione tra Processi"
+description: "Introduzione ai concetti fondamentali della programmazione concorrente: competizione vs collaborazione, sezione critica, mutua esclusione, stallo e starvation."
+---
+
+import {
+    Aside,
+    Badge,
+    Card,
+    Icon,
+    LinkButton,
+    LinkCard,
+    Steps,
+    TabItem,
+    Tabs
+} from "@astrojs/starlight/components";
+import Mermaid from "@/components/Mermaid.astro";
+import CustomPageHeader from '@/components/CustomPageHeader.astro';
+import IconGroup from '@/components/IconGroup.astro';
+
+<CustomPageHeader 
+    pageType="Labs" 
+    pageTypeIcon="rocket" 
+    badgeTextList={["Programmazione Concorrente", "Sistemi Operativi", "Fondamenti"]}
+    techIconList={["seti:html", "seti:javascript", "vscode"]}
+    asideIntroTitle="In questa lezione ..."
+    youTubeLink="https://youtu.be/R4HCYWLVHZQ"
+    youTubeText="guarda il video introduttivo"
+    asidePrerequisitesTitle="Prerequisiti"
+>
+<p slot="intro">
+Vengono introdotti i concetti fondamentali della programmazione concorrente:
+competizione e collaborazione tra processi, sezioni critiche, mutua esclusione,
+e i rischi legati a stallo e starvation.
+</p>
+<p slot="prerequisites">
+- Concetti base di processi concorrenti e cicli di esecuzione.
+</p>
+</CustomPageHeader>
+
+## 1. Concorrenza: Cooperazione vs Competizione
+
+Quando più processi vengono eseguiti in un sistema di elaborazione, essi
+possono interagire tra loro in due modi principali:
+
+* **Interazione Competitiva**: Due o più processi hanno la necessità di
+    utilizzare in modo esclusivo alcune risorse limitate che servono a entrambi,
+    trovandosi a competere per ottenerle. Ad esempio, due processi che tentano di
+    scrivere contemporaneamente sullo stesso file.
+* **Interazione Cooperativa**: I processi non competono, ma devono coordinarsi
+    e scambiarsi informazioni per svolgere un compito comune (es. un processo
+    *produttore* che inserisce dati in un buffer e un processo *consumatore* che
+    li preleva).
+
+<Aside type="caution" title="Il rischio del disordine">
+In entrambi i casi, l'assenza di coordinamento può generare errori gravi,
+comportamenti imprevedibili o stati di grave corruzione dei dati.
+</Aside>
+
+---
+
+## 2. Risorse Condivise e Sezione Critica
+
+Quando i processi competono per l'accesso a elementi comuni (come variabili
+globali, file o strutture dati), si definisce **risorsa condivisa** qualsiasi
+elemento hardware o software riusabile conteso dai processi.
+
+Per evitare conflitti, si definisce **sezione critica** quella porzione di
+codice all'interno di un processo in cui si accede alla risorsa condivisa per
+leggerla o modificarla.
+
+### Schema di Accesso alla Risorsa Condivisa
+Il diagramma seguente mostra come due processi distinti (`Processo P1` e
+`Processo P2`) eseguano il proprio codice e debbano passare attraverso la
+rispettiva sezione critica per poter interagire con la risorsa condivisa
+`R`:
+
+<Mermaid chart={`
+flowchart TD
+    subgraph P1 ["Processo P1"]
+        CP1_start["Codice P1"] --> SCP1["Sezione Critica P1"]
+        SCP1 --> CP1_end["Codice P1"]
+    end
+
+    subgraph P2 ["Processo P2"]
+        CP2_start["Codice P2"] --> SCP2["Sezione Critica P2"]
+        SCP2 --> CP2_end["Codice P2"]
+    end
+
+    SCP1 ==>|Accesso esclusivo| R["Risorsa R"]
+    SCP2 ==>|Accesso esclusivo| R["Risorsa R"]
+`} />
+
+### La necessità della Mutua Esclusione
+Per preservare la coerenza dei dati ed evitare le cosiddette **race condition**
+(situazioni in cui l'ordine di esecuzione altera imprevedibilmente il
+risultato), il sistema deve garantire la **mutua esclusione**:
+* In ogni istante, al massimo **un solo processo** può trovarsi nella propria
+    sezione critica e utilizzare la risorsa condivisa.
+
+---
+
+## 3. Il Protocollo di Accesso (Richiedi - Utilizza - Rilascia)
+
+Per garantire la mutua esclusione e fare in modo che ogni processo ottenga
+l'accesso in tempi finiti, l'accesso a una risorsa deve seguire rigorosamente
+un protocollo standard strutturato in tre fasi:
+
+<Steps>
+1. **Richiesta della risorsa**: Il processo chiede l'accesso esclusivo alla
+    risorsa (se è occupata, dovrà attendere).
+2. **Utilizzo della risorsa**: Il processo entra nella sezione critica ed
+    esegue le operazioni necessarie sulla risorsa.
+3. **Rilascio della risorsa**: Il processo libera la risorsa, permettendo così
+    agli altri processi in attesa di poterla acquisire.
+</Steps>
+
+---
+
+## 4. Esempio Pratico: La Pila (Stack)
+
+Un esempio classico di struttura dati condivisa soggetta a competizione è la
+**pila (`stack`)**, gestita tramite un vettore e un puntatore di testa
+(`top`).
+
+Operazioni come l'inserimento (`Push`) e il prelievo (`Pop`) modificano
+contemporaneamente le stesse variabili condivise (`stack[]` e `top`). Se queste operazioni vengono eseguite in modo concorrente senza
+un'adeguata sincronizzazione, si rischia di sovrascrivere i dati o di leggere
+valori non definiti (*race condition*).
+
+:::tip[Laboratorio interattivo]
+Possiamo utilizzare questo simulatore per osservare direttamente il
+comportamento della pila **con o senza mutua esclusione**.
+:::
+
+<div class="iframe-container" style="margin: 2rem 0; text-align: center;">
+    <iframe
+        src="/simulatore-pila.html"
+        width="100%"
+        style="height: 600px !important; border: 1px solid #30363d; border-radius: 8px; background: #f4f4f4; overflow: hidden; display: block;"
+    ></iframe>
+</div>
+
+---
+
+## 5. I Rischi della Sincronizzazione: Deadlock e Starvation
+
+La gestione della sincronizzazione e dell'attesa delle risorse può esporre il
+sistema a due importanti problematiche critiche:
+
+<Card title="Deadlock (Stallo)" icon="warning">
+Il deadlock si verifica quando due o più processi si bloccano permanentemente
+in attesa di una risorsa che è attualmente trattenuta da un altro processo del
+gruppo.
+* **Esempio tipico**: Il processo `P1` possiede la risorsa `A` e chiede la `B`;
+    il processo `P2` possiede la risorsa `B` e chiede la `A`. Nessuno dei due può
+    proseguire.
+* È una condizione bloccante da cui il sistema non può uscire autonomamente se
+    non tramite interventi esterni (come il riavvio o l'interruzione forzata dei
+    processi).
+</Card>
+
+<Card title="Starvation (Inedia)" icon="information">
+La starvation si verifica quando un processo non riesce mai ad accedere a una
+risorsa perché questa risulta continuamente assegnata ad altri processi (ad
+esempio, a causa di politiche di priorità sbilanciate).
+* A differenza del deadlock, **non è una condizione definitiva**: il processo
+    non è bloccato in modo permanente, ma deve semplicemente attendere
+    indefinitamente finché la politica di assegnazione non gli concede
+    accesso.
+</Card>

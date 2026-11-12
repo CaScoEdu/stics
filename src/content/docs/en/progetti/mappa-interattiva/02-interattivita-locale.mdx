@@ -1,6 +1,6 @@
 ---
-title: "Local Interactivity and an External JavaScript File"
-description: "In this lesson, we create a new development branch, add a dropdown menu for selecting buildings, and move the JavaScript logic into the external script.js file."
+title: "Local interactivity and external JS script"
+description: "In this lesson we create a new development branch, add a dropdown menu to select buildings, and separate the JavaScript logic into the external file script.js"
 ---
 
 import {
@@ -28,40 +28,36 @@ import IconGroup from '@/components/IconGroup.astro';
 <p slot="intro">
 Second step of the Campus Map project.
 
-In this lesson, we create a new development branch, add a dropdown menu for selecting buildings, and move the JavaScript logic into the external file.
+In this lesson we create a new development branch, add a dropdown menu to select buildings, and separate the JavaScript logic into an external file.
 
 </p>
 <p slot="prerequisites">
-- **Visual Studio Code** installed on your computer.
+- **Visual Studio Code** already installed on your computer.
 </p>
 </CustomPageHeader>
 
 <Card>
 
-## 1. Create the `lesson-2` Working Branch
+## 1. Creating the Work Branch `lezione-2`
 
 <Icon name="github" size="2rem" label="GitHub" color="DeepSkyBlue" />
 
-Before writing any new code, create a dedicated branch to isolate this lesson's changes:
+Before starting to write the new code, we create a dedicated branch to isolate the changes for this lesson:
 
 <Steps>
-  1. Open the Source Control panel in VS Code (`Ctrl + Shift + G`). 2. Click
-  the current branch name in the bottom-left corner (or at the top of the panel)
-  and select `Create new branch...`. 3. Enter the new branch name: `lesson-2`
-  and press Enter.
+  1. Open the Source Control panel in VS Code (`Ctrl + Shift + G`). 2. Click the current branch name in the bottom-left corner (or at the top of the panel) and select `Create a new branch...` (`Create new branch...`). 3. Type the new branch name: `lezione-2` and press Enter.
 </Steps>
-You are now working on a copy independent from Lesson 1, ready to be developed further!
+You are now working on an independent copy of Lesson 1, ready to evolve!
 
 </Card>
 
 <Card>
 
-## 2. Update `style.css` (Hover Effects and the `active` Class)
+## 2. Updating `style.css` (Hover Effects and `attivo` Class)
 
 <Icon name="seti:css" size="2rem" label="css" color="DeepSkyBlue" />
 
-At the end of your `style.css` file, add the visual rules for the hover cursor
-and the highlighting effect (a yellow border and glow) when a building is selected:
+At the end of your `style.css` file, we add the visual rules for the cursor on mouse hover and the highlight effect (yellow border and glow) when a building is selected:
 
 ```css
 //style.css
@@ -73,8 +69,8 @@ and the highlighting effect (a yellow border and glow) when a building is select
 #layer-edifici > g:hover {
   opacity: 0.85;
 }
-/* Style applied by JavaScript to the SELECTED building */
-.active rect {
+/* Style applied to the BUILDING SELECTED via JS */
+.attivo rect {
   stroke: #facc15 !important; /* Bright yellow */
   stroke-width: 5px !important;
   filter: drop-shadow (0px 0px 10px #facc15);
@@ -85,7 +81,7 @@ and the highlighting effect (a yellow border and glow) when a building is select
 
 <Card>
 
-## 3. Create `script.js` and Use `document.getElementById()`
+## 2. Creating the `script.js` file and using `document.getElementById()`
 
 <Icon
   name="seti:javascript"
@@ -94,46 +90,45 @@ and the highlighting effect (a yellow border and glow) when a building is select
   color="DeepSkyBlue"
 />
 
-Create a new file named `script.js` in the project's root folder.
+Create a new file called `script.js` in the main folder of the project.
 
-In it, we'll add functions that use `document.getElementById()` to retrieve the
-SVG element corresponding to the selected building and apply the `.active` class:
+Inside it, we add the function that uses `document.getElementById()` to get the SVG element corresponding to the selected building and apply the `.attivo` class to it:
 
 ```javascript
 //script.js
-// Called when the dropdown menu changes
-function highlightBuildingFromMenu() {
-  clearPreviousSelection();
-  const selectMenu = document.getElementById("building-select");
+// Function called when the dropdown menu changes
+function evidenziaEdificioDaMenu() {
+    rimuoviSelezionePrecedente();
+    const selectMenu = document.getElementById("select-edificio");
     const idSelezionato = selectMenu.value;
     if (idSelezionato) {
-        // Use getElementById to find the SVG element in the DOM
-        const buildingElement = document.getElementById(selectedId);
-        if (buildingElement) {
-          buildingElement.classList.add("active");
+        // we use getElementById to find the SVG element in the DOM
+        const elementoEdificio = document.getElementById(idSelezionato);
+        if (elementoEdificio) {
+            elementoEdificio.classList.add("attivo");
         }
     }
 }
 
-// Called when a building on the SVG map is clicked directly
-function selectFromMap(buildingId) {
-  const selectMenu = document.getElementById("building-select");
-  selectMenu.value = buildingId;
-  highlightBuildingFromMenu();
+// Function called when clicking directly on a building in the SVG map
+function selezionaDaMappa(idEdificio) {
+    const selectMenu = document.getElementById("select-edificio");
+    selectMenu.value = idEdificio;
+    evidenziaEdificioDaMenu();
 }
 
 // Helper function to clear the previous selection
-function clearPreviousSelection() {
-  const activeBuilding = document.querySelector(".active");
-  if (activeBuilding) {
-    activeBuilding.classList.remove("active");
+function rimuoviSelezionePrecedente() {
+    const edificioAttivo = document.querySelector(".attivo");
+    if (edificioAttivo) {
+        edificioAttivo.classList.remove("attivo");
     }
 }
 ```
 </Card>
 ---
 <Card>
-## 4. Update `index.html` (Menu and JavaScript Link)
+## 3. Updating `index.html` (Menu and JS Connection)
 <Icon
   name="seti:html"
   size="2rem"
@@ -141,9 +136,7 @@ function clearPreviousSelection() {
   color="DeepSkyBlue"
 />
 
-Update `index.html` by adding a control panel with a `<select>` dropdown,
-adding `onclick` attributes to the SVG buildings, and linking `script.js` before
-the closing `body` tag:
+We update the `index.html` file by adding a control panel with the `<select>` dropdown, adding the `onclick` attributes to the various SVG buildings, and linking the `script.js` file before the closing `body` tag:
 
 ```html
 //index.html
@@ -161,11 +154,11 @@ the closing `body` tag:
 
   <!-- CONTROL PANEL WITH DROPDOWN MENU -->
   <div style="margin-bottom: 15px; background: white; padding: 10px; border-radius: 8px; border: 1px solid #cbd5e1;">
-    <label for="building-select"><strong>🔍 Highlight a Building:</strong></label>
-    <select id="building-select" onchange="highlightBuildingFromMenu()" style="padding: 6px; border-radius: 4px; border: 1px solid #0284c7;">
+    <label for="select-edificio"><strong>🔍 Highlight building:</strong></label>
+    <select id="select-edificio" onchange="evidenziaEdificioDaMenu()" style="padding: 6px; border-radius: 4px; border: 1px solid #0284c7;">
       <option value="">-- Select a destination --</option>
-      <option value="edificio-uffici">Administration Offices</option>
-      <option value="edificio-aule">Classroom Building</option>
+      <option value="edificio-uffici">Administrative Offices</option>
+      <option value="edificio-aule">Classrooms Building</option>
       <option value="edificio-laboratori">Laboratories</option>
       <option value="edificio-mensa">Campus Cafeteria</option>
       <option value="edificio-palestra">Gym</option>
@@ -184,29 +177,29 @@ the closing `body` tag:
       <rect x="570" y="80" width="50" height="440" fill="#d1d5db" rx="4" />
     </g>
 
-    <!-- Add onclick events connected to JavaScript -->
+    <!-- Adding onclick events linked to JavaScript -->
     <g id="layer-edifici">
-      <g id="edificio-uffici" onclick="selectFromMap('edificio-uffici')">
+      <g id="edificio-uffici" onclick="selezionaDaMappa('edificio-uffici')">
         <rect x="70" y="80" width="100" height="140" fill="#1e3a8a" rx="6" />
         <text x="120" y="150" class="label">Offices</text>
       </g>
 
-      <g id="edificio-aule" onclick="selectFromMap('edificio-aule')">
+      <g id="edificio-aule" onclick="selezionaDaMappa('edificio-aule')">
         <rect x="70" y="380" width="100" height="140" fill="#2563eb" rx="6" />
         <text x="120" y="450" class="label">Classrooms</text>
       </g>
 
-      <g id="edificio-laboratori" onclick="selectFromMap('edificio-laboratori')">
+      <g id="edificio-laboratori" onclick="selezionaDaMappa('edificio-laboratori')">
         <rect x="630" y="80" width="100" height="140" fill="#7c3aed" rx="6" />
         <text x="680" y="150" class="label">Laboratories</text>
       </g>
 
-      <g id="edificio-mensa" onclick="selectFromMap('edificio-mensa')">
+      <g id="edificio-mensa" onclick="selezionaDaMappa('edificio-mensa')">
         <rect x="240" y="180" width="140" height="80" fill="#ea580c" rx="6" />
         <text x="310" y="220" class="label">Cafeteria</text>
       </g>
 
-      <g id="edificio-palestra" onclick="selectFromMap('edificio-palestra')">
+      <g id="edificio-palestra" onclick="selezionaDaMappa('edificio-palestra')">
         <rect x="630" y="380" width="100" height="140" fill="#dc2626" rx="6" />
         <text x="680" y="450" class="label">Gym</text>
       </g>
@@ -226,7 +219,7 @@ the closing `body` tag:
 ---
 
 <Card>
-## 5. Final Commit and Sync (Git / GitHub)
+## 4. Final Commit and Sync (Git / GitHub)
 <Icon
   name="github"
   size="2rem"
@@ -234,18 +227,18 @@ the closing `body` tag:
   color="DeepSkyBlue"
 />
 
-Now that Lesson 2 is complete and tested in the browser, save your work to the repository:
+Now that Lesson 2 is complete and tested in the browser, we save the work in the repository:
 <Steps>
-1. Return to the `Source Control` tab in VS Code.
-2. Check that the modified and new files appear (`index.html`, `style.css`, `script.js`).
-3. Enter a clear commit message in the text box, for example:
-  "Completed Lesson 2: Local interactivity, dropdown menu, and script.js".
+1. Go back to the `Source Control` tab in VS Code.
+2. Check that the changed and created files appear (`index.html`, `style.css`, `script.js`).
+3. Write a clear commit message in the text box, for example:
+"Completed Lesson 2: Local interactivity, dropdown menu and script.js".
 4. Click the `Commit` button.
-5. Click `Publish Branch` (or `Sync Changes`) to push the new `lesson-2` branch and its commits to your GitHub remote repository.
+5. Click `Publish Branch` (or `Sync Changes`) to upload the new `lezione-2` branch and related commits to your remote GitHub repository.
 </Steps>
 </Card>
 <Aside type="tip" title="Great job!">
 Congratulations! You have successfully completed the second step of the Campus Map project.
-You can now move on to the third step.
+You can now proceed to the third step.
 </Aside>
 

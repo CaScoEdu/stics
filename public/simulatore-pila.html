@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stack Simulation with Mutual Exclusion</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: row;
+            justify-content: space-around;
+            align-items: flex-start;
+            margin: 20px;
+        }
+
+        .panel {
+            background-color: antiquewhite;
+            border: 1px solid #333;
+            padding: 20px;
+            width: 30%;
+            min-height: 300px;
+        }
+
+        .panel h2 {
+            text-align: center;
+        }
+
+        #stack {
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
+            height: 250px;
+            border: 1px solid #000;
+            margin: 10px 0;
+            position: relative;
+        }
+
+        .stack-cell {
+            height: 25px;
+            text-align: center;
+            border-top: 1px solid #000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .highlight {
+            background-color: greenyellow;
+        }
+
+        .error {
+            background-color: red;
+        }
+
+        #top-value {
+            font-size: 18px;
+            text-align: center;
+            margin-top: 10px;
+        }
+
+        button {
+            background-color: aquamarine;
+            margin: 5px;
+            padding: 10px;
+            width: 100%;
+        }
+
+        input {
+            width: 100%;
+            padding: 5px;
+            margin-top: 5px;
+        }
+
+        input.largerCheckbox {
+            width: 80px;
+            height: 40px;
+        }
+
+    </style>
+</head>
+
+<body>
+    <!-- Processo 1: istruzioni push -->
+    <div class="panel" id="push-instructions">
+        <h2>Processo 1 - Istruzioni Push</h2>
+        <p>1) Incrementa indice <code>stackTop</code></p>
+        <button id="increment-button" onclick="incrementTop()" disabled>Esegui Istruzione 1</button>
+        <p>2) Inserisci valore in <code>stack[stackTop]</code></p>
+        <button id="insert-button" onclick="insertValue()" disabled>Esegui Istruzione 2</button>
+    </div>
+
+    <!-- Pannello centrale: visualizzazione pila -->
+    <div class="panel" id="stack-view">
+        <h2>Pila</h2>
+
+        <fieldset>
+            <legend>Abilita Mutua Esclusione</legend>
+            <input type="checkbox" id="mutual-exclusion-toggle" checked
+            onchange="toggleMutualExclusion()" class="largerCheckbox" />
+            
+        </fieldset>
+        <button onclick="resetStack()">Reset</button>
+        <div id="stack">
+            <div id="stack-container"></div>
+        </div>
+        <div id="top-value">Indice top: <span id="top-index">-1</span></div>
+    </div>
+
+    <!-- Processo 2: istruzioni pop -->
+    <div class="panel" id="pop-instructions">
+        <h2>Processo 2 - Istruzioni Pop</h2>
+        <p>1) Preleva valore da <code>stack[stackTop]</code></p>
+        <button id="remove-button" onclick="removeValue()" disabled>Esegui Istruzione 1</button>
+        <input type="text" id="pop-value" placeholder="Valore estratto" readonly />
+        <p>2) Decrementa indice <code>stackTop</code></p>
+        <button id="decrement-button" onclick="decrementTop()" disabled>Esegui Istruzione 2</button>
+    </div>
+
+    <script>
+        const STACK_SIZE = 10;
+        let stackTop = -1;
+        const STACK = new Array(STACK_SIZE).fill(null);
+        let nuovoValore = 0; // valore da inserire nello stack
+        let mutuaEsclusione = true;
+        let ultimaOperazione = null;
+        let operazioneParziale = false;
+        let statoInconsistente = false;
+
+        function updateStackView() {
+            const STACK_CONTAINER = document.getElementById("stack-container");
+            STACK_CONTAINER.innerHTML = '';
+            for (let i = 0; i < STACK_SIZE; i++) {
+                const CELL = document.createElement("div");
+                CELL.className = "stack-cell";
+                CELL.textContent = STACK[i] !== null ? STACK[i] : '';
+                if (i === stackTop) CELL.classList.add("highlight");
+                if (statoInconsistente && i === stackTop) {
+                    CELL.classList.add("error");
+                }
+                STACK_CONTAINER.appendChild(CELL);
+            }
+            document.getElementById("top-index").textContent = stackTop;
+        }
+
+        function enablePushStep(step) {
+            document.getElementById("increment-button").disabled = step !== 1;
+            document.getElementById("insert-button").disabled = step !== 2;
+            if (mutuaEsclusione && step == 2) {
+                document.getElementById("remove-button").disabled = true;
+                document.getElementById("decrement-button").disabled = true;
+            }
+        }
+
+        function enablePopStep(step) {
+            document.getElementById("remove-button").disabled = step !== 1;
+            document.getElementById("decrement-button").disabled = step !== 2;
+            if (mutuaEsclusione && step == 2) {
+                document.getElementById("increment-button").disabled = true;
+                document.getElementById("insert-button").disabled = true;
+            }
+        }
+
+        function toggleMutualExclusion() {
+            mutuaEsclusione = document.getElementById("mutual-exclusion-toggle").checked;
+            ultimaOperazione = null;
+            operazioneParziale = false;
+            statoInconsistente = false;
+            enablePushStep(1);
+            enablePopStep(1);
+            updateStackView();
+        }
+
+        function resetStack() {
+            stackTop = -1;
+            ultimaOperazione = null;
+            operazioneParziale = false;
+            statoInconsistente = false;
+            STACK.fill(null);
+            updateStackView();
+            enablePushStep(1);
+            enablePopStep(1);
+        }
+
+        function enterInconsistencyState() {
+            statoInconsistente = true;
+            alert("Stato di incongruenza rilevato! È possibile continuare, ma le celle aggiornate verranno evidenziate in rosso.");
+            updateStackView();
+        }
+
+        function incrementTop() {
+            if (stackTop >= STACK_SIZE - 1) {
+                alert("Pila piena! Non è possibile incrementare l'indice.");
+                return;
+            }
+            stackTop++;
+            updateStackView();
+            enablePushStep(2);
+            if (!mutuaEsclusione && operazioneParziale && ultimaOperazione === 'pop') enterInconsistencyState();
+            operazioneParziale = true;
+            ultimaOperazione = 'push';
+        }
+
+        function insertValue() {
+            
+            STACK[stackTop] = ++nuovoValore;
+            operazioneParziale = false;
+            updateStackView();
+            enablePushStep(1);
+            if (mutuaEsclusione) enablePopStep(1);
+        }
+
+        function removeValue() {
+            if (stackTop < 0) {
+                alert("Pila vuota! Non è possibile prelevare un valore.");
+                return;
+            }
+            const POP_OUTPUT = document.getElementById("pop-value");
+            POP_OUTPUT.value = STACK[stackTop];
+            STACK[stackTop] = null;
+            updateStackView();
+            enablePopStep(2);
+            if (!mutuaEsclusione && operazioneParziale && ultimaOperazione === 'push') enterInconsistencyState();
+            operazioneParziale = true;
+            ultimaOperazione = 'pop';
+        }
+
+        function decrementTop() {
+            if (stackTop < 0) {
+                alert("Indice già al limite inferiore!");
+                return;
+            }
+            stackTop--;
+            operazioneParziale = false;
+            updateStackView();
+            enablePopStep(1);
+            if (mutuaEsclusione) enablePushStep(1);
+        }
+
+        updateStackView();
+        enablePushStep(1);
+        enablePopStep(1);
+    </script>
+</body>
+
+</html>
