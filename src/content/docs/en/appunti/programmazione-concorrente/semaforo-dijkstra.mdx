@@ -110,10 +110,12 @@ a    to check the semaphore state and acquire access.
 
 You can directly test the behavior of the semaphore and the interaction of concurrent processes (P1, P2, P3) using the interactive simulator below.
 
-:::tip[How to use the simulator]
-* Click the **RUN P1**, **RUN P2**, or **RUN P3** buttons to advance each process through the **Acquisition**, **Use**, and **Release** phases.
-* Observe how the semaphore changes from **FREE** to **BUSY** and how processes remain waiting if the resource is already occupied by another thread.
-* Reflect on what would happen if the control instructions (`while loop`) and assignment (`SR <- BUSY`) were not executed atomically.
+:::tip[Using the simulator]
+* Click **RUN P1**, **RUN P2**, or **RUN P3** to advance each process through the **Acquire**, **Use**, and **Release** phases.
+* Observe how the semaphore changes from **FREE** to **BUSY**, and how processes wait when another thread is already using the resource.
+* **Experiment with the "Atomic" switch**:
+  * When the switch is **on**, the system protects the transition from interference by other processes, ensuring the integrity of the mutex.
+  * When the switch is **off**, you can simulate and observe what happens when the check instructions (the waiting loop) and the assignment (`SR <- BUSY`) are not executed atomically, demonstrating the failure of mutual exclusion.
 :::
 
 <div class="iframe-container" style="margin: 2rem 0; text-align: center;">

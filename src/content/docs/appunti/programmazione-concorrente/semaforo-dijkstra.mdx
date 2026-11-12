@@ -33,7 +33,7 @@ Analizzeremo come i semafori introdotti da E.W. Dijkstra consentono di gestire l
 </p>
 </CustomPageHeader>
 
-## 1. I Semafori e la Variabile Intera S
+## 1. I Semafori e la Variabile Intera `S`
 
 Nel 1968, [**Edsger W. Dijkstra**](https://en.wikipedia.org/wiki/Edsger_W._Dijkstra) propose l'utilizzo di due primitive fondamentali per risolvere qualsiasi problema di interazione e sincronizzazione fra processi: **wait** e **signal**. 
 
@@ -115,7 +115,9 @@ Puoi testare direttamente il comportamento del semaforo e l'interazione dei proc
 :::tip[Come usare il simulatore]
 * Clicca sui pulsanti **RUN P1**, **RUN P2** o **RUN P3** per fare avanzare i singoli processi attraverso le fasi di **Acquisizione**, **Uso** e **Rilascio**.
 * Osserva come il semaforo passa da **LIBERO** a **OCCUPATO** e come i processi rimangono in attesa se la risorsa è già occupata da un altro thread.
-* Rifletti su cosa accadrebbe se le istruzioni di controllo (`ciclo fintanto che`) e di assegnazione (`SR <- OCCUPATO`) non venissero eseguite in modo atomico.
+* **Sperimenta con lo switch "Atomica"**: 
+  * Se lo switch è **attivo**, il sistema protegge la transizione impedendo ad altri processi di inseririrsi, garantendo l'integrità del mutex.
+  * Se lo switch è **disattivo**, puoi simulare e osservare cosa accade quando le istruzioni di controllo (il ciclo di attesa) e di assegnazione (`SR <- OCCUPATO`) non vengono eseguite in modo atomico, dimostrando il fallimento della mutua esclusione.
 :::
 
 <div class="iframe-container" style="margin: 2rem 0; text-align: center;">

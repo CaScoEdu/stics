@@ -44,12 +44,14 @@ export default defineConfig({
         },
         {
           label: 'Esercitazioni',
+          collapsed: true,
           translations: {
             'en': 'Practical Labs',
           },
           items: [
             {
               label: 'Software Engineering',
+              collapsed: true,
               translations: {
                 en: 'Software Engineering',
               },
@@ -57,6 +59,7 @@ export default defineConfig({
             },
             {
               label: 'Sviluppo Front End',
+              collapsed: true,
               translations: {
                 en: 'Front End Development',
               },
@@ -66,12 +69,14 @@ export default defineConfig({
         },
         {
           label: 'Progetti',
+          collapsed: true,
           translations: {
             'en': 'Practical Projects',
           },
           items: [
             {
               label: 'Mappa Interattiva',
+              collapsed: true,
               translations: {
                 en: 'Interactive Map',
               },
@@ -81,12 +86,14 @@ export default defineConfig({
         },
         {
           label: 'Appunti',
+          collapsed: true,
           translations: {
             'en': 'Notes',
           },
           items: [
             {
               label: 'Programmazione Concorrente',
+              collapsed: true,
               translations: {
                 en: 'Concurrent Programming',
               },

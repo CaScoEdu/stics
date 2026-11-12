@@ -3,23 +3,23 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Simulazione con Semaforo Mutex</title>
+    <title>Mutex Semaphore Simulation</title>
     <style>
       body {
         font-family: Arial, sans-serif;
         text-align: center;
         background-color: #f4f4f4;
-        margin: 10px; /* ridotto */
+        margin: 10px;
       }
 
       h1 {
         color: #333;
-        font-size: 22px; /* leggermente più compatto */
+        font-size: 22px;
         margin-bottom: 10px;
       }
 
       #controls {
-        margin-bottom: 10px; /* ridotto */
+        margin-bottom: 10px;
       }
 
       button {
@@ -29,15 +29,21 @@
         cursor: pointer;
       }
 
+      button:disabled {
+        background-color: #cccccc;
+        color: #666666;
+        cursor: not-allowed;
+      }
+
       #simulation {
         display: flex;
         justify-content: center;
-        margin-top: 20px;
+        margin-top: 15px;
       }
 
       .panel {
         width: 190px;
-        padding: 8px; /* ridotto */
+        padding: 8px;
         margin: 0 10px;
         border: 2px solid #333;
         border-radius: 10px;
@@ -46,8 +52,8 @@
 
       .semaforo {
         font-weight: bold;
-        padding: 10px;
-        margin: 10px 0;
+        padding: 8px;
+        margin: 8px 0;
         color: white;
         text-align: center;
       }
@@ -63,77 +69,94 @@
       ul {
         list-style-type: none;
         padding: 0;
+        margin: 5px 0;
       }
 
       li {
         display: flex;
         align-items: center;
-        margin: 10px 0;
+        margin: 8px 0;
         font-weight: bold;
+        font-size: 14px;
       }
 
       .process-name {
         font-weight: normal;
-        margin-right: 10px;
+        margin-right: 5px;
         color: blue;
+      }
+
+      .atomic-container {
+        margin-top: 10px;
+        padding-top: 8px;
+        border-top: 1px dashed #ccc;
+        font-size: 13px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
       }
     </style>
   </head>
 
   <body>
-    <h1>Simulazione Mutex con Semaforo</h1>
+    <h1>Mutex Semaphore Simulation</h1>
 
     <div id="controls">
-      <button onclick="runProcess('P1')">RUN P1</button>
-      <button onclick="runProcess('P2')">RUN P2</button>
-      <button onclick="runProcess('P3')">RUN P3</button>
+      <button id="btn-P1" onclick="runProcess('P1')">RUN P1</button>
+      <button id="btn-P2" onclick="runProcess('P2')">RUN P2</button>
+      <button id="btn-P3" onclick="runProcess('P3')">RUN P3</button>
     </div>
 
     <div id="simulation">
       <div class="panel">
-        <h2>ACQUISIZIONE</h2>
+        <h2>ACQUISITION</h2>
         <ul id="acquisizione-instructions">
           <li id="wait-loop">
-            <span class="process-name" id="wait-loop-process"></span> ciclo
-            fintanto che SR = OCCUPATO
+            <span class="process-name" id="wait-loop-process"></span> loop while
+            SR = BUSY
           </li>
-          <div id="semaforo" class="semaforo libero">LIBERO</div>
+          <div id="semaforo" class="semaforo libero">FREE</div>
           <li id="occupato-assignment">
             <span class="process-name" id="occupato-assignment-process"></span>
-            SR <- OCCUPATO
+            SR &lt;- BUSY
           </li>
         </ul>
+        <div class="atomic-container">
+          <input type="checkbox" id="atomic-switch" checked />
+          <label for="atomic-switch"><strong>Atomic</strong></label>
+        </div>
       </div>
 
       <div class="panel">
-        <h2>USO</h2>
+        <h2>USE</h2>
         <ul id="uso-instructions">
-          <li><span class="process-name" id="uso-process"></span> USO DI R</li>
+          <li><span class="process-name" id="uso-process"></span> USE OF R</li>
         </ul>
       </div>
 
       <div class="panel">
-        <h2>RILASCIO</h2>
+        <h2>RELEASE</h2>
         <ul id="rilascio-instructions">
           <li>
             <span class="process-name" id="libero-assignment-process"></span> SR
-            <- LIBERO
+            &lt;- FREE
           </li>
         </ul>
       </div>
     </div>
 
     <script>
-      let semaforo = "LIBERO"; // Stato iniziale del semaforo
+      let semaforo = "LIBERO";
       let processes = {
-        P1: "WAIT_LOOP", // Stato iniziale del processo (ciclo fintanto che SR = OCCUPATO)
+        P1: "WAIT_LOOP",
         P2: "WAIT_LOOP",
         P3: "WAIT_LOOP",
       };
 
       function updateUI() {
         const semaforoDiv = document.getElementById("semaforo");
-        semaforoDiv.textContent = semaforo;
+        semaforoDiv.textContent = semaforo === "LIBERO" ? "FREE" : "BUSY";
         semaforoDiv.className = `semaforo ${semaforo.toLowerCase()}`;
 
         // Resetta le posizioni dei processi
@@ -156,6 +179,30 @@
           } else if (state === "LIBERO_ASSIGNMENT") {
             document.getElementById("libero-assignment-process").textContent +=
               `${process} `;
+          }
+        }
+
+        // Gestione dell'atomicità: se un processo si trova in OCCUPATO_ASSIGNMENT
+        // e lo switch "Atomica" è attivo, disabilita gli altri processi.
+        const isAtomic = document.getElementById("atomic-switch").checked;
+        let processInTransition = null;
+
+        if (isAtomic) {
+          for (const [process, state] of Object.entries(processes)) {
+            if (state === "OCCUPATO_ASSIGNMENT") {
+              processInTransition = process;
+              break;
+            }
+          }
+        }
+
+        // Aggiorna lo stato dei pulsanti
+        for (const process of ["P1", "P2", "P3"]) {
+          const btn = document.getElementById(`btn-${process}`);
+          if (processInTransition && process !== processInTransition) {
+            btn.disabled = true; // Disabilita gli altri durante la transizione atomica
+          } else {
+            btn.disabled = false;
           }
         }
       }
@@ -181,6 +228,11 @@
         }
         updateUI();
       }
+
+      // Ascolta il cambiamento dello switch per aggiornare subito i pulsanti
+      document
+        .getElementById("atomic-switch")
+        .addEventListener("change", updateUI);
 
       // Inizializzazione interfaccia utente
       updateUI();
