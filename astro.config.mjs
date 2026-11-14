@@ -104,6 +104,7 @@ export default defineConfig({
       ],
       // Registra il componente personalizzato per il footer
       components: {
+        PageTitle: './src/components/CustomTitle.astro',
         Footer: './src/components/CustomFooter.astro'
       },
 

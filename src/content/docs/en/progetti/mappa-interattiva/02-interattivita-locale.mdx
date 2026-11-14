@@ -1,5 +1,5 @@
 ---
-title: "Local interactivity and external JS script"
+title: "02. Local interactivity and external JS script"
 description: "In this lesson we create a new development branch, add a dropdown menu to select buildings, and separate the JavaScript logic into the external file script.js"
 ---
 
@@ -27,7 +27,6 @@ import IconGroup from '@/components/IconGroup.astro';
 >
 <p slot="intro">
 Second step of the Campus Map project.
-
 In this lesson we create a new development branch, add a dropdown menu to select buildings, and separate the JavaScript logic into an external file.
 
 </p>
@@ -36,25 +35,24 @@ In this lesson we create a new development branch, add a dropdown menu to select
 </p>
 </CustomPageHeader>
 
-<Card>
+---
 
 ## 1. Creating the Work Branch `lezione-2`
-
 <Icon name="github" size="2rem" label="GitHub" color="DeepSkyBlue" />
 
 Before starting to write the new code, we create a dedicated branch to isolate the changes for this lesson:
 
 <Steps>
-  1. Open the Source Control panel in VS Code (`Ctrl + Shift + G`). 2. Click the current branch name in the bottom-left corner (or at the top of the panel) and select `Create a new branch...` (`Create new branch...`). 3. Type the new branch name: `lezione-2` and press Enter.
+  1. Open the Source Control panel in VS Code (`Ctrl + Shift + G`). 
+  2. Click the current branch name in the bottom-left corner 
+    (or at the top of the panel) and select `Create a new branch...` (`Create new branch...`). 
+  3. Type the new branch name: `lezione-2` and press Enter.
 </Steps>
 You are now working on an independent copy of Lesson 1, ready to evolve!
 
-</Card>
-
-<Card>
+---
 
 ## 2. Updating `style.css` (Hover Effects and `attivo` Class)
-
 <Icon name="seti:css" size="2rem" label="css" color="DeepSkyBlue" />
 
 At the end of your `style.css` file, we add the visual rules for the cursor on mouse hover and the highlight effect (yellow border and glow) when a building is selected:
@@ -77,9 +75,7 @@ At the end of your `style.css` file, we add the visual rules for the cursor on m
 }
 ```
 
-</Card>
-
-<Card>
+---
 
 ## 2. Creating the `script.js` file and using `document.getElementById()`
 
@@ -125,9 +121,9 @@ function rimuoviSelezionePrecedente() {
     }
 }
 ```
-</Card>
+
 ---
-<Card>
+
 ## 3. Updating `index.html` (Menu and JS Connection)
 <Icon
   name="seti:html"
@@ -214,11 +210,8 @@ We update the `index.html` file by adding a control panel with the `<select>` dr
 </html>
 ```
 
-</Card>
-
 ---
 
-<Card>
 ## 4. Final Commit and Sync (Git / GitHub)
 <Icon
   name="github"
@@ -236,7 +229,7 @@ Now that Lesson 2 is complete and tested in the browser, we save the work in the
 4. Click the `Commit` button.
 5. Click `Publish Branch` (or `Sync Changes`) to upload the new `lezione-2` branch and related commits to your remote GitHub repository.
 </Steps>
-</Card>
+
 <Aside type="tip" title="Great job!">
 Congratulations! You have successfully completed the second step of the Campus Map project.
 You can now proceed to the third step.

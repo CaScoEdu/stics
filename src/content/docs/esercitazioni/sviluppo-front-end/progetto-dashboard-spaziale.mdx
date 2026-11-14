@@ -1,5 +1,5 @@
 ---
-title: "Progetto: Dashboard Spaziale"
+title: "🚀 Progetto: Dashboard Spaziale"
 description: "Applicazione dell'esecuzione asincrona JavaScript e fetch API."
 ---
 
@@ -15,35 +15,27 @@ import {
     Tabs
 } from "@astrojs/starlight/components";
 import Mermaid from "@/components/Mermaid.astro";
-import CustomPageHeader from '@/components/CustomPageHeader.astro';
+import Checklist from '@/components/Checklist.astro';
 import IconGroup from '@/components/IconGroup.astro';
+import StepCard from '@/components/StepCard.astro';
 
-<CustomPageHeader 
-    pageType="Labs" 
-    pageTypeIcon="laptop" 
-    badgeTextList={["Sviluppo Front End", "Intermedio", "Fetch, Async/Await"]}
-    techIconList={["seti:html", "seti:javascript", "vscode"]}
-    asideIntroTitle="In questa esercitazione ..."
-    asidePrerequisitesTitle="Prerequisiti"
->
-<p slot="intro">
-Realizzeremo la dashboard di bordo di una missione spaziale (**Ares-IV**) 
-per scaricare e visualizzare diari di bordo asincroni da file di testo esterni 
- (`.txt`) tramite le Fetch API.
-</p>
-<p slot="prerequisites">
-- **HTML5, CSS3 e JavaScript DOM** di base.
-- **Visual Studio Code** con estensione **Live Server** installata.
-- studio della lezione [Esecuzione Asincrona e Fetch API](./esecuzione-asincrona-e-fetch-api) per comprendere i concetti di base.
-</p>
-</CustomPageHeader>
+<Aside type="tip" title="Prerequisiti">
+- saper creare file HTML, CSS e JavaScript e collegarli tra loro
+- conoscere le variabili, le funzioni e la selezione degli elementi del DOM
+- sapere collegare eventi ai pulsanti e visualizzare contenuti nella pagina
+- poter avviare il progetto con un server locale, ad esempio Live Server
+- saper usare il browser e i suoi strumenti di sviluppo per controllare la pagina
+- avere svolto l'esercitazione precedente ([link alla lezione precedente](/esercitazioni/sviluppo-front-end/))
+</Aside>
 
 ---
-<Card>
-## Passo 1: La Struttura HTML (`index.html`)
+
+<StepCard stepNumber={1}>
+
+## 🧱 La Struttura [HTML](https://it.wikipedia.org/wiki/HTML) (`index.html`)
 
 Iniziamo creando l'interfaccia utente. 
-L'HTML definisce i pulsanti di controllo e il riquadro 
+L'[HTML](https://it.wikipedia.org/wiki/HTML) definisce i pulsanti di controllo e il riquadro 
 di console dove compariranno lo stato del download e il testo del diario.
 
 ```html
@@ -82,12 +74,16 @@ gli eventi JavaScript da codice.
 - <code>#stato</code> accoglierà i messaggi di avanzamento del caricamento
   (es. "In corso...", "Ok", "Errore").
 - <code>#log</code> conterrà il testo effettivo scaricato dal file di testo.   
- </Card> 
+
+</StepCard>
+
 ---
-<Card>
-## Passo 2: Lo Stile Grafico (<code>style.css</code>)
+
+<StepCard stepNumber={2}>
+
+## 🎨 Lo Stile Grafico (<code>style.css</code> / [CSS](https://it.wikipedia.org/wiki/Cascading_Style_Sheets))
 Creiamo un file separato <code>style.css</code> per dare alla pagina
- l'aspetto di un vero terminale di bordo. 
+ l'aspetto di un vero terminale di bordo, usando il [CSS](https://it.wikipedia.org/wiki/Cascading_Style_Sheets).
 
 ```css
 //style.css
@@ -133,10 +129,13 @@ sul contenitore <code>#log</code> è fondamentale: fa sì che i ritorni a capo
  (<code>\n</code>) 
 presenti nel file di testo vengano rispettati a schermo.    
 
-</Card>
+</StepCard>
 
-<Card>
-## Passo 3: I File di Dati (I Diari di Bordo)
+---
+
+<StepCard stepNumber={3}>
+
+## 📄 I File di Dati (I Diari di Bordo)
 Creiamo nella stessa cartella del progetto due file di testo:   
 
 :::tip[log1.txt]
@@ -150,12 +149,14 @@ Tutti i motori funzionano al 100%. Il viaggio verso Marte è iniziato senza into
 Anomalia rilevata nel settore di navigazione 4.
 I sensori indicano un segnale non identificato. Richiesta verifica immediata.
 :::
-</Card>
+
+</StepCard>
 
 ---
 
-<Card>
-## Passo 4: La Logica JavaScript (<code>app.js</code>)
+<StepCard stepNumber={4}>
+
+## ⚙️ La Logica [JavaScript](https://it.wikipedia.org/wiki/JavaScript) (<code>app.js</code>)
 Costruiamo la logica dello script dividendola in blocchi concettuali.
 
 ### Snippet A: La dichiarazione della funzione asincrona
@@ -230,10 +231,10 @@ document.getElementById('btn-log2').addEventListener('click', () => caricaLog('l
 document.getElementById('btn-errore').addEventListener('click', () => caricaLog('log-inesistente.txt'));
 ```
 
-</Card>
+</StepCard>
 
 :::caution[Attenzione al blocco `CORS` (`Live Server`)]
-Riferimento: [`CORS`](https://en.wikipedia.org/wiki/Cross-origin_resource_sharing).
+Riferimento: [`CORS`](https://it.wikipedia.org/wiki/Cross-origin_resource_sharing).
 Se si apre il file `index.html` facendo semplicemente doppio clic 
 (protocollo `file:///`), il browser bloccherà la `fetch` per motivi di sicurezza.
 Ricordati di eseguire il progetto tramite un server locale
@@ -245,3 +246,29 @@ Aggiungi un quarto pulsante denominato `"Registro Giorno 100"`
 e crea il rispettivo file `log100.txt` 
 per verificare il corretto funzionamento del sistema.
 :::
+
+<Aside type="note" title="Sintesi Concetti Chiave" icon="puzzle">
+- [Esecuzione asincrona](https://it.wikipedia.org/wiki/Programmazione_asincrona): consente di attendere il caricamento dei diari senza bloccare la dashboard.
+- [Promise](https://developer.mozilla.org/it/docs/Web/JavaScript/Reference/Global_Objects/Promise): rappresenta il risultato futuro della richiesta di un file di registro.
+- `async` e `await`: permettono a `caricaLog(nomeFile)` di attendere la risposta e la lettura del diario.
+- [Fetch API](https://developer.mozilla.org/it/docs/Web/API/Fetch_API): recupera dal server i file `log1.txt` e `log2.txt`.
+- [HTTP](https://it.wikipedia.org/wiki/Hypertext_Transfer_Protocol): protocollo usato per comunicare con il server locale.
+- `response.ok`: permette di riconoscere una risposta HTTP non riuscita, come l'errore `404` del pulsante di test.
+- `response.text()`: legge il contenuto del diario ricevuto e lo restituisce come testo.
+- [DOM](https://it.wikipedia.org/wiki/Document_Object_Model): permette di aggiornare gli elementi `#stato` e `#log` con l'esito e il contenuto del caricamento.
+- `try/catch`: gestisce errori di rete o file non disponibili e mostra il messaggio nella console della dashboard.
+</Aside>
+
+<Checklist id="progetto-dashboard-spaziale" title="✅Verifica dell'apprendimento">
+- [ ] So spiegare perché `fetch()` carica un diario senza bloccare l'interfaccia
+- [ ] So descrivere il ruolo di `async` e `await` nella funzione `caricaLog(nomeFile)`
+- [ ] So verificare l'esito della richiesta con `response.ok` e riconoscere un errore `404`
+- [ ] So leggere il contenuto del file con `response.text()` e mostrarlo nell'elemento `#log`
+- [ ] So gestire gli errori con `try/catch` e aggiornare lo stato nell'elemento `#stato`
+- [ ] So avviare il progetto con un server locale per consentire le richieste `fetch()`
+<Aside type="tip" title="Ottimo lavoro!" slot="reward">
+  Ora sai usare `fetch()` con `async` e `await` per caricare i diari di bordo,
+  gestire eventuali errori e aggiornare la dashboard spaziale.
+</Aside>
+</Checklist>
+

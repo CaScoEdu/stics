@@ -1,51 +1,44 @@
 ---
-title: Asynchronous Execution and the Fetch API
-description: JavaScript asynchronous execution and the Fetch API.
+title: Asynchronous Execution and Fetch API
+description: Asynchronous JavaScript execution and Fetch API.
 ---
 
 import {
     Aside,
-    Badge,
-    Card,
     Icon,
     LinkButton,
-    LinkCard,
-    Steps,
     TabItem,
     Tabs
 } from "@astrojs/starlight/components";
 import Mermaid from "@/components/Mermaid.astro";
-import CustomPageHeader from '@/components/CustomPageHeader.astro';
+import Checklist from '@/components/Checklist.astro';
 import IconGroup from '@/components/IconGroup.astro';
+import StepCard from '@/components/StepCard.astro';
 
-
-<CustomPageHeader 
-    pageType="Labs" 
-    pageTypeIcon="laptop" 
-    badgeTextList={["Front-End Development", "Asynchronous Execution", "Fetch API"]}
-    techIconList={["seti:html", "seti:javascript", "vscode"]}
-    asideIntroTitle="In this exercise ..."
-    youTubeLink="https://youtu.be/R4HCYWLVHZQ"
-    youTubeText="guarda il video introduttivo"
-    asidePrerequisitesTitle="Prerequisites"
->
-<p slot="intro">
-... we'll see how asynchrony works in JavaScript
-in the simplest and most concise way possible.
-</p>
-<p slot="prerequisites">
-- **Visual Studio Code** installed on your computer.
-- basic knowledge of `JavaScript`, see [W3schools tutorial Javascript](https://www.w3schools.com/js/)
-
-</p>
-</CustomPageHeader>
+<Aside type="tip" title="Prerequisites">
+- know how to create and modify HTML and JavaScript files
+- know variables, functions and DOM usage
+- know how to open a page in the browser and use developer tools
+- have Internet access to use online services or external resources
+</Aside>
 
 ---
 
-## 1. The Essential `index.html` Code
+<LinkButton
+    href="https://youtu.be/R4HCYWLVHZQ"
+    variant="primary"
+    icon="youtube"
+    iconPlacement="end"
+>
+watch the introductory video
+</LinkButton>
 
-<IconGroup techIconList={["vscode","seti:html"]} />
-Create an `index.html` file and a `hello.txt` file in the same folder:
+---
+
+<StepCard stepNumber="1">
+
+## The essential code <code>index.html</code>
+In this exercise we introduce the concept of [**asynchronous execution**](https://en.wikipedia.org/wiki/Asynchronous_programming) and the use of the [**Fetch API**](https://en.wikipedia.org/wiki/Fetch_API) with the simplest possible code. On button click, the page retrieves the content of `hello.txt` and displays it without blocking the interface. To follow the example, create `index.html` and `hello.txt` in the same folder: we will see the essential flow of `fetch()` and `await`, without adding unnecessary functionality.
 
 
 <Tabs>
@@ -53,25 +46,25 @@ Create an `index.html` file and a `hello.txt` file in the same folder:
 <TabItem label="index.html" icon="seti:html" >
 ```html
 <!DOCTYPE html>
-<html lang="it">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <title>Intro Async Fetch</title>
 </head>
 <body>
 
-    <button onclick="loadMessage()">Load "Hello World"</button>
+    <button onclick="caricaMessaggio()">Load "Hello World"</button>
 
-    <!-- A minimal container for displaying the text -->
-    <div id="output">Waiting for a click...</div>
+    <!-- Minimal container where the text is printed -->
+    <div id="output">Waiting for click...</div>
 
     <script>
     // 1. 'async' makes the function asynchronous
-    async function loadMessage() {
+    async function caricaMessaggio() {
         const output = document.getElementById('output');
 
         try {
-        // 2. 'await fetch' retrieves the resource without blocking
+        // 2. 'await fetch' downloads the resource without blocking
         const response = await fetch('hello.txt');
 
         // 3. Check whether the file was found (e.g. 200 OK)
@@ -80,14 +73,14 @@ Create an `index.html` file and a `hello.txt` file in the same folder:
         }
 
         // 4. 'await' waits for the response body to be converted to text
-        const text = await response.text();
+        const testo = await response.text();
 
-        // 5. Add the text to the DOM (without an alert)
-        output.textContent = text;
+        // 5. We insert the text into the DOM (without alert)
+        output.textContent = testo;
 
-        } catch (error) {
-        // Handle network issues or missing files
-        output.textContent = 'Error: ' + error.message;
+        } catch (errore) {
+        // Handle possible network issues or missing files
+        output.textContent = 'Error: ' + errore.message;
         }
     }
     </script>
@@ -103,13 +96,14 @@ Hello World!
 </TabItem>
 </Tabs>
 
-<Aside type="tip" title="Tips">
-- Read the `index.html` file and its self-explanatory comments
-to understand how `fetch` works with JavaScript.
+In short, the code uses `async` and `await` to make the request non-blocking: `fetch('hello.txt')` starts an [HTTP](https://en.wikipedia.org/wiki/Hypertext_Transfer_Protocol) request, `response.ok` checks whether the response succeeded, and `response.text()` reads the file content as text. The `try/catch` block handles network errors or missing files, preventing the page from freezing and allowing the [DOM](https://en.wikipedia.org/wiki/Document_Object_Model) to be updated with the result.
 
-- Click the "Load Hello World" button to run the script.
-- Try it in Visual Studio Code using the Live Server extension.
-- You can also try it on CodePen below.
+<Aside type="tip" title="Tips">
+- Read the `index.html` file with the self-explanatory comments about how `fetch()` works with JavaScript.
+
+- Click the **"Load Hello World"** button to trigger the script.
+- Try it in your Visual Studio Code environment with the Live Server extension.
+- You can also try it on the CodePen platform below.
 </Aside>
 
 <p class="codepen" data-theme-id="-3" data-height="300" 
@@ -121,46 +115,52 @@ data-slug-hash="GgrwzxR" data-user="Scocco" style="height: 300px; box-sizing: bo
 </p>
 <script async src="https://public.codepenassets.com/embed/index.js"></script>
 
+</StepCard>
+
 ---
 
-<Card>
+<StepCard stepNumber="2">
 
-## 2. Component Diagram
-Let's see which logical components interact during the execution
-of the `fetch` statement.
+## Component Diagram 🧩
+Let's see which logical components interact with each other during the execution of `fetch()`: the [browser](https://en.wikipedia.org/wiki/Web_browser) sends an **HTTP GET** request, receives a `Response`, and updates the **DOM**.
 
 <Mermaid chart={`
   flowchart TD
     subgraph Browser ["Browser (Client)"]
-        DOM["Elemento DOM (#output)"]
-        JS["Async JS Function\n(loadMessage)"]
+        DOM["DOM element (#output)"]
+        JS["Async JS function\n(caricaMessaggio)"]
         FETCH["Fetch API Engine"]
     end
 
-    subgraph Server ["Server Web"]
+    subgraph Server ["Web Server"]
         FILE["Text file\n(hello.txt)"]
     end
 
     DOM -->|"1. Click event"| JS
     JS -->|"2. await fetch(hello.txt)"| FETCH
     FETCH -->|"3. HTTP GET request"| FILE
-    FILE -->|"4. Response with text"| FETCH
+    FILE -->|"4. Response with the text"| FETCH
     FETCH -->|"5. Returns Response"| JS
-    JS -->|"6. output.textContent = text"| DOM
+    JS -->|"6. output.textContent = testo"| DOM
 `} />
 
-Diagram created with [Mermaid](https://mermaid.live/edit#pako:eNqNk1FvmzAQx7-K5b60EokgaQjjYdOW9GnaVrVTpQ3y4NkHWAUfso1SluS719jJNm0v4wXu7nf_-3PgA-UogOa0anHPG6Yt-botFXHXo3XRdfEkjbQEVSsVEGNRw-6GzGZvyQeNewNFuJFeoxi4NbvQfM5O3MbJFO-FINJCZ4hFwl3mzE1FT22BSwGHB2Bi9EwD_JngYN-dAhmAiT1-BOiJabDvpaqP51n_UN_AHMk9G4s7ZUGTno0dKEsEWCbbi09X9-OfWCvF4f7MMM6htyAus33Vi37GI3kAq8fiscE9Aa1Rkw6MYTWcJX3Zizq5v_u9qQ2qSuqu-KKFM8ZDBOKykhCHraCC6-Kuc46JBg6yt7ubUgXQ2LGF8JlIJds2v4KsWsGbyFiNz5Bf3S5ZfLv-E570_pcNpgNcVdUS4l9w9SPjcUwjWmspaG71ABHtQDufLqSHSaaktoEOSpq7Rw1ieJlxbFGXtFQn19oz9R2xu3RrHOqG5hVrjYuGXjALW8lqzX4joNy-NjgoS_OVV6D5gb7QfLlO5mm2SBbJOk5WaZpEdHTZ1TzOsjTN0sS92nKRniL604-M59naCYCQ7n_-FA6APwenV1CD_oo/)
-</Card>
+diagram made with [Mermaid](https://mermaid.live/edit#pako:eNqNk1FvmzAQx7-K5b60EokgaQjjYdOW9GnaVrVTpQ3y4NkHWAUfso1SluS719jJNm0v4wXu7nf_-3PgA-UogOa0anHPG6Yt-botFXHXo3XRdfEkjbQEVSsVEGNRw-6GzGZvyQeNewNFuJFeoxi4NbvQfM5O3MbJFO-FINJCZ4hFwl3mzE1FT22BSwGHB2Bi9EwD_JngYN-dAhmAiT1-BOiJabDvpaqP51n_UN_AHMk9G4s7ZUGTno0dKEsEWCbbi09X9-OfWCvF4f7MMM6htyAus33Vi37GI3kAq8fiscE9Aa1Rkw6MYTWcJX3Zizq5v_u9qQ2qSuqu-KKFM8ZDBOKykhCHraCC6-Kuc46JBg6yt7ubUgXQ2LGF8JlIJds2v4KsWsGbyFiNz5Bf3B5ZfLv-E570_pcNpgNcVdUS4l9w9SPjcUwjWmspaG71ABHtQDufLqSHSaaktoEOSpq7Rw1ieJlxbFGXtFQn19oz9R2xu3RrHOqG5hVrjYuGXjALW8lqzX4joNy-NjgoS_OVV6D5gb7QfLlO5mm2SBbJOk5WaZpEdHTZ1TzOsjTN0sS92nKRniL604-M59naCYCQ7n_-FA6APwenV1CD_oo/)
 
-<Card>
-## 3. Deployment Diagram
-Let's see where the files reside during actual execution
-or in an environment such as `CodePen/OneCompiler`.
+In practice, when the user clicks the button, the browser executes the [JavaScript](https://en.wikipedia.org/wiki/JavaScript) function that starts `fetch()`. The request is sent to the [server](https://en.wikipedia.org/wiki/Server_(computing)), which returns a `Response`; then the code reads the content and inserts it into the DOM. The key point is that the browser does not freeze: it continues responding to events while waiting for the server response.
+
+</StepCard>
+
+---
+
+<StepCard stepNumber="3">
+
+## Deployment Diagram 🌐
+Let's see where the files live during real execution or inside an environment such as `CodePen`/`OneCompiler`: the code runs in the **[browser](https://en.wikipedia.org/wiki/Web_browser) (client)**, while `hello.txt` is located on the **[web server](https://en.wikipedia.org/wiki/Web_server)**.
 
 
 <Mermaid chart={`
   flowchart LR
-    subgraph Client ["Client: User's Browser"]
+    subgraph Client ["Client: User Browser"]
         subgraph Sandbox ["Sandbox / iFrame Environment"]
             HTML["HTML Interface & DOM"]
             ENGINE["JavaScript Engine (V8)"]
@@ -176,17 +176,33 @@ or in an environment such as `CodePen/OneCompiler`.
     TXT -->|2. Response 200: Hello World!| ENGINE
     ENGINE -->|3. Updates output.textContent| HTML
 `} />
+diagram made with [Mermaid](https://mermaid.live/edit#pako:eNqNk1FvmzAQx7-K5b60EokgaQjjYdOW9GnaVrVTpQ3y4NkHWAUfso1SluS719jJNm0v4wXu7nf_-3PgA-UogOa0anHPG6Yt-botFXHXo3XRdfEkjbQEVSsVEGNRw-6GzGZvyQeNewNFuJFeoxi4NbvQfM5O3MbJFO-FINJCZ4hFwl3mzE1FT22BSwGHB2Bi9EwD_JngYN-dAhmAiT1-BOiJabDvpaqP51n_UN_AHMk9G4s7ZUGTno0dKEsEWCbbi09X9-OfWCvF4f7MMM6htyAus33Vi37GI3kAq8fiscE9Aa1Rkw6MYTWcJX3Zizq5v_u9qQ2qSuqu-KKFM8ZDBOKykhCHraCC6-Kuc46JBg6yt7ubUgXQ2LGF8JlIJds2v4KsWsGbyFiNz5Bf3ZfLv-E570_pcNpgNcVdUS4l9w9SPjcUwjWmspaG71ABHtQDufLqSHSaaktoEOSpq7Rw1ieJlxbFGXtFQn19oz9R2xu3RrHOqG5hVrjYuGXjALW8lqzX4joNy-NjgoS_OVV6D5gb7QfLlO5mm2SBbJOk5WaZpEdHTZ1TzOsjTN0sS92nKRniL604-M59naCYCQ7n_-FA6APwenV1CD_oo/)
 
-Diagram created with [Mermaid](https://mermaid.live/edit#pako:eNqNk1FvmzAQx7-K5b60EokgaQjjYdOW9GnaVrVTpQ3y4NkHWAUfso1SluS719jJNm0v4wXu7nf_-3PgA-UogOa0anHPG6Yt-botFXHXo3XRdfEkjbQEVSsVEGNRw-6GzGZvyQeNewNFuJFeoxi4NbvQfM5O3MbJFO-FINJCZ4hFwl3mzE1FT22BSwGHB2Bi9EwD_JngYN-dAhmAiT1-BOiJabDvpaqP51n_UN_AHMk9G4s7ZUGTno0dKEsEWCbbi09X9-OfWCvF4f7MMM6htyAus33Vi37GI3kAq8fiscE9Aa1Rkw6MYTWcJX3Zizq5v_u9qQ2qSuqu-KKFM8ZDBOKykhCHraCC6-Kuc46JBg6yt7ubUgXQ2LGF8JlIJds2v4KsWsGbyFiNz5Bf3S5ZfLv-E570_pcNpgNcVdUS4l9w9SPjcUwjWmspaG71ABHtQDufLqSHSaaktoEOSpq7Rw1ieJlxbFGXtFQn19oz9R2xu3RrHOqG5hVrjYuGXjALW8lqzX4joNy-NjgoS_OVV6D5gb7QfLlO5mm2SBbJOk5WaZpEdHTZ1TzOsjTN0sS92nKRniL604-M59naCYCQ7n_-FA6APwenV1CD_oo/)
-</Card>
 
-<Aside type="tip" title="Great job!">
-You've created an HTML page that loads `hello.txt` with `fetch`,
-handling the response and any errors. You also followed the asynchronous flow
-in the component and deployment diagrams.
-Great work: you're ready for the next page, **Space Dashboard Project**!
+In this diagram, the browser is the client: it runs [HTML](https://en.wikipedia.org/wiki/HTML) and JavaScript, while the `hello.txt` file resides on the web server. The `fetch()` request starts from the browser, the server responds with a `200 OK` status, and the JavaScript code updates the page content in the DOM.
+
+</StepCard>
+
+<Aside type="note" title="Key concepts summary" icon="puzzle">
+- [Asynchronous execution](https://en.wikipedia.org/wiki/Asynchronous_programming): allows waiting for operations such as a network request without blocking the interface.
+- [Promise](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise): represents the future result of an asynchronous operation.
+- `async` and `await`: simplify Promise management; `await` waits for a result without blocking the browser.
+- [Fetch API](https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API): allows you to make network requests and receive a `Response`.
+- [HTTP](https://en.wikipedia.org/wiki/Hypertext_Transfer_Protocol): protocol used for communication between browser and server.
+- `response.ok`: indicates whether the HTTP response has a status between 200 and 299.
+- `response.text()`: reads the response body and returns it as text.
+- [DOM](https://en.wikipedia.org/wiki/Document_Object_Model): representation of the page that JavaScript can update.
+- `try/catch`: allows you to handle errors that occur during the request or while reading the response.
 </Aside>
 
-
-
-
+<Checklist id="esecuzione-asincrona-fetch-check" title="✅Learning check">
+- [ ] I can explain why a `fetch()` request is asynchronous and does not block the interface
+- [ ] I can describe the role of `async` and `await` in the `caricaMessaggio()` function
+- [ ] I can check the request result using `response.ok`
+- [ ] I can read the response body as text with `response.text()`
+- [ ] I can handle errors with `try/catch` and display the result in the DOM
+<Aside type="tip" title="Great job!" slot="reward">
+    Now you know how to use `fetch()` with `async` and `await` to fetch a resource,
+    handle errors, and update the page.
+</Aside>
+</Checklist>

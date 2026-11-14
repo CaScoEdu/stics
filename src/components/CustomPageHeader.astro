@@ -27,35 +27,48 @@ const {
 import { Aside, Card, LinkButton } from "@astrojs/starlight/components";
 ---
 
-<Card title={pageType} icon={pageTypeIcon}>
-  {badgeTextList.length > 0 && <BadgeList badgeTextList={badgeTextList} />}
-  {techIconList.length > 0 && <IconGroup techIconList={techIconList} />}
+<div class="custom-wrapper-card">
+  <Card title={pageType} icon={pageTypeIcon}>
+    {badgeTextList.length > 0 && <BadgeList badgeTextList={badgeTextList} />}
+    {techIconList.length > 0 && <IconGroup techIconList={techIconList} />}
 
-  {
-    asideIntroTitle && (
-      <Aside type="tip" title={asideIntroTitle}>
-        <slot name="intro" />
-      </Aside>
-    )
-  }
+    {
+      asideIntroTitle && (
+        <Aside type="tip" title={asideIntroTitle}>
+          <slot name="intro" />
+        </Aside>
+      )
+    }
 
-  {
-    youTubeLink && youTubeText && (
-      <LinkButton
-        href={youTubeLink}
-        variant="primary"
-        icon="youtube"
-        iconPlacement="end"
-      >
-        {youTubeText}
-      </LinkButton>
-    )
+    {
+      youTubeLink && youTubeText && (
+        <LinkButton
+          href={youTubeLink}
+          variant="primary"
+          icon="youtube"
+          iconPlacement="end"
+        >
+          {youTubeText}
+        </LinkButton>
+      )
+    }
+    {
+      asidePrerequisitesTitle && (
+        <Aside title={asidePrerequisitesTitle}>
+          <slot name="prerequisites" />
+        </Aside>
+      )
+    }
+  </Card>
+</div>
+
+<style>
+  /* Applica lo stesso stile e la stessa curvatura delle StepCard alla Card di Starlight */
+  .custom-wrapper-card :global(.card) {
+    background-color: var(--sl-color-bg);
+    border: 1px solid var(--sl-color-gray-5);
+    border-radius: 0.75rem !important; /* Angoli arrotondati coordinati */
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
+    overflow: hidden;
   }
-  {
-    asidePrerequisitesTitle && (
-      <Aside title={asidePrerequisitesTitle}>
-        <slot name="prerequisites" />
-      </Aside>
-    )
-  }
-</Card>
+</style>

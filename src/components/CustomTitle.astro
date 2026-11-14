@@ -1,0 +1,39 @@
+---
+// Recupera i dati del frontmatter direttamente dal contesto di Starlight
+const { entry } = Astro.locals.starlightRoute;
+const { title, description } = entry.data;
+---
+
+<div class="custom-hero-card">
+  <h1 id="_top">{title}</h1>
+  {description && <p class="hero-description">{description}</p>}
+</div>
+
+<style>
+  .custom-hero-card {
+    background-color: var(--sl-color-accent);
+    color: #ffffff;
+    padding: 1.75rem 2rem;
+    border-radius: 1rem;
+    margin-top: -1rem;
+    margin-bottom: 2.5rem;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+  }
+
+  .custom-hero-card :global(h1) {
+    margin: 0 !important;
+    padding: 0 !important;
+    border: none !important;
+    color: #ffffff !important;
+    font-size: 1.6rem !important;
+    line-height: 1.25 !important;
+  }
+
+  .hero-description {
+    margin: 0.75rem 0 0 0 !important;
+    color: #ffffff !important;
+    opacity: 0.92;
+    font-size: 1.05rem;
+    line-height: 1.4;
+  }
+</style>

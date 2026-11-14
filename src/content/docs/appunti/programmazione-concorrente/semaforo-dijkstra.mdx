@@ -1,53 +1,50 @@
 ---
-title: "Realizzazione della Mutua Esclusione con i Semafori"
+title: "Realizzazione della Mutua Esclusione con i 🚦 Semafori"
 description: "Introduzione ai semafori di Dijkstra, alle primitive wait e signal basate su variabile intera S, e alla risoluzione della mutua esclusione."
 ---
 
 import {
     Aside,
-    Badge,
     Card,
-    Icon,
     LinkButton,
-    LinkCard,
     Steps,
-    TabItem,
-    Tabs
 } from "@astrojs/starlight/components";
 import Mermaid from "@/components/Mermaid.astro";
-import CustomPageHeader from '@/components/CustomPageHeader.astro';
 import IconGroup from '@/components/IconGroup.astro';
+import StepCard from '@/components/StepCard.astro';
+import Checklist from '@/components/Checklist.astro';
 
-<CustomPageHeader 
-    pageType="Labs" 
-    pageTypeIcon="rocket" 
-    badgeTextList={["Programmazione Concorrente"]}
-    youTubeLink="https://youtu.be/VMa9NJsELic"
-    youTubeText="guarda il video introduttivo"
-    asideIntroTitle="In questa lezione ..."
-    asidePrerequisitesTitle="Prerequisiti"
+<Aside type="tip" title="Prerequisiti">
+- concetti di base su processi
+- differenza tra esecuzione sequenziale e concorrente
+- variabili e risorse condivise tra processi
+- idea di sezione critica e di mutua esclusione
+</Aside>
+
+---
+
+<LinkButton
+    href="https://youtu.be/VMa9NJsELic"
+    variant="primary"
+    icon="youtube"
+    iconPlacement="end"
 >
-<p slot="intro">
-Analizzeremo come i semafori introdotti da E.W. Dijkstra consentono di gestire l'accesso alle risorse condivise in mutua esclusione mediante una variabile intera e le primitive wait e signal.
-</p>
-<p slot="prerequisites">
-- Concetti base di processi concorrenti e sezioni critiche.
-</p>
-</CustomPageHeader>
+guarda il video introduttivo
+</LinkButton>
 
-## 1. I Semafori e la Variabile Intera `S`
+---
+<StepCard stepNumber="1">
+## 🚦 I Semafori e la Variabile Intera `S`
+Nel 1968, [**Edsger W. Dijkstra**](https://en.wikipedia.org/wiki/Edsger_W._Dijkstra) propose l'utilizzo di due primitive fondamentali per risolvere qualsiasi problema di interazione e sincronizzazione fra processi: **`wait`** e **`signal`**.
 
-Nel 1968, [**Edsger W. Dijkstra**](https://en.wikipedia.org/wiki/Edsger_W._Dijkstra) propose l'utilizzo di due primitive fondamentali per risolvere qualsiasi problema di interazione e sincronizzazione fra processi: **wait** e **signal**. 
-
-Queste primitive operano su una **variabile intera non negativa S** (chiamata *semaforo*):
-- **S = 0**: Semaforo rosso (risorsa occupata o non disponibile).
-- **S > 0**: Semaforo verde (risorsa libera o eventi disponibili).
+Queste primitive operano su una **variabile intera non negativa `S`** (chiamata [*semaforo*](https://it.wikipedia.org/wiki/Semaforo_(informatica))):
+- **`S = 0`**: semaforo rosso, cioè risorsa occupata o non disponibile.
+- **`S > 0`**: semaforo verde, cioè risorsa libera o eventi disponibili.
 
 :::note[Il Mutex (Semaforo Binario)]
-Quando il semaforo viene utilizzato specificamente 
-per la **mutua esclusione** di una risorsa, assume valori binari (0 oppure 1) e viene comunemente chiamato **Mutex**. Per convenzione, viene inizializzato a `1` dal sistema operativo (risorsa inizialmente libera).
+Quando il semaforo viene utilizzato specificamente per la [**mutua esclusione**](https://it.wikipedia.org/wiki/Mutua_esclusione) di una risorsa, assume valori binari (`0` oppure `1`) e viene comunemente chiamato **Mutex**. Per convenzione, viene inizializzato a `1` dal sistema operativo (risorsa inizialmente libera).
 :::
-### Approfondimento: Chi era Edsger W. Dijkstra?
+### 🧠 Approfondimento: Chi era Edsger W. Dijkstra?
 
 <Card title="Edsger W. Dijkstra (1930 - 2002)" icon="information">
   <div style="display: flex; gap: 20px; align-items: center; flex-wrap: wrap;">
@@ -65,14 +62,15 @@ per la **mutua esclusione** di una risorsa, assume valori binari (0 oppure 1) e 
     </div>
   </div>
 </Card>
+</StepCard>
 ---
 
-## 2. Le Primitive `wait(S)` e `signal(S)`
+<StepCard stepNumber="2">
+## ⚙️ Le Primitive `wait(S)` e `signal(S)`
+Per gestire l'accesso alla risorsa condivisa `R`, i processi invocano le due operazioni sulla variabile intera `S`:
 
-Per gestire l'accesso alla risorsa condivisa R, i processi invocano le due operazioni sulla variabile intera S:
-
-* **`wait(S)`** (detta anche operazione di acquisizione): Controlla lo stato di S. Se S < 1, il processo si blocca o attende. Se S >= 1, il processo decrementa la variabile (S--) e accede alla sezione critica.
-* **`signal(S)`** (detta anche operazione di rilascio): Incrementa la variabile del semaforo (S++) per liberare la risorsa o sbloccare eventuali processi in attesa.
+* **`wait(S)`** (detta anche operazione di acquisizione): controlla lo stato di `S`. Se **`S < 1`**, il processo si blocca o attende. Se **`S >= 1`**, il processo decrementa la variabile (`S--`) e accede alla [**sezione critica**](https://it.wikipedia.org/wiki/Sezione_critica).
+* **`signal(S)`** (detta anche operazione di rilascio): incrementa la variabile del semaforo (`S++`) per liberare la risorsa o sbloccare eventuali processi in attesa.
 
 ### Diagrammi di Flusso delle Primitive
 
@@ -88,30 +86,22 @@ flowchart TD
     end
 
 `} />
+</StepCard>
 
 ---
-## 3. Il Protocollo Classico della Mutua Esclusione
 
-Per proteggere una risorsa condivisa e garantire 
-che un solo processo alla volta possa accedervi, 
-ogni processo che intende utilizzarla deve seguire rigorosamente 
-un protocollo standard composto da tre fasi sequenziali:
+<StepCard stepNumber="3">
+## 🔒 Il Protocollo Classico della Mutua Esclusione
+Per proteggere una risorsa condivisa e garantire che un solo processo alla volta possa accedervi, ogni processo che intende utilizzarla deve seguire rigorosamente un protocollo standard composto da tre fasi sequenziali:
 <Steps>
-1. **Richiesta della risorsa (`wait`)**: 
-    Il processo invoca la primitiva `wait(SR)` 
-    per testare lo stato del semaforo e acquisire l'accesso.
-2. **Utilizzo della risorsa**: 
-    Il processo entra nella propria **sezione critica** 
-    ed esegue le operazioni necessarie sulla risorsa condivisa R.
-3. **Rilascio della risorsa (`signal`)**:
-    Al termine delle operazioni, il processo invoca
-     la primitiva `signal(SR)` per ripristinare lo stato libero 
-     e consentire ad altri processi 
-     eventualmente in attesa di procedere.
+1. **Richiesta della risorsa (`wait`)**: il processo invoca la primitiva `wait(SR)` per testare lo stato del semaforo e acquisire l'accesso.
+2. **Utilizzo della risorsa**: il processo entra nella propria **sezione critica** ed esegue le operazioni necessarie sulla risorsa condivisa `R`.
+3. **Rilascio della risorsa (`signal`)**: al termine delle operazioni, il processo invoca la primitiva `signal(SR)` per ripristinare lo stato libero e consentire ad altri processi eventualmente in attesa di procedere.
 </Steps>
+</StepCard>
 
-## 4. Simulatore Interattivo e Test dell'Atomicità
-
+<StepCard stepNumber="4">
+## 🧪 Simulatore Interattivo e Test dell'Atomicità
 Puoi testare direttamente il comportamento del semaforo e l'interazione dei processi concorrenti (P1, P2, P3) tramite il simulatore interattivo qui sotto. 
 
 :::tip[Come usare il simulatore]
@@ -125,72 +115,58 @@ Puoi testare direttamente il comportamento del semaforo e l'interazione dei proc
 <div class="iframe-container" style="margin: 2rem 0; text-align: center;">
   <iframe src="/simulatore-mutex.html" width="100%" style="height: 400px !important; border: 1px solid #30363d; border-radius: 8px; background: #f4f4f4; overflow: hidden; display: block;"></iframe>
 </div>
+</StepCard>
 
 ---
 
-## 5. Attesa Attiva vs Attesa Passiva
-
-Nelle prime implementazioni teoriche, la `wait` veniva eseguita tramite un ciclo continuo (es. `while (S < 1) { }`), sprecando cicli di CPU (*Attesa Attiva*).
+<StepCard stepNumber="5">
+## ⏳ Attesa Attiva vs Attesa Passiva
+Nelle prime implementazioni teoriche, la `wait` veniva eseguita tramite un ciclo continuo (es. `while (S < 1) { }`), sprecando cicli di CPU ([**attesa attiva**](https://it.wikipedia.org/wiki/Attesa_attiva)).
 
 Nei sistemi operativi moderni l'attesa viene gestita in modo **passivo**:
 <Steps>
-1. Al semaforo viene associata una **coda di attesa Qs**.
-2. Se un processo esegue `wait(S)` e trova S < 1, il sistema operativo lo **sospende** spostandolo dallo stato di *Esecuzione* a quello di *Attesa* e inserisce il suo descrittore nella coda Qs.
-3. Quando un altro processo esegue `signal(S)`, il sistema rimuove un processo dalla coda Qs e lo porta nello stato di *Pronto*, evitando qualsiasi spreco di risorse di calcolo.
+1. Al semaforo viene associata una **coda di attesa `Qs`**.
+2. Se un processo esegue `wait(S)` e trova `S < 1`, il sistema operativo lo **sospende** spostandolo dallo stato di *Esecuzione* a quello di *Attesa* e inserisce il suo descrittore nella coda `Qs`.
+3. Quando un altro processo esegue `signal(S)`, il sistema rimuove un processo dalla coda `Qs` e lo porta nello stato di *Pronto*, evitando qualsiasi spreco di risorse di calcolo.
 </Steps>
+</StepCard>
+
 ---
 
-## 6. Il Problema dell'Atomicità e la Sezione Critica della wait
-Per comprendere a fondo il funzionamento di un semaforo, 
-bisogna analizzare cosa accade internamente all'operazione wait(S). 
-L'acquisizione di una risorsa tramite wait richiede di compiere due azioni distinte in sequenza:
+<StepCard stepNumber="6">
+## ⚛️ Il Problema dell'Atomicità nella Sezione Critica della wait
+Per comprendere a fondo il funzionamento di un semaforo, bisogna analizzare cosa accade internamente all'operazione `wait(S)`. L'acquisizione di una risorsa tramite `wait` richiede di compiere due azioni distinte in sequenza:
 <Steps>
-1. Controllare lo stato del semaforo (verificare se S è maggiore o uguale a 1).   
-2. Aggiornare il semaforo (decrementarlo o sospendere il processo se S è minore di 1). 
-</Steps>  
-### Che cosa significa esecuzione "atomica"?
-Per evitare errori, queste due operazioni devono essere eseguite in modo atomico (o indivisibile). 
-Un'operazione atomica è un blocco di codice che, una volta avviato dal processore, 
-deve essere eseguito fino al termine senza alcuna interruzione,
-né possibilità che un altro processo vi si inserisca nel mezzo.  
-### Cosa succederebbe in caso contrario?
-Se il controllo e il successivo aggiornamento non fossero atomici, 
-potrebbero verificarsi gravi falle di sincronizzazione. 
-Immaginiamo questa sequenza con due processi concorrenti (P1 e P2)
- e un semaforo S inizializzato a 1:
+1. Controllare lo stato del semaforo (verificare se `S >= 1`).
+2. Aggiornare il semaforo (decrementarlo o sospendere il processo se `S < 1`).
+</Steps>
 
-- Il processo P1 esegue il controllo e trova il semaforo libero (S = 1).
-Prima però di fare in tempo a modificarlo a 0 (occupato), 
-il sistema operativo sospende P1 e assegna la CPU a P2.
+### 🤔 Che cosa significa esecuzione "atomica"?
+Per evitare errori, queste due operazioni devono essere eseguite in modo **atomico** (o indivisibile). Un'operazione atomica è un blocco di codice che, una volta avviato dal processore, deve essere eseguito fino al termine senza alcuna interruzione, né possibilità che un altro processo vi si inserisca nel mezzo.
 
-- Anche il processo P2 esegue il controllo, 
-trova a sua volta il semaforo libero (S = 1) 
-e procede a occuparlo.
+### 🤔 Cosa succederebbe in caso contrario?
+Se il controllo e il successivo aggiornamento non fossero atomici, potrebbero verificarsi gravi falle di sincronizzazione. Immaginiamo questa sequenza con due processi concorrenti (`P1` e `P2`) e un semaforo `S` inizializzato a `1`:
 
-- Quando P1 riprende l'esecuzione, 
-convinto che la risorsa sia libera, la occupa a sua volta.
+- Il processo `P1` esegue il controllo e trova il semaforo libero (`S = 1`). Prima però di fare in tempo a modificarlo a `0` (occupato), il sistema operativo sospende `P1` e assegna la CPU a `P2`.
+- Anche il processo `P2` esegue il controllo, trova a sua volta il semaforo libero (`S = 1`) e procede a occuparlo.
+- Quando `P1` riprende l'esecuzione, convinto che la risorsa sia libera, la occupa a sua volta.
 
-Il risultato è disastroso: entrambi i processi accedono 
-contemporaneamente alla risorsa condivisa, 
-violando completamente il principio della mutua esclusione.
+Il risultato è disastroso: entrambi i processi accedono contemporaneamente alla risorsa condivisa, violando completamente il principio della **mutua esclusione**.
 
-### Come risolveremo questo problema?
-Nelle future esercitazioni pratiche di programmazione concorrente in Java,
-vedremo come il linguaggio mette a disposizione strumenti nativi 
-(come la parola chiave `synchronized` o i blocchi di attesa/notifica) che gestiscono 
-automaticamente questa atomicità a livello di sistema, 
-proteggendo le sezioni critiche ed evitando conflitti invisibili tra i thread.
+### 🤔 Come risolveremo questo problema?
+Nelle future esercitazioni pratiche di programmazione concorrente in Java, vedremo come il linguaggio mette a disposizione strumenti nativi (come la parola chiave `synchronized` o i blocchi di attesa/notifica) che gestiscono automaticamente questa atomicità a livello di sistema, proteggendo le sezioni critiche ed evitando conflitti invisibili tra i thread.
+</StepCard>
 
 ---
 
-## 7. Schema della Mutua Esclusione
+<StepCard stepNumber="7">
+## 🧩 Schema della Mutua Esclusione
 
-Considerando due processi concorrenti Q1 e Q2 che accedono a una risorsa R 
-protetta da un semaforo SR inizializzato a `1`, la struttura del codice è la seguente:
+Considerando due processi concorrenti `Q1` e `Q2` che accedono a una risorsa `R` protetta da un semaforo `SR` inizializzato a `1`, la struttura del codice è la seguente:
 
 ```javascript
 // Inizializzazione del semaforo associato alla risorsa
-SR = 1; 
+SR = 1;
 
 // Esecuzione concorrente dei processi Q1 e Q2
 // --- Processo Q1 ---
@@ -208,8 +184,29 @@ wait(SR);
 signal(SR);
 ```
 :::tip[Proprietà fondamentale]
-Mentre il processo `Q1` possiede la risorsa 
-(ha eseguito `wait` e non ha ancora fatto `signal`), `Q2`
- che tenta di accedere troverà `SR < 1` e verrà bloccato, 
- garantendo la `mutua esclusione`.
+Mentre il processo `Q1` possiede la risorsa (ha eseguito `wait` e non ha ancora fatto `signal`), il processo `Q2` che tenta di accedere troverà **`SR < 1`** e verrà bloccato, garantendo la **mutua esclusione**.
 :::
+</StepCard>
+
+<Aside type="note" title="Sintesi Concetti Chiave" icon="puzzle">
+- [Semaforo](https://it.wikipedia.org/wiki/Semaforo_(informatica)): variabile di sincronizzazione che coordina l'accesso a una risorsa o la disponibilità di eventi.
+- [`wait(S)` e `signal(S)`](https://it.wikipedia.org/wiki/Semaforo_(informatica)): operazioni atomiche per acquisire e rilasciare una risorsa, aggiornando il valore del semaforo.
+- [Mutex](https://it.wikipedia.org/wiki/Mutua_esclusione): semaforo binario usato per garantire l'accesso esclusivo a una risorsa condivisa.
+- [Sezione critica](https://it.wikipedia.org/wiki/Sezione_critica): parte di codice che accede a una risorsa condivisa e deve essere protetta.
+- [Mutua esclusione](https://it.wikipedia.org/wiki/Mutua_esclusione): proprietà per cui un solo processo alla volta può accedere alla sezione critica.
+- [Atomicità](https://it.wikipedia.org/wiki/Operazione_atomica): proprietà che rende indivisibile l'acquisizione del semaforo e previene accessi simultanei.
+- [Attesa attiva](https://it.wikipedia.org/wiki/Attesa_attiva) e attesa passiva: modalità di attesa tramite controllo ripetuto oppure sospensione del processo in una coda.
+</Aside>
+
+<Checklist id="semaforo-dijkstra-check" title="✅ Verifica dell'Apprendimento">
+- [ ] So spiegare che cosa rappresenta il valore del semaforo `S` 
+- [ ] So cos'è un semaforo `mutex`
+- [ ] So descrivere il funzionamento delle primitive `wait(S)` e `signal(S)`
+- [ ] So applicare il protocollo di mutua esclusione: acquisizione, uso e rilascio della risorsa
+- [ ] So spiegare perché `wait(S)` deve essere eseguita atomicamente
+- [ ] So distinguere l'attesa attiva dall'attesa passiva e descrivere il ruolo della coda di attesa
+<Aside type="tip" title="Ottimo lavoro!" slot="reward">
+    Hai capito come usare i semafori per proteggere una risorsa condivisa,
+    come funzionano `wait` e `signal` e perché l'acquisizione deve essere atomica.
+</Aside>
+</Checklist>

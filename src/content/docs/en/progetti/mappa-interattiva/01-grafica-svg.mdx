@@ -1,5 +1,5 @@
 ---
-title: "Creating an SVG Map"
+title: "01. Creating an SVG Map"
 description: "First step of the Campus Map project: creating the vector graphics structure in SVG inside the HTML page and separating visual styles into the style.css file."
 ---
 
@@ -33,75 +33,73 @@ First step of the Campus Map project: creating the vector graphics structure in 
 </p>
 </CustomPageHeader>
 
-<Card>
 The following figure shows the map we are going to create.
 
-  <svg viewBox="0 0 800 600" width="100%" height="auto" style="border: 2px solid #ccc; border-radius: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.1);">
- 
-    <g id="layer-terreno">
-      <rect x="0" y="0" width="800" height="600" fill="#7ec850" />
-    </g>
-    <g id="layer-percorsi">
-      <rect x="50" y="270" width="700" height="60" fill="#d1d5db" rx="4" />
-      <rect x="180" y="80" width="50" height="440" fill="#d1d5db" rx="4" />
-    </g>
-    <g id="layer-edifici">
-      
-      <g id="edificio-uffici">
-        <rect x="70" y="80" width="100" height="140" fill="#1e3a8a" rx="6" />
-        <text x="120" y="150"  style="font-size: 14px;
-      font-weight: bold;
-      fill: #ffffff;
-      text-anchor: middle;
-      dominant-baseline: middle;">Offices</text>
-      </g>
+<svg viewBox="0 0 800 600" width="100%" height="auto" style="border: 2px solid #ccc; border-radius: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.1);">
 
-      <g id="edificio-aule">
-        <rect x="70" y="380" width="100" height="140" fill="#2563eb" rx="6" />
-        <text x="120" y="450" style="font-size: 14px;
-      font-weight: bold;
-      fill: #ffffff;
-      text-anchor: middle;
-      dominant-baseline: middle;">Classrooms</text>
-      </g>
-
-      <g id="edificio-laboratori">
-        <rect x="630" y="80" width="100" height="140" fill="#7c3aed" rx="6" />
-        <text x="680" y="150" style="font-size: 14px;
-      font-weight: bold;
-      fill: #ffffff;
-      text-anchor: middle;
-      dominant-baseline: middle;">Laboratories</text>
-      </g>
-
-      <g id="edificio-mensa">
-        <rect x="240" y="180" width="140" height="80" fill="#ea580c" rx="6" />
-        <text x="310" y="220" style="font-size: 14px;
-      font-weight: bold;
-      fill: #ffffff;
-      text-anchor: middle;
-      dominant-baseline: middle;">Cafeteria</text>
-      </g>
-
-      <g id="edificio-palestra">
-        <rect x="630" y="380" width="100" height="140" fill="#dc2626" rx="6" />
-        <text x="680" y="450" style="font-size: 14px;
-      font-weight: bold;
-      fill: #ffffff;
-      text-anchor: middle;
-      dominant-baseline: middle;">Gym</text>
-      </g>
-
+<g id="layer-terreno">
+    <rect x="0" y="0" width="800" height="600" fill="#7ec850" />
 </g>
-  </svg>
+<g id="layer-percorsi">
+    <rect x="50" y="270" width="700" height="60" fill="#d1d5db" rx="4" />
+    <rect x="180" y="80" width="50" height="440" fill="#d1d5db" rx="4" />
+</g>
+<g id="layer-edifici">
+    
+    <g id="edificio-uffici">
+    <rect x="70" y="80" width="100" height="140" fill="#1e3a8a" rx="6" />
+    <text x="120" y="150"  style="font-size: 14px;
+    font-weight: bold;
+    fill: #ffffff;
+    text-anchor: middle;
+    dominant-baseline: middle;">Offices</text>
+    </g>
+
+    <g id="edificio-aule">
+    <rect x="70" y="380" width="100" height="140" fill="#2563eb" rx="6" />
+    <text x="120" y="450" style="font-size: 14px;
+    font-weight: bold;
+    fill: #ffffff;
+    text-anchor: middle;
+    dominant-baseline: middle;">Classrooms</text>
+    </g>
+
+    <g id="edificio-laboratori">
+    <rect x="630" y="80" width="100" height="140" fill="#7c3aed" rx="6" />
+    <text x="680" y="150" style="font-size: 14px;
+    font-weight: bold;
+    fill: #ffffff;
+    text-anchor: middle;
+    dominant-baseline: middle;">Laboratories</text>
+    </g>
+
+    <g id="edificio-mensa">
+    <rect x="240" y="180" width="140" height="80" fill="#ea580c" rx="6" />
+    <text x="310" y="220" style="font-size: 14px;
+    font-weight: bold;
+    fill: #ffffff;
+    text-anchor: middle;
+    dominant-baseline: middle;">Cafeteria</text>
+    </g>
+
+    <g id="edificio-palestra">
+    <rect x="630" y="380" width="100" height="140" fill="#dc2626" rx="6" />
+    <text x="680" y="450" style="font-size: 14px;
+    font-weight: bold;
+    fill: #ffffff;
+    text-anchor: middle;
+    dominant-baseline: middle;">Gym</text>
+    </g>
+
+  </g>
+</svg>
 
 <Aside>
-  The SVG is fully vector-based and automatically adapts to the reader's screen
-  size.
+The SVG is fully vector-based and automatically adapts to the reader's screen
+size.
 </Aside>
-</Card>
+
 ---
-<Card>
 
 ### 1. Organizing Layers (Z-Order)
 
@@ -128,13 +126,10 @@ Let's group the map elements into three main logical layers using the `<g>` (gro
 </svg>
 ```
 
-</Card>
-
-<Card>
+---
 
 ### 2. Creating the `style.css` stylesheet
-  <Icon name="seti:css" size="2rem" label="css" color="DeepSkyBlue"/>
-
+<Icon name="seti:css" size="2rem" label="css" color="DeepSkyBlue"/>
 
 To keep the web architecture clean, separate the graphic layout from the style rules. Create a file called `style.css` in the same project folder and paste in the following code:
 
@@ -180,13 +175,10 @@ svg {
 }
 ```
 
-</Card>
-
-<Card>
+---
 
 ### 3. The `index.html` file
-  <Icon name="seti:html" size="2rem" label="html" color="DeepSkyBlue"/>
-
+<Icon name="seti:html" size="2rem" label="html" color="DeepSkyBlue"/>
 
 Create the `index.html` file, link the external `style.css` stylesheet in the header, and insert the SVG map inside the body:
 
@@ -267,9 +259,7 @@ Create the `index.html` file, link the external `style.css` stylesheet in the he
 </html>
 ```
 
-</Card>
-
-<Card>
+---
 
     ### 4. Exercises and Version Control (Git / VS Code)
       <Icon name="vscode" size="2rem" label="vscode" color="DeepSkyBlue"/>
@@ -278,8 +268,7 @@ Create the `index.html` file, link the external `style.css` stylesheet in the he
 - **CSS Customization:** Open `style.css` and change the buildings' fill colors or add a custom rounded border.
 - **Saving your first branch to Git / GitHub:**
 
-<Card>
-  <Icon name="github" size="2rem" label="GitHub" color="DeepSkyBlue"/>
+<Icon name="github" size="2rem" label="GitHub" color="DeepSkyBlue"/>
 
 Open the **Source Control** panel in VS Code (`Ctrl + Shift + G`):
 
@@ -288,8 +277,9 @@ Open the **Source Control** panel in VS Code (`Ctrl + Shift + G`):
       2. Commit the files with the message: `"Completed Lesson 1: SVG Map and style.css"`.
       3. Select **Publish Branch / Sync** to sync the lesson to your GitHub repository.
 </Steps>
-</Card>
-</Card>
+
+---
+
 <Aside type="tip" title="Great job!">
-  You have successfully completed the first step of the Campus Map project. You can now proceed to the second lesson, which will introduce local interactivity and the dropdown menu.
+You have successfully completed the first step of the Campus Map project. You can now proceed to the second lesson, which will introduce local interactivity and the dropdown menu.
 </Aside>

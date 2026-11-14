@@ -1,1 +1,12 @@
 /* src/styles/custom.css */
+/* src/styles/custom.css (o nel tuo file di stili globali di Starlight) */
+
+:root {
+  /* Sfondo leggermente più caldo/grigio in light mode (di default è un bianco puro #fff) */
+  --sl-color-bg: #f8fafc;
+}
+
+[data-theme='dark'] {
+  /* Sfondo leggermente più scuro/profondo in dark mode per far staccare le card */
+  --sl-color-bg: #0f172a;
+}

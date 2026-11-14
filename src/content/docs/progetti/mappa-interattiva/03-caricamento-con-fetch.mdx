@@ -1,0 +1,341 @@
+---
+title: "03. Caricamento dinamico Mappa e Dati tramite fetch()"
+description: "Progetto Mappa Interattiva Campus - Lezione 3: estrapolazione della grafica in mappa.svg, creazione di locali.json e popolamento dinamico tramite fetch() e async/await."
+---
+
+import {
+    Aside,
+    Badge,
+    Card,
+    Icon,
+    LinkButton,
+    LinkCard,
+    Steps,
+    TabItem,
+    Tabs
+} from "@astrojs/starlight/components";
+import Mermaid from "@/components/Mermaid.astro";
+import CustomPageHeader from '@/components/CustomPageHeader.astro';
+import IconGroup from '@/components/IconGroup.astro';
+
+<CustomPageHeader 
+    pageType="Labs" 
+    pageTypeIcon="rocket" 
+    badgeTextList={["Mappa Interattiva", "Passo 3"]}
+    techIconList={["seti:html", "seti:css", "seti:javascript", "seti:svg", "seti:json", "vscode"]}
+    asideIntroTitle="In questa lezione ..."
+    youTubeLink="https://youtu.be/gZEkC0hiGTM"
+    youTubeText="guarda il video introduttivo"
+    asidePrerequisitesTitle="Prerequisiti"
+>
+<p slot="intro">
+In questa terza lezione del <strong>Progetto Mappa Interattiva Campus</strong> estrapoliamo la grafica vettoriale in <code>mappa.svg</code> e creiamo il file <code>locali.json</code> per popolare dinamicamente via JavaScript i menu a tendina "Da" (Origine) e "A" (Destinazione), implementando l'evidenziazione simmetrica.
+</p>
+<p slot="prerequisites">
+- Aver completato la <strong>Lezione 2</strong> del progetto Mappa Interattiva Campus.
+- Conoscenze base di HTML, CSS, SVG e manipolazione del DOM in JavaScript.
+</p>
+</CustomPageHeader>
+
+<Card>
+## Architettura Asincrona della Lezione
+Prima di scrivere il codice, osserviamo come vengono separati i dati, la grafica vettoriale e la logica applicativa tramite chiamate asincrone `fetch()`:
+
+<Mermaid chart={`
+flowchart LR
+    HTML["index.html<br/>Struttura e Select"]
+    SVG["mappa.svg<br/>Grafica Vettoriale"]
+    JS["script.js<br/>fetch + async/await"]  
+    JSON["locali.json<br/>Elenco Edifici"]
+
+    HTML -->|"DOMContentLoaded"| JS
+    JS -->|"fetch()"| SVG
+    JS -->|"fetch()"| JSON
+    SVG -->|"Iniezione text()"| HTML
+    JSON -->|"Popolamento option"| HTML
+`} />
+</Card>
+
+---
+
+## 1. Creazione del Branch di Lavoro `lezione-3`
+Per mantenere ordinata la cronologia del progetto su Git, creiamo un nuovo branch dedicato prima di iniziare a modificare i file:
+
+```bash
+git checkout -b lezione-3
+```
+---
+
+## 2. Esternalizzazione della Grafica: `mappa.svg`
+Separiamo il codice grafico dall'HTML principale 
+creando un file `mappa.svg` nella radice del progetto.
+Impostiamo `width="100%"` e `height="100%"` 
+per renderlo completamente responsive all'interno del suo contenitore:
+
+```xml title="mappa.svg"
+<svg viewBox="0 0 800 600" width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
+  <g id="layer-terreno">
+    <rect x="0" y="0" width="800" height="600" fill="#7ec850" />
+  </g>
+
+  <g id="layer-percorsi">
+    <rect x="50" y="270" width="700" height="60" fill="#d1d5db" rx="4" />
+    <rect x="180" y="80" width="50" height="440" fill="#d1d5db" rx="4" />
+    <rect x="570" y="80" width="50" height="440" fill="#d1d5db" rx="4" />
+  </g>
+
+  <g id="layer-edifici">
+    <g id="edificio-uffici" onclick="selezionaDaMappa(&#39;edificio-uffici&#39;)">
+      <rect x="70" y="80" width="100" height="140" fill="#1e3a8a" rx="6" />
+      <text x="120" y="150" class="label">Uffici</text>
+    </g>
+
+    <g id="edificio-aule" onclick="selezionaDaMappa(&#39;edificio-aule&#39;)">
+      <rect x="240" y="80" width="160" height="140" fill="#1e3a8a" rx="6" />
+      <text x="320" y="150" class="label">Aule</text>
+    </g>
+
+    <g id="edificio-laboratori" onclick="selezionaDaMappa(&#39;edificio-laboratori&#39;)">
+      <rect x="630" y="80" width="110" height="140" fill="#1e3a8a" rx="6" />
+      <text x="685" y="150" class="label">Lab</text>
+    </g>
+
+    <g id="edificio-mensa" onclick="selezionaDaMappa(&#39;edificio-mensa&#39;)">
+      <rect x="70" y="380" width="100" height="140" fill="#1e3a8a" rx="6" />
+      <text x="120" y="450" class="label">Mensa</text>
+    </g>
+
+    <g id="edificio-biblioteca" onclick="selezionaDaMappa(&#39;edificio-biblioteca&#39;)">
+      <rect x="630" y="380" width="110" height="140" fill="#1e3a8a" rx="6" />
+      <text x="685" y="450" class="label">Biblio</text>
+    </g>
+  </g>
+</svg>
+```
+
+<Aside type="tip" title="Usa la tua mappa personalizzata!">
+Se nella lezione precedente hai già personalizzato la grafica 
+del campus (ad esempio aggiungendo nuovi edifici, palestre o laboratori), 
+utilizza il **tuo codice SVG modificato**.
+Ricorda  di mantenere la stessa struttura a livelli (`<g id="layer-...">`) e di assegnare un `id` univoco e l'evento `onclick="selezionaDaMappa('...')"` a ogni nuovo edificio, così da poterlo poi collegare facilmente nel file `locali.json`.
+</Aside>
+
+---
+
+## 3. Dati in `locali.json` e Stili in `style.css`
+Creiamo il file `locali.json` per archiviare gli identificativi degli edifici (corrispondenti agli id presenti nell'SVG) e i nomi leggibili da mostrare nei menu a tendina:
+
+```javascript title="locali.json"
+[
+  { "id": "edificio-uffici", "nome": "Uffici Amministrativi" },
+  { "id": "edificio-aule", "nome": "Edificio Aule" },
+  { "id": "edificio-laboratori", "nome": "Laboratori Informatici" },
+  { "id": "edificio-mensa", "nome": "Mensa Campus" },
+  { "id": "edificio-biblioteca", "nome": "Biblioteca Centrale" }
+]
+```
+
+<Aside type="tip" title="Crea la tua lista personalizzata!">
+Se nella lezione precedente hai già personalizzato la grafica 
+del campus (ad esempio aggiungendo nuovi edifici, palestre o laboratori), 
+ricordati di inserire i tuoi edifici personalizzati nella lista 
+`locali.json`.
+</Aside>
+---
+<Aside type="tip" title="Presta attenzione agli id!">
+Gli `id` dei locali  devono essere gli 
+stessi utilizzati nella `mappa.svg`.
+</Aside>
+
+Aggiorniamo poi `style.css` con le regole responsive per il contenitore della mappa e le classi CSS per l'evidenziazione simmetrica di partenza e destinazione:
+
+```css title="style.css"
+body {
+  font-family: Verdana, sans-serif;
+  text-align: center;
+  margin: 20px;
+  background-color: #f8fafc;
+}
+
+.controls {
+  margin-bottom: 20px;
+  display: flex;
+  justify-content: center;
+  gap: 15px;
+}
+
+select {
+  padding: 8px 12px;
+  font-size: 14px;
+  border-radius: 6px;
+  border: 1px solid #cbd5e1;
+}
+
+#mappa-container {
+  width: 100%;
+  max-width: 900px;
+  margin: 0 auto;
+  aspect-ratio: 4 / 3;
+}
+
+#mappa-container svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+  background: #fff;
+  border: 2px solid #334155;
+  border-radius: 8px;
+}
+
+#layer-edifici g {
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+
+#layer-edifici g:hover {
+  opacity: 0.85;
+}
+
+.label {
+  fill: white;
+  font-size: 16px;
+  font-weight: bold;
+  text-anchor: middle;
+  dominant-baseline: middle;
+  pointer-events: none;
+}
+
+/* Evidenziazione simmetrica */
+.selezionato-da rect {
+  fill: #16a34a !important; /* Verde per Partenza */
+  stroke: #052e16;
+  stroke-width: 4px;
+}
+
+.selezionato-a rect {
+  fill: #dc2626 !important; /* Rosso per Destinazione */
+  stroke: #450a0a;
+  stroke-width: 4px;
+}
+``` 
+
+---
+
+## 4. Logica Asincrona in `script.js`
+Gestiamo il caricamento dell'SVG e del JSON tramite `fetch()` 
+e `async/await`, collegando sia i menu `<select>`
+ sia il clic diretto sugli edifici della mappa
+
+```javascript title="script.js"
+document.addEventListener("DOMContentLoaded", () => {
+  caricaMappaSVG();
+  caricaLocaliJSON();
+});
+
+async function caricaMappaSVG() {
+  const risposta = await fetch("mappa.svg");
+  document.getElementById("mappa-container").innerHTML = await risposta.text();
+}
+
+async function caricaLocaliJSON() {
+  const risposta = await fetch("locali.json");
+  const locali = await risposta.json();
+
+  const selectDa = document.getElementById("select-da");
+  const selectA = document.getElementById("select-a");
+
+  locali.forEach(l => {
+    selectDa.innerHTML += `<option value="${l.id}">${l.nome}</option>`;
+    selectA.innerHTML += `<option value="${l.id}">${l.nome}</option>`;
+  });
+}
+
+function aggiornaEvidenziazione() {
+  const idDa = document.getElementById("select-da").value;
+  const idA = document.getElementById("select-a").value;
+
+  // Rimuove eventuali evidenziazioni precedenti
+  document.querySelectorAll("#layer-edifici g").forEach(edificio => {
+    edificio.classList.remove("selezionato-da", "selezionato-a");
+  });
+
+  // Applica le nuove classi simmetriche
+  if (idDa) {
+    document.getElementById(idDa)?.classList.add("selezionato-da");
+  }
+  if (idA) {
+    document.getElementById(idA)?.classList.add("selezionato-a");
+  }
+}
+
+function selezionaDaMappa(idEdificio) {
+  const selectDa = document.getElementById("select-da");
+  const selectA = document.getElementById("select-a");
+
+  if (!selectDa.value) {
+    selectDa.value = idEdificio;
+  } else if (!selectA.value && selectDa.value !== idEdificio) {
+    selectA.value = idEdificio;
+  } else {
+    selectDa.value = idEdificio;
+    selectA.value = "";
+  }
+
+  aggiornaEvidenziazione();
+}
+```
+
+---
+
+## 5. Struttura HTML in index.html
+Il file HTML principale si alleggerisce notevolmente, ospitando soltanto i due menu a tendina e il contenitore vuoto in cui verrà iniettato mappa.svg:
+
+```html title="index.html"
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Calcolo Percorso Campus</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <h1>🗺️ Calcolo Percorso Campus</h1>
+
+  <div class="controls">
+    <select id="select-da" onchange="aggiornaEvidenziazione()">
+      <option value="">-- Partenza --</option>
+    </select>
+
+    <select id="select-a" onchange="aggiornaEvidenziazione()">
+      <option value="">-- Destinazione --</option>
+    </select>
+  </div>
+
+  <div id="mappa-container"></div>
+
+  <script src="script.js"></script>
+</body>
+</html>
+```
+
+---
+
+## 6. Commit e Sincronizzazione Finale (Git / GitHub)
+
+<Aside type="caution" title="Prevenzione errori CORS">
+Avvia sempre il progetto con **Live Server** in VS Code (e non aprendo direttamente il file con un doppio clic o come file locale `file://`) per evitare il blocco **CORS** imposto dai browser sulle chiamate asincrone <code>fetch()</code>.
+</Aside>
+
+<Steps>
+1. **Verifica i file**: Apri il pannello **Source Control** di VS Code e controlla che tutti i file modificati e creati (`mappa.svg`, `locali.json`, `style.css`, `script.js` e `index.html`) siano presenti nell'area di staging.
+2. **Crea il commit**: Scrivi il messaggio di commit: `"Completata Lezione 3: Fetch asincrono, SVG responsive"` e conferma.
+3. **Sincronizza**: Effettua il **Publish Branch** o **Sync Changes** per inviare tutto su GitHub.
+</Steps>
+
+---
+
+<Aside type="tip" title="Ottimo lavoro!">
+Congratulazioni! Hai completato con successo il terzo passo del progetto Mappa Campus. 
+Ora puoi procedere con il quarto passo.
+</Aside>

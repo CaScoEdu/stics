@@ -1,0 +1,212 @@
+---
+title: "04. Grafi, Dijkstra e Animazione del Percorso"
+description: "Progetto Mappa Interattiva Campus - Lezione 4: modellazione della rete con grafo pesato, implementazione di Dijkstra in dijkstra.js e tracciamento animato della poligonale."
+---
+
+import {
+    Aside,
+    Badge,
+    Card,
+    Icon,
+    LinkButton,
+    LinkCard,
+    Steps,
+    TabItem,
+    Tabs
+} from "@astrojs/starlight/components";
+import Mermaid from "@/components/Mermaid.astro";
+import CustomPageHeader from '@/components/CustomPageHeader.astro';
+import IconGroup from '@/components/IconGroup.astro';
+
+<CustomPageHeader 
+    pageType="Labs" 
+    pageTypeIcon="rocket" 
+    badgeTextList={["Mappa Interattiva", "Passo 4", "Intermedio"]}
+    techIconList={["seti:html", "seti:css", "seti:javascript", "seti:svg", "seti:json", "vscode"]}
+    asideIntroTitle="In questa lezione ..."
+    youTubeLink="https://youtu.be/gZEkC0hiGTM"
+    youTubeText="guarda il video introduttivo"
+    asidePrerequisitesTitle="Prerequisiti"
+>
+<p slot="intro">
+In questa quarta lezione del <strong>Progetto Mappa Interattiva Campus</strong> modelliamo la rete dei percorsi tramite un grafo pesato, introduciamo gli snodi geometrici in <code>mappa.svg</code>, implementiamo l'algoritmo di Dijkstra e tracciamo il tragitto ideale con un'animazione a serpentina[cite: 9, 11, 16].
+</p>
+<p slot="prerequisites">
+- Aver completato la <strong>Lezione 3</strong> del progetto Mappa Interattiva Campus.
+- Conoscenze base di strutture dati (grafi, nodi, archi pesati) e logica algoritmica in JavaScript.
+</p>
+</CustomPageHeader>
+
+<Card>
+## Architettura del Calcolo dei Percorsi
+Prima di scrivere il codice, osserviamo il flusso logico che collega la struttura grafica, la definizione matematica del grafo e l'algoritmo di ricerca:
+
+<Mermaid chart={`
+flowchart LR
+    SVG["mappa.svg<br/>Snodi e Strade"]
+    JSON["grafo.json<br/>Grafo Pesato"]
+    JS["dijkstra.js<br/>Algoritmo di Ricerca"]
+    UI["script.js<br/>Animazione Poligonale"]
+
+    SVG -->|"Coordinate Snodi"| UI
+    JSON -->|"Archi e Pesi"| JS
+    JS -->|"Cammino Minimo"| UI
+`} />
+</Card>
+
+---
+
+## 1. Creazione del Branch di Lavoro `lezione-4`
+Isoliamo lo sviluppo di questa nuova fase creando un apposito branch su Git[cite: 11]:
+
+<Steps>
+1. Apri il pannello **Source Control** in VS Code (`Ctrl + Shift + G`).
+2. Crea un nuovo branch denominato `lezione-4`[cite: 11].
+</Steps>
+
+---
+
+## 1. Aggiunta Locali e Layer degli Snodi Stradali DA RIVEDERE 
+CI SIAMO PERSI DELLE PARTI
+Per fare in modo che i percorsi seguano le strade ed evitino di tagliare i prati "a volo d'uccello", definiamo con precisione la geometria dei percorsi e introduciamo il layer degli snodi geometrici ortogonali agli edifici e agli incroci principali in `mappa.svg`[cite: 11]:
+
+```xml title="mappa.svg"
+<svg viewBox="0 0 800 600" width="100%" height="100%" xmlns="[http://www.w3.org/2000/svg](http://www.w3.org/2000/svg)">
+  <g id="layer-terreno">
+    <rect x="0" y="0" width="800" height="600" fill="#7ec850" />
+  </g>
+
+  <g id="layer-percorsi">
+    <rect id="percorso-orizzontale" x="50" y="270" width="700" height="60" fill="#d1d5db" rx="4" />
+    <rect id="percorso-ovest" x="180" y="80" width="50" height="440" fill="#d1d5db" rx="4" />
+    <rect id="percorso-est" x="570" y="80" width="50" height="440" fill="#d1d5db" rx="4" />
+  </g>
+
+  <!-- LAYER SNODI STRADALI E DI ACCESSO -->
+  <g id="layer-snodi">
+    <!-- Snodi di accesso ortogonali agli edifici -->
+    <circle id="snodo-uffici" cx="205" cy="150" r="4" fill="#dc2626" />
+    <circle id="snodo-aule" cx="205" cy="430" r="4" fill="#dc2626" />
+    <circle id="snodo-mensa" cx="310" cy="300" r="4" fill="#dc2626" />
+    
+    <!-- Snodi situati agli incroci stradali principali -->
+    <circle id="snodo-incrocio-ovest" cx="205" cy="300" r="4" fill="#0284c7" />
+    <circle id="snodo-incrocio-est" cx="595" cy="300" r="4" fill="#0284c7" />
+  </g>
+
+  <g id="layer-edifici">
+    <g id="edificio-uffici" onclick="selezionaDaMappa(&#39;edificio-uffici&#39;)">
+      <rect x="70" y="80" width="100" height="140" fill="#1e3a8a" rx="6" />
+      <text x="120" y="150" class="label">Uffici</text>
+    </g>
+
+    <g id="edificio-aule" onclick="selezionaDaMappa(&#39;edificio-aule&#39;)">
+      <rect x="240" y="80" width="160" height="140" fill="#1e3a8a" rx="6" />
+      <text x="320" y="150" class="label">Aule</text>
+    </g>
+  </g>
+</svg>
+```
+<Aside type="tip" title="Personalizza gli snodi per i tuoi edifici!">
+Se nella lezione precedente hai aggiunto o spostato degli edifici nella tua mappa, ricorda di **creare e posizionare gli snodi corrispondenti** anche nel layer `<g id="layer-snodi">`:
+- Aggiungi un elemento `<circle>` per ogni nuovo edificio, posizionandolo sul tratto di strada più vicino al suo ingresso (`cx` e `cy`).
+- Assegna a ciascuno un `id` chiaro e coerente (es. `snodo-palestra`, `snodo-laboratorio`) e assicurati che sia allineato con gli incroci principali, così da poterlo poi collegare facilmente nel file `grafo.json`.
+</Aside>
+
+---
+
+## 2. Definizione del Grafo con gli Snodi (grafo.json)
+Aggiorniamo il file grafo.json passando dai collegamenti diretti
+ tra edifici alla rete strutturata tramite gli snodi.   
+ Ricordiamo le proprietà fondamentali di un Grafo Non Orientato e Pesato:
+ - Non orientato: I collegamenti (archi) sono bidirezionali. 
+    Se lo snodo $A$ è collegato allo snodo $B$ con un certo peso, 
+    la stessa percorrenza vale in entrambi i versi.   
+- Pesato: Ogni arco ha un costo numerico (il peso, es. metri o secondi), 
+    utilizzato da Dijkstra per calcolare il percorso minimo.
+
+Ecco un frammento corretto di grafo.json che modella il passaggio dagli uffici agli incroci tramite gli snodi:
+```json title="grafo.json"
+{
+  "edificio-uffici": { "snodo-uffici": 30 },
+  "snodo-uffici": {
+    "edificio-uffici": 30,
+    "snodo-incrocio-ovest": 100
+  },
+  "snodo-incrocio-ovest": {
+    "snodo-uffici": 100,
+    "snodo-aule": 130,
+    "snodo-incrocio-est": 390
+  }
+}
+```
+
+<Aside type="tip" title="🧩 Esercizio di completamento: ">
+Completa il file grafo.json aggiungendo i nodi mancanti per collegare la Mensa, i Laboratori, la Palestra, i locali che hai aggiunto e l'incrocio est (snodo-incrocio-est) con i relativi pesi stimati!
+</Aside>
+
+## 3. L'Algoritmo di Dijkstra (`dijkstra.js`)
+
+<Aside type="note" title="Come funziona Dijkstra?">
+L'algoritmo parte da un nodo di origine ed imposta la distanza iniziale verso di esso a 0, e verso tutti gli altri nodi a Infinito ($\infty$). Esplora progressivamente i nodi vicini non ancora visitati, aggiornando il cammino più breve registrato fino a raggiungere il nodo di destinazione[cite: 13].
+</Aside>
+
+Separiamo la logica algoritmica creandola all'interno di un file dedicato `dijkstra.js`[cite: 13]:
+
+```javascript title="dijkstra.js"
+/**
+ * Algoritmo di Dijkstra per trovare il percorso minimo su un grafo pesato
+ */
+function calcolaDijkstra(grafo, inizio, fine) {
+  const distanze = {};
+  const precedenti = {};
+  const nodiNonVisitati = new Set();
+
+  // Inizializzazione delle distanze
+  Object.keys(grafo).forEach(nodo => {
+    distanze[nodo] = Infinity;
+    precedenti[nodo] = null;
+    nodiNonVisitati.add(nodo);
+  });
+
+  distanze[inizio] = 0;
+
+  while (nodiNonVisitati.size > 0) {
+    // Trova il nodo non visitato con la distanza minore
+    let nodoCorrente = null;
+    nodiNonVisitati.forEach(nodo => {
+      if (nodoCorrente === null || distanze[nodo] < distanze[nodoCorrente]) {
+        nodoCorrente = nodo;
+      }
+    });
+
+    if (distanze[nodoCorrente] === Infinity || nodoCorrente === fine) {
+      break;
+    }
+
+    nodiNonVisitati.delete(nodoCorrente);
+
+    // Aggiorna le distanze dei vicini
+    const vicini = grafo[nodoCorrente] || {};
+    for (let vicino in vicini) {
+      if (nodiNonVisitati.has(vicino)) {
+        let nuovaDistanza = distanze[nodoCorrente] + vicini[vicino];
+        if (nuovaDistanza < distanze[vicino]) {
+          distanze[vicino] = nuovaDistanza;
+          precedenti[vicino] = nodoCorrente;
+        }
+      }
+    }
+  }
+
+  // Ricostruzione del percorso a ritroso
+  const percorso = [];
+  let attuale = fine;
+  while (attuale !== null) {
+    percorso.unshift(attuale);
+    attuale = precedenti[attuale];
+  }
+
+  return percorso.length > 1 || inizio === fine ? percorso : [];
+}
+```

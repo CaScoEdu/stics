@@ -1,0 +1,210 @@
+---
+title: "Introduction to Process Synchronization 🔄"
+description: "Introduction to the fundamental concepts of concurrent programming: competition vs collaboration, critical section, mutual exclusion, deadlock, and starvation."
+---
+
+import {
+    Aside,
+    Card,
+    LinkButton,
+    Steps
+} from "@astrojs/starlight/components";
+import Mermaid from "@/components/Mermaid.astro";
+import StepCard from '@/components/StepCard.astro';
+import Checklist from '@/components/Checklist.astro';
+
+<Aside type="tip" title="Prerequisites">
+- basic concepts of processes
+- distinction between sequential and concurrent execution
+- elementary notions of variables, memory, and shared resources
+</Aside>
+
+---
+
+<LinkButton
+    href="https://youtu.be/F11DVxSC_DQ"
+    variant="primary"
+    icon="youtube"
+    iconPlacement="end"
+>
+        watch the introductory video
+</LinkButton>
+
+---
+<StepCard stepNumber="1">
+## ⚔️ Competition and Collaboration
+When multiple processes are executed in a processing system, they can interact
+with each other in two main ways:
+
+* **Competitive Interaction**: Two or more processes need to use certain limited
+    resources exclusively, which they both require, and therefore compete to
+    obtain them. For example, two processes that try to write to the same file
+    simultaneously.
+* **Cooperative Interaction**: The processes do not compete, but must coordinate
+    and exchange information to carry out a common task (e.g., a *producer*
+    process that inserts data into a buffer and a *consumer* process that
+    retrieves it).
+
+<Aside type="caution" title="The risk of disorder">
+In both cases, the lack of coordination can generate serious errors,
+unpredictable behavior, or states of severe data corruption.
+</Aside>
+</StepCard>
+
+---
+
+<StepCard stepNumber="2">
+## 🔒 Shared Resource, Critical Section, and Mutual Exclusion
+When processes compete for access to common elements (such as global variables,
+files, or data structures), a **shared resource** is any hardware or software
+element that can be reused and is contested by the processes.
+
+To avoid conflicts, a **critical section** is defined as the portion of code
+within a process where access to the shared resource occurs for reading or
+modifying it.
+
+### 🧭 Access Scheme to the Shared Resource
+The following diagram shows how two distinct processes (`Process P1` and
+`Process P2`) execute their code and must pass through their respective critical
+sections in order to interact with the shared resource `R`:
+
+<Mermaid chart={`
+flowchart TD
+    subgraph P1 ["Process P1"]
+        CP1_start["P1 Code"] --> SCP1["Critical Section P1"]
+        SCP1 --> CP1_end["P1 Code"]
+    end
+
+    subgraph P2 ["Process P2"]
+        CP2_start["P2 Code"] --> SCP2["Critical Section P2"]
+        SCP2 --> CP2_end["P2 Code"]
+    end
+
+    SCP1 ==>|Exclusive access| R["Resource R"]
+    SCP2 ==>|Exclusive access| R["Resource R"]
+`} />
+
+### The Need for Mutual Exclusion
+To preserve data consistency and avoid the so-called **race conditions**
+(situations in which the execution order unpredictably alters the result), the
+system must guarantee **mutual exclusion**:
+* At any given moment, at most **one process** can be in its own critical section
+    and use the shared resource.
+</StepCard>
+
+---
+
+<StepCard stepNumber="3">
+## Access Protocol (Request - Use - Release)
+To guarantee mutual exclusion and ensure that every process gains access in a
+finite time, access to a resource must follow a strict standard protocol made up
+of three phases:
+
+<Steps>
+1. **Request for the resource**: The process asks for exclusive access to the
+    resource (if it is occupied, it must wait).
+2. **Use of the resource**: The process enters the critical section and performs
+    the necessary operations on the resource.
+3. **Release of the resource**: The process frees the resource, allowing other
+    waiting processes to acquire it.
+</Steps>
+</StepCard>
+
+---
+
+<StepCard stepNumber="4">
+## Practical Example: The Stack
+
+A classic example of a shared data structure subject to competition is the
+**stack (`stack`)**, managed through an array and a head pointer (`top`).
+
+Operations such as insertion (`Push`) and retrieval (`Pop`) modify the same
+shared variables (`stack[]` and `top`) simultaneously. If these operations are
+executed concurrently without proper synchronization, there is a risk of
+overwriting data or reading undefined values (*race condition*).
+
+:::tip[Interactive laboratory]
+We can use this simulator to directly observe the behavior of the stack
+**with or without mutual exclusion**.
+:::
+
+<div class="iframe-container" style="margin: 2rem 0; text-align: center;">
+    <iframe
+        src="/simulatore-pila.html"
+        width="100%"
+        style="height: 600px !important; border: 1px solid #30363d; border-radius: 8px; background: #f4f4f4; overflow: hidden; display: block;"
+    ></iframe>
+</div>
+</StepCard>
+
+---
+
+<StepCard stepNumber="5">
+## ⚠️ The Risks of Synchronization: Deadlock and Starvation
+
+Managing synchronization and waiting for resources can expose the system to two
+important critical issues:
+
+<Card title="🔄 Deadlock (Stall)" >
+Deadlock occurs when two or more processes become permanently blocked while
+waiting for a resource that is currently held by another process in the group.
+* **Typical example**: Process `P1` owns resource `A` and requests `B`; process
+    `P2` owns resource `B` and requests `A`. Neither can proceed.
+* It is a blocking condition from which the system cannot recover on its own
+    unless external intervention occurs (such as restarting or forcibly
+    terminating the processes).
+
+<Mermaid chart={`
+flowchart LR
+
+    subgraph Resources
+        A["Resource A"]
+        B["Resource B"]
+    end
+
+    subgraph Processes
+        P1["Process P1"]
+        P2["Process P2"]
+    end
+
+    %% Current assignments
+    A ==>|"Assigned to"| P1
+    B ==>|"Assigned to"| P2
+
+    %% Pending requests
+    P1 -.->|"Requests / Waiting"| B
+    P2 -.->|"Requests / Waiting"| A
+`} />
+</Card>
+
+<Card title="🥶 Starvation (Hunger)">
+Starvation occurs when a process never succeeds in accessing a resource because
+it is continuously assigned to other processes (for example, due to unbalanced
+priority policies).
+* Unlike deadlock, **it is not a permanent condition**: the process is not
+    permanently blocked, but must simply wait indefinitely until the allocation
+    policy grants it access.
+</Card>
+</StepCard>
+
+<Aside type="note" title="Key Concepts Summary" icon="puzzle">
+- [Concurrency](https://en.wikipedia.org/wiki/Concurrency_(computer_science)): execution of multiple processes in overlapping time intervals.
+- [Shared resource](https://en.wikipedia.org/wiki/Shared_resource): a resource that can be used by multiple processes.
+- [Critical section](https://en.wikipedia.org/wiki/Critical_section): the part of the code that accesses a shared resource.
+- [Mutual exclusion](https://en.wikipedia.org/wiki/Mutual_exclusion): allows only one process at a time to access the shared resource.
+- [Race condition](https://en.wikipedia.org/wiki/Race_condition): a situation in which the result depends on the order of concurrent operations.
+- [Deadlock](https://en.wikipedia.org/wiki/Deadlock): a mutual blocking condition in which processes wait for resources held by other processes.
+- [Starvation](https://en.wikipedia.org/wiki/Starvation_(computer_science)): the indefinite waiting of a process that is never granted access to a resource.
+</Aside>
+
+<Checklist id="introduzione-sincronizzazione-processi-check" title="✅Learning Check">
+- [ ] I can explain the difference between competition and collaboration
+- [ ] I can recognize a shared resource and identify the critical section
+- [ ] I can explain what mutual exclusion is and how it prevents race conditions
+- [ ] I remember the three phases of the protocol: request, use, and release of the resource
+- [ ] I can distinguish deadlock from starvation and describe an example of each
+<Aside type="tip" title="Great job!" slot="reward">
+    You have understood the fundamentals of process synchronization: shared resources,
+    critical sections, mutual exclusion, and the main risks of deadlock and starvation.
+</Aside>
+</Checklist>

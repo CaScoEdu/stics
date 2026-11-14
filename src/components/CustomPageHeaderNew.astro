@@ -1,0 +1,37 @@
+---
+interface Props {
+  youTubeLink?: string;
+  youTubeText?: string;
+  asidePrerequisitesTitle?: string;
+
+}
+const {
+  youTubeLink,
+  youTubeText,
+  asidePrerequisitesTitle,
+
+} = Astro.props;
+
+import { Aside, LinkButton } from "@astrojs/starlight/components";
+---
+
+{
+      asidePrerequisitesTitle && (
+        <Aside title={asidePrerequisitesTitle}>
+          <slot name="prerequisites" />
+        </Aside>
+      )
+    }
+
+ {
+      youTubeLink && youTubeText && (
+        <LinkButton
+          href={youTubeLink}
+          variant="primary"
+          icon="youtube"
+          iconPlacement="end"
+        >
+          {youTubeText}
+        </LinkButton>
+      )
+    }

@@ -1,0 +1,141 @@
+---
+interface Props {
+  id?: string;
+  title?: string;
+}
+const { id = 'default-checklist', title = 'Checklist' } = Astro.props;
+---
+
+<div class="starlight-checklist" data-checklist-id={id}>
+  <div class="checklist-header">
+    <h3 class="checklist-title">{title}</h3>
+    <a href={`#${id}`} class="checklist-anchor" aria-label="Link diretto a questa sezione">
+      🔗
+    </a>
+  </div>
+  <div class="checklist-body">
+    <slot />
+  </div>
+  
+  <!-- Contenitore dell'aside premio, nascosto di default -->
+  <div class="checklist-reward" style="display: none;">
+    <slot name="reward" />
+  </div>
+</div>
+
+<script>
+  document.querySelectorAll('.starlight-checklist').forEach((wrapper) => {
+    const listId = wrapper.getAttribute('data-checklist-id');
+    const storageKey = `starlight-checklist-${listId}`;
+    const savedState = JSON.parse(localStorage.getItem(storageKey) || '{}');
+    const checkboxes = wrapper.querySelectorAll('input[type="checkbox"]');
+    const rewardBox = wrapper.querySelector('.checklist-reward') as HTMLElement;
+
+    function updateRewardVisibility() {
+      if (!rewardBox) return;
+      const allChecked = Array.from(checkboxes).every(box => (box as HTMLInputElement).checked);
+      
+      if (allChecked) {
+        rewardBox.style.display = 'block';
+        rewardBox.style.opacity = '1';
+      } else {
+        rewardBox.style.display = 'none';
+        rewardBox.style.opacity = '0';
+      }
+    }
+
+    checkboxes.forEach((box, index) => {
+      const input = box as HTMLInputElement;
+      input.disabled = false;
+      input.style.cursor = 'pointer';
+
+      if (savedState[index] !== undefined) {
+        input.checked = savedState[index];
+      }
+
+      input.addEventListener('change', () => {
+        savedState[index] = input.checked;
+        localStorage.setItem(storageKey, JSON.stringify(savedState));
+        updateRewardVisibility();
+      });
+    });
+
+    updateRewardVisibility();
+  });
+</script>
+
+<style>
+  .starlight-checklist {
+    background-color: var(--sl-color-green-low, rgba(34, 197, 94, 0.08));
+    border: 1px solid var(--sl-color-green, #22c55e);
+    border-radius: 0.75rem;
+    margin: 2rem 0;
+    padding: 1.5rem;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
+  }
+
+  .checklist-header {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+    border-bottom: 1px solid var(--sl-color-green);
+    padding-bottom: 0.5rem;
+    opacity: 0.85;
+  }
+
+  .checklist-title {
+    margin: 0 !important;
+    font-size: 1.2rem !important;
+    color: var(--sl-color-text) !important;
+    border: none !important;
+  }
+
+  .checklist-anchor {
+    font-size: 0.85rem;
+    opacity: 0.4;
+    text-decoration: none;
+    transition: opacity 0.2s ease;
+  }
+
+  .checklist-anchor:hover {
+    opacity: 1;
+  }
+
+  .checklist-body {
+    color: var(--sl-color-text);
+  }
+
+  .starlight-checklist :global(ul) {
+    list-style: none;
+    padding-left: 0;
+    margin: 0;
+  }
+
+  .starlight-checklist :global(li) {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
+    margin-bottom: 0.75rem;
+    font-size: 1rem;
+    line-height: 1.5;
+  }
+
+  .starlight-checklist :global(input[type="checkbox"]) {
+    margin-top: 0.25rem;
+    width: 1.15rem;
+    height: 1.15rem;
+    accent-color: var(--sl-color-green, #22c55e);
+    cursor: pointer;
+  }
+
+  .checklist-reward {
+    margin-top: 1.5rem;
+    animation: fadeIn 0.4s ease-in-out;
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-5px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+</style>
