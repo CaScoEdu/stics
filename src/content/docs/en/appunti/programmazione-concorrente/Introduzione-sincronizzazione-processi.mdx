@@ -33,7 +33,7 @@ export let stepNumber = 1;
 </LinkButton>
 
 ---
-<StepCard stepNumber="1">
+<StepCard stepNumber={stepNumber++}>
 ## ⚔️ Competition and Collaboration
 When multiple processes are executed in a processing system, they can interact
 with each other in two main ways:
@@ -55,7 +55,7 @@ unpredictable behavior, or states of severe data corruption.
 
 ---
 
-<StepCard stepNumber="2">
+<StepCard stepNumber={stepNumber++}>
 ## 🔒 Shared Resource, Critical Section, and Mutual Exclusion
 When processes compete for access to common elements (such as global variables,
 files, or data structures), a **shared resource** is any hardware or software
@@ -96,7 +96,7 @@ system must guarantee **mutual exclusion**:
 
 ---
 
-<StepCard stepNumber="3">
+<StepCard stepNumber={stepNumber++}>
 ## Access Protocol (Request - Use - Release)
 To guarantee mutual exclusion and ensure that every process gains access in a
 finite time, access to a resource must follow a strict standard protocol made up
@@ -114,7 +114,7 @@ of three phases:
 
 ---
 
-<StepCard stepNumber="4">
+<StepCard stepNumber={stepNumber++}>
 ## Practical Example: The Stack
 
 A classic example of a shared data structure subject to competition is the
@@ -141,7 +141,7 @@ We can use this simulator to directly observe the behavior of the stack
 
 ---
 
-<StepCard stepNumber="5">
+<StepCard stepNumber={stepNumber++}>
 ## ⚠️ The Risks of Synchronization: Deadlock and Starvation
 
 Managing synchronization and waiting for resources can expose the system to two

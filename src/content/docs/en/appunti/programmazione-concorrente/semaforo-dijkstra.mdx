@@ -35,7 +35,7 @@ watch the introductory video
 </LinkButton>
 
 ---
-<StepCard stepNumber="1">
+<StepCard stepNumber={stepNumber++}>
 ## 🚦 Semaphores and the Integer Variable `S`
 In 1968, [**Edsger W. Dijkstra**](https://en.wikipedia.org/wiki/Edsger_W._Dijkstra) proposed the use of two fundamental primitives to solve any problem of process interaction and synchronization: **`wait`** and **`signal`**.
 
@@ -67,7 +67,7 @@ When the semaphore is used specifically for the **mutual exclusion** of a resour
 </StepCard>
 ---
 
-<StepCard stepNumber="2">
+<StepCard stepNumber={stepNumber++}>
 ## ⚙️ The `wait(S)` and `signal(S)` Primitives
 To manage access to the shared resource `R`, processes invoke the two operations on the integer variable `S`:
 
@@ -92,7 +92,7 @@ flowchart TD
 
 ---
 
-<StepCard stepNumber="3">
+<StepCard stepNumber={stepNumber++}>
 ## 🔒 The Classic Mutual Exclusion Protocol
 To protect a shared resource and ensure that only one process can access it at a time, every process that intends to use it must strictly follow a standard protocol made of three sequential phases:
 <Steps>
@@ -102,7 +102,7 @@ To protect a shared resource and ensure that only one process can access it at a
 </Steps>
 </StepCard>
 
-<StepCard stepNumber="4">
+<StepCard stepNumber={stepNumber++}>
 ## 🧪 Interactive Simulator and Atomicity Test
 You can directly test the semaphore behavior and the interaction of concurrent processes (P1, P2, P3) through the interactive simulator below.
 
@@ -121,7 +121,7 @@ You can directly test the semaphore behavior and the interaction of concurrent p
 
 ---
 
-<StepCard stepNumber="5">
+<StepCard stepNumber={stepNumber++}>
 ## ⏳ Busy Waiting vs Passive Waiting
 In the first theoretical implementations, `wait` was executed through a continuous loop (e.g. `while (S < 1) { }`), wasting CPU cycles (**busy waiting**).
 
@@ -135,7 +135,7 @@ In modern operating systems, waiting is handled **passively**:
 
 ---
 
-<StepCard stepNumber="6">
+<StepCard stepNumber={stepNumber++}>
 ## ⚛️ The Atomicity Problem in the Critical Section of `wait`
 To understand how a semaphore works in depth, we need to analyze what happens internally during the `wait(S)` operation. Acquiring a resource through `wait` requires performing two distinct actions in sequence:
 <Steps>
@@ -161,7 +161,7 @@ In future hands-on exercises in concurrent programming in Java, we will see how 
 
 ---
 
-<StepCard stepNumber="7">
+<StepCard stepNumber={stepNumber++}>
 ## 🧩 Mutual Exclusion Scheme
 
 Considering two concurrent processes `Q1` and `Q2` that access a resource `R` protected by a semaphore `SR` initialized to `1`, the structure of the code is as follows:

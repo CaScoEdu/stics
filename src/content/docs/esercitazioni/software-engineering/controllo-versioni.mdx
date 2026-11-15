@@ -29,7 +29,7 @@ export let stepNumber = 1;
 guarda il video introduttivo
 </LinkButton>
 
-<StepCard stepNumber="1">
+<StepCard stepNumber={stepNumber++}>
 ## 👤 Creazione dell'Account GitHub
 Registrazione del profilo sviluppatore:
 
@@ -42,7 +42,7 @@ Registrazione del profilo sviluppatore:
 
 ---
 
-<StepCard stepNumber="2">
+<StepCard stepNumber={stepNumber++}>
 ## ⚙️ Installazione e Configurazione di Git
 Prerequisito essenziale per la gestione locale dei file.
 
@@ -62,7 +62,7 @@ git config --global user.email "email@example.com"
 
 ---
 
-<StepCard stepNumber="3">
+<StepCard stepNumber={stepNumber++}>
 ## 🧑‍💻 Creazione del Progetto Locale su VS Code
 Strutturazione del file iniziale del sito:
 
@@ -90,7 +90,7 @@ Strutturazione del file iniziale del sito:
 
 ---
 
-<StepCard stepNumber="4">
+<StepCard stepNumber={stepNumber++}>
 ## 🚀 Inizializzazione e Pubblicazione su GitHub
 Staging, commit e pubblicazione sul cloud. 
 VS Code permette di gestire il flusso di lavoro di Git
@@ -118,7 +118,7 @@ e seleziona l'opzione **Publish to GitHub public repository**.
 
 ---
 
-<StepCard stepNumber="5">
+<StepCard stepNumber={stepNumber++}>
 ## 🌿 Lavorare con i Branch: Italiano vs Inglese
 ---
 Flusso completo: **`Modifica → Staging → Commit`** su branch differenti.
@@ -155,7 +155,7 @@ I rami (_branch_) consentono di sviluppare funzionalità parallele senza intacca
 
 ---
  
-<StepCard stepNumber="6">
+<StepCard stepNumber={stepNumber++}>
 ## 🔍 Verificare che i branch siano effettivamente diversi
 
 Per verificare la vera "magia" di Git e confermare che le due versioni coesistono nello stesso progetto senza sovrascriversi, segui queste verifiche:

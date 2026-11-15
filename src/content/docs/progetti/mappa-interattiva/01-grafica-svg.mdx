@@ -9,17 +9,18 @@ import {
     LinkButton,
     Steps,
 } from "@astrojs/starlight/components";
+import Mermaid from "@/components/Mermaid.astro";
 import StepCard from '@/components/StepCard.astro';
 import Checklist from '@/components/Checklist.astro';
 
 export let stepNumber = 1;
 
 <Aside type="tip" title="📚 Prerequisiti per questa lezione">
-- 🌐 conoscere i fondamenti di [HTML](https://it.wikipedia.org/wiki/HTML), [CSS](https://it.wikipedia.org/wiki/CSS) e [JavaScript](https://it.wikipedia.org/wiki/JavaScript)
-- ✏️ saper creare, leggere e modificare elementi [SVG](https://it.wikipedia.org/wiki/Scalable_Vector_Graphics)
-- 🧩 conoscere variabili, funzioni e l'uso del [DOM](https://it.wikipedia.org/wiki/Document_Object_Model)
-- 🔍 essere in grado di aprire la pagina nel browser e usare gli strumenti di sviluppo
-- 💻 avere accesso a Internet per eventuali risorse esterne o servizi online
+- conoscere i fondamenti di [HTML](https://it.wikipedia.org/wiki/HTML), [CSS](https://it.wikipedia.org/wiki/CSS) e [JavaScript](https://it.wikipedia.org/wiki/JavaScript)
+- saper creare, leggere e modificare elementi [SVG](https://it.wikipedia.org/wiki/Scalable_Vector_Graphics)
+- conoscere variabili, funzioni e l'uso del [DOM](https://it.wikipedia.org/wiki/Document_Object_Model)
+- essere in grado di aprire la pagina nel browser e usare gli strumenti di sviluppo
+- avere accesso a Internet per eventuali risorse esterne o servizi online
 </Aside>
 
 <LinkButton
@@ -31,7 +32,13 @@ export let stepNumber = 1;
 guarda il video introduttivo
 </LinkButton>
 
-🗺️ Nella seguente figura è visualizzata la mappa che andremo a realizzare.
+## Analisi e Progettazione
+
+<StepCard stepNumber={stepNumber++}>
+### la Mappa del Campus in SVG
+
+🗺️ Nella seguente figura è visualizzata la 
+mappa che andremo a realizzare in formato SVG.
 
 <svg viewBox="0 0 800 600" width="100%" height="auto" style="border: 2px solid #ccc; border-radius: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.1);">
 
@@ -97,6 +104,38 @@ guarda il video introduttivo
   dello schermo del lettore.
 </Aside>
 
+</StepCard>
+
+<StepCard stepNumber={stepNumber++}>
+
+### 🗂️ Organizzazione dei layer (ordine di sovrapposizione)
+
+In [SVG](https://it.wikipedia.org/wiki/Scalable_Vector_Graphics), l'ordine in cui il codice viene scritto determina l'ordine di sovrapposizione visiva degli elementi sullo schermo:
+
+- 🟩 Il primo elemento scritto si trova sullo sfondo.
+- ⬆️ Gli elementi successivi vengono disegnati sopra di esso.
+
+🧱 Raggruppiamo gli elementi della mappa in tre layer logici principali usando il tag `<g>` ([gruppo](https://it.wikipedia.org/wiki/Scalable_Vector_Graphics#Groups_and_transforms)):
+
+```html
+<svg
+  viewBox="0 0 800 600"
+  xmlns="[http://www.w3.org/2000/svg](http://www.w3.org/2000/svg)"
+>
+  <!-- Layer 1: Terreno (sfondo) -->
+  <g id="layer-terreno">...</g>
+
+  <!-- Layer 2: Percorsi pedonali -->
+  <g id="layer-percorsi">...</g>
+
+  <!-- Layer 3: Edifici del campus -->
+  <g id="layer-edifici">...</g>
+</svg>
+```
+</StepCard>
+
+<StepCard stepNumber={stepNumber++}>
+
 ### 📁 Struttura dei file del progetto
 
 Al termine di questa lezione, la cartella del progetto conterrà due file principali nella directory radice:
@@ -107,98 +146,66 @@ Al termine di questa lezione, la cartella del progetto conterrà due file princi
   - **style.css** Foglio di stile per il layout della pagina e le etichette degli edifici
 </FileTree>
 
----
+</StepCard>
 
-<StepCard stepNumber={1}>
+<StepCard stepNumber={stepNumber++}>
 
-### 🗂️ Organizzazione in Layer (Z-Order)
+### 🧩 Diagramma dei componenti
 
-In [SVG](https://it.wikipedia.org/wiki/Scalable_Vector_Graphics) l'ordine di scrittura del codice stabilisce l'ordine di sovrapposizione visiva degli elementi sullo schermo:
+  <Mermaid chart={`
+  graph TD
+    subgraph Client [Ambiente Client]
+        Browser[Browser Web]
+    end
 
-- 🟩 Il primo elemento scritto sta sullo sfondo.
-- ⬆️ Gli elementi successivi vengono disegnati al di sopra.
+    subgraph ProjectFiles [File di Progetto]
+        HTML[index.html] -->|Collega foglio stile| CSS[style.css]
+        HTML -->|Incorpora e struttura| SVG[Struttura SVG della Mappa]
 
-🧱 Raggruppiamo gli elementi della mappa in tre layer logici principali usando il tag `<g>` ([group](https://it.wikipedia.org/wiki/Scalable_Vector_Graphics#Gruppi_e_translazioni)):
+        subgraph SVG_Structure [Composizione SVG]
+            SVG --> Terreno[Layer Terreno]
+            SVG --> Percorsi[Layer Percorsi]
+            SVG --> Edifici[Layer Edifici & Etichette]
+        end
+    end
 
-```html
-<svg
-  viewBox="0 0 800 600"
-  xmlns="[http://www.w3.org/2000/svg](http://www.w3.org/2000/svg)"
->
-  <!-- Layer 1: Terreno (Sfondo) -->
-  <g id="layer-terreno">...</g>
+    Browser -->|Carica e renderizza| HTML
 
-  <!-- Layer 2: Percorsi Pedonali -->
-  <g id="layer-percorsi">...</g>
+    %% Stili visivi per il diagramma
+    classDef browser fill:#1e3a8a,stroke:#3b82f6,color:#fff,stroke-width:2px;
+    classDef html fill:#2563eb,stroke:#1d4ed8,color:#fff,stroke-width:2px;
+    classDef cssSvg fill:#059669,stroke:#047857,color:#fff,stroke-width:2px;
+    classDef layer fill:#0d9488,stroke:#0f766e,color:#fff,stroke-width:1px;
 
-  <!-- Layer 3: Edifici del Campus -->
-  <g id="layer-edifici">...</g>
-</svg>
-```
+    class Browser browser;
+    class HTML html;
+    class CSS,SVG cssSvg;
+    class Terreno,Percorsi,Edifici layer;
+`} />
+
+diagramma fatto con [Mermaid](https://mermaid.live/edit#pako:eNqNk1FvmzAQx7-K5b60EokgaQjjYdOW9GnaVrVTpQ3y4NkHWAUfso1SluS719jJNm0v4wXu7nf_-3PgA-UogOa0anHPG6Yt-botFXHXo3XRdfEkjbQEVSsVEGNRw-6GzGZvyQeNewNFuJFeoxi4NbvQfM5O3MbJFO-FINJCZ4hFwl3mzE1FT22BSwGHB2Bi9EwD_JngYN-dAhmAiT1-BOiJabDvpaqP51n_UN_AHMk9G4s7ZUGTno0dKEsEWCbbi09X9-OfWCvF4f7MMM6htyAus33Vi37GI3kAq8fiscE9Aa1Rkw6MYTWcJX3Zizq5v_u9qQ2qSuqu-KKFM8ZDBOKykhCHraCC6-Kuc46JBg6yt7ubUgXQ2LGF8JlIJds2v4KsWsGbyFiNz5Bf3S5ZfLv-E570_pcNpgNcVdUS4l9w9SPjcUwjWmspaG71ABHtQDufLqSHSaaktoEOSpq7Rw1ieJlxbFGXtFQn19oz9R2xu3RrHOqG5hVrjYuGXjALW8lqzX4joNy-NjgoS_OVV6D5gb7QfLlO5mm2SBbJOk5WaZpEdHTZ1TzOsjTN0sS92nKRniL604-M59naCYCQ7n_-FA6APwenV1CD_oo/)
+
+Un **diagramma dei componenti** (**Component Diagram**) è un diagramma strutturale UML utilizzato per modellare la vista fisica e statica di un sistema. Il suo obiettivo principale è mostrare l'organizzazione e le dipendenze tra i vari moduli software, i file di codice, le librerie e le risorse, evidenziando come i diversi elementi del progetto si aggregano e interagiscono tra loro e con l'ambiente di esecuzione, come il **browser**.
+
+#### 🔍 Spiegazione del diagramma
+Questo diagramma rappresenta l'architettura pulita e modulare sviluppata nella prima lezione del progetto della Mappa del Campus:
+
+- **Ambiente di esecuzione**: il **Browser Web** funge da client e si occupa di caricare e interpretare il punto di accesso principale del progetto.
+- **Struttura dei file e separazione delle responsabilità**: la pagina `index.html` agisce da coordinatore centrale, delegando la grafica e l'aspetto visivo al file esterno `style.css` e incorporando direttamente il codice vettoriale della mappa.
+- **Organizzazione SVG**: la struttura vettoriale (`SVG`) è a sua volta suddivisa in livelli logici come `layer-terreno`, `layer-percorsi` e `layer-edifici` per gestire correttamente la composizione grafica della mappa.
 
 </StepCard>
 
----
+## Realizzazione
 
-<StepCard stepNumber={2}>
-
-### 🎨 Creazione del file di stile `style.css`
-
-Per mantenere un'architettura web pulita, separiamo il layout grafico dalle regole stilistiche. Crea un file chiamato `style.css` nella stessa cartella del progetto e incolla il seguente codice. Il foglio di stile in [CSS](https://it.wikipedia.org/wiki/CSS) permette di separare la presentazione della struttura HTML/SVG.
-
-```css
-//style.css
-/* stili generali della pagina */
-body {
-  font-family:
-    system-ui,
-    -apple-system,
-    sans-serif;
-  background-color: #f8fafc;
-  margin: 0;
-  padding: 20px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-}
-
-h1 {
-  color: #0f172a;
-  margin-bottom: 20px;
-}
-
-/* Stile del contenitore SVG */
-svg {
-  background-color: #ffffff;
-  border: 2px solid #cbd5e1;
-  border-radius: 12px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-  max-width: 100%;
-  height: auto;
-}
-
-/* Stile per le etichette di testo sugli edifici */
-.label {
-  font-size: 14px;
-  font-weight: bold;
-  fill: #ffffff;
-  text-anchor: middle;
-  dominant-baseline: middle;
-  pointer-events: none;
-}
-```
-
-</StepCard>
----
-
-<StepCard stepNumber={3}>
+<StepCard stepNumber={stepNumber++}>
 
 ### 🧑‍💻 Codice del file `index.html`
 
 📄 Crea il file `index.html` in [HTML](https://it.wikipedia.org/wiki/HTML), collegando il foglio di stile esterno [CSS](https://it.wikipedia.org/wiki/CSS) nell'intestazione ed inserendo la mappa [SVG](https://it.wikipedia.org/wiki/Scalable_Vector_Graphics) all'interno del body:
 
 ```html
-//index.html
+<!-- index.html -->
 <!DOCTYPE html>
 <html lang="it">
   <head>
@@ -273,7 +280,6 @@ svg {
   </body>
 </html>
 ```
-
 ### Elementi principali dell'SVG
 
   - [SVG](https://it.wikipedia.org/wiki/Scalable_Vector_Graphics) definisce l'area della grafica; [`viewBox`](https://it.wikipedia.org/wiki/Scalable_Vector_Graphics) stabilisce il sistema di coordinate.
@@ -284,11 +290,59 @@ svg {
 
 </StepCard>
 
+<StepCard stepNumber={stepNumber++}>
+### 🎨 Creazione del foglio di stile `style.css`
+
+Per mantenere un'architettura web ordinata, separiamo il layout grafico dalle regole di stile. Crea un file chiamato `style.css` nella stessa cartella del progetto e incolla il seguente codice. Il foglio di stile in [CSS](https://it.wikipedia.org/wiki/CSS) ci permette di separare la presentazione dalla struttura HTML/SVG.
+
+```css
+//style.css
+/* stili generali della pagina */
+body {
+  font-family:
+    system-ui,
+    -apple-system,
+    sans-serif;
+  background-color: #f8fafc;
+  margin: 0;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+h1 {
+  color: #0f172a;
+  margin-bottom: 20px;
+}
+
+/* stile del contenitore SVG */
+svg {
+  background-color: #ffffff;
+  border: 2px solid #cbd5e1;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  max-width: 100%;
+  height: auto;
+}
+
+/* stile per le etichette di testo degli edifici */
+.label {
+  font-size: 14px;
+  font-weight: bold;
+  fill: #ffffff;
+  text-anchor: middle;
+  dominant-baseline: middle;
+  pointer-events: none;
+}
+```
+
+</StepCard>
+
 ---
 
-<StepCard stepNumber={4}>
 
-### 🧩 Esercizi e salvataggio del controllo versioni ([Git](https://it.wikipedia.org/wiki/Git) / [GitHub](https://it.wikipedia.org/wiki/GitHub) / VS Code)
+<StepCard stepNumber={stepNumber++}>
 
 ### 🧪 Esercizi
 <Steps>
@@ -296,6 +350,9 @@ svg {
 2. 🎨 **Personalizzazione CSS:** Apri `style.css` e modifica i colori di riempimento degli edifici o aggiungi un bordo arrotondato personalizzato.
 </Steps>
 
+</StepCard>
+
+<StepCard stepNumber={stepNumber++}>
 
 ### 💾 Salvataggio del primo branch su [Git](https://it.wikipedia.org/wiki/Git) / [GitHub](https://it.wikipedia.org/wiki/GitHub)
 

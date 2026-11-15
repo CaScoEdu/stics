@@ -68,7 +68,7 @@ Quando il semaforo viene utilizzato specificamente per la [**mutua esclusione**]
 </StepCard>
 ---
 
-<StepCard stepNumber="2">
+<StepCard stepNumber={stepNumber++}>
 ## ⚙️ Le Primitive `wait(S)` e `signal(S)`
 Per gestire l'accesso alla risorsa condivisa `R`, i processi invocano le due operazioni sulla variabile intera `S`:
 
@@ -93,7 +93,7 @@ flowchart TD
 
 ---
 
-<StepCard stepNumber="3">
+<StepCard stepNumber={stepNumber++}>
 ## 🔒 Il Protocollo Classico della Mutua Esclusione
 Per proteggere una risorsa condivisa e garantire che un solo processo alla volta possa accedervi, ogni processo che intende utilizzarla deve seguire rigorosamente un protocollo standard composto da tre fasi sequenziali:
 <Steps>
@@ -103,7 +103,7 @@ Per proteggere una risorsa condivisa e garantire che un solo processo alla volta
 </Steps>
 </StepCard>
 
-<StepCard stepNumber="4">
+<StepCard stepNumber={stepNumber++}>
 ## 🧪 Simulatore Interattivo e Test dell'Atomicità
 Puoi testare direttamente il comportamento del semaforo e l'interazione dei processi concorrenti (P1, P2, P3) tramite il simulatore interattivo qui sotto. 
 
@@ -122,7 +122,7 @@ Puoi testare direttamente il comportamento del semaforo e l'interazione dei proc
 
 ---
 
-<StepCard stepNumber="5">
+<StepCard stepNumber={stepNumber++}>
 ## ⏳ Attesa Attiva vs Attesa Passiva
 Nelle prime implementazioni teoriche, la `wait` veniva eseguita tramite un ciclo continuo (es. `while (S < 1) { }`), sprecando cicli di CPU ([**attesa attiva**](https://it.wikipedia.org/wiki/Attesa_attiva)).
 
@@ -136,7 +136,7 @@ Nei sistemi operativi moderni l'attesa viene gestita in modo **passivo**:
 
 ---
 
-<StepCard stepNumber="6">
+<StepCard stepNumber={stepNumber++}>
 ## ⚛️ Il Problema dell'Atomicità nella Sezione Critica della wait
 Per comprendere a fondo il funzionamento di un semaforo, bisogna analizzare cosa accade internamente all'operazione `wait(S)`. L'acquisizione di una risorsa tramite `wait` richiede di compiere due azioni distinte in sequenza:
 <Steps>
@@ -162,7 +162,7 @@ Nelle future esercitazioni pratiche di programmazione concorrente in Java, vedre
 
 ---
 
-<StepCard stepNumber="7">
+<StepCard stepNumber={stepNumber++}>
 ## 🧩 Schema della Mutua Esclusione
 
 Considerando due processi concorrenti `Q1` e `Q2` che accedono a una risorsa `R` protetta da un semaforo `SR` inizializzato a `1`, la struttura del codice è la seguente:

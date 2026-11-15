@@ -35,8 +35,7 @@ export let stepNumber = 1;
 guarda il video introduttivo
 </LinkButton>
 
-
-<StepCard stepNumber="1">
+<StepCard stepNumber={stepNumber++}>
 
 ## Il codice essenziale `index.html`
 In questa esercitazione introduciamo il concetto di [**esecuzione asincrona**](https://it.wikipedia.org/wiki/Programmazione_asincrona) e l'uso della [**Fetch API**](https://it.wikipedia.org/wiki/Fetch) con il codice più semplice possibile. Al clic su un pulsante, la pagina recupera il contenuto di `hello.txt` e lo mostra senza bloccare l'interfaccia. Per seguire l'esempio, crea `index.html` e `hello.txt` nella stessa cartella: vedremo il flusso essenziale di `fetch()` e `await`, senza aggiungere funzionalità non necessarie.
@@ -131,7 +130,7 @@ data-slug-hash="GgrwzxR" data-user="Scocco" style="height: 300px; box-sizing: bo
 
 ---
 
-<StepCard stepNumber="2">
+<StepCard stepNumber={stepNumber++}>
 
 ## Diagramma dei Componenti 🧩
 Vediamo quali componenti logici interagiscono tra loro durante l'esecuzione di `fetch()`: il [browser](https://it.wikipedia.org/wiki/Browser) invia una richiesta **HTTP GET**, riceve una `Response` e aggiorna il **DOM**.
@@ -164,7 +163,7 @@ In pratica, quando l'utente clicca il pulsante, il browser esegue la funzione [J
 
 ---
 
-<StepCard stepNumber="3">
+<StepCard stepNumber={stepNumber++}>
 
 ## Diagramma di Deployment 🌐
 Vediamo dove risiedono i file durante l'esecuzione reale o all'interno di un ambiente come `CodePen`/`OneCompiler`: il codice viene eseguito nel **[browser](https://it.wikipedia.org/wiki/Browser) (client)**, mentre `hello.txt` si trova sul **[server web](https://it.wikipedia.org/wiki/Server_web)**.

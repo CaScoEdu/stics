@@ -30,7 +30,7 @@ export let stepNumber = 1;
 watch the introduction video
 </LinkButton>
 
-<StepCard stepNumber="1">
+<StepCard stepNumber={stepNumber++}>
 ## 👤 Create a GitHub Account
 Register your developer profile:
 
@@ -43,7 +43,7 @@ Register your developer profile:
 
 ---
 
-<StepCard stepNumber="2">
+<StepCard stepNumber={stepNumber++}>
 ## ⚙️ Install and Configure Git
 An essential prerequisite for managing files locally.
 
@@ -63,7 +63,7 @@ git config --global user.email "email@example.com"
 
 ---
 
-<StepCard stepNumber="3">
+<StepCard stepNumber={stepNumber++}>
 ## 🧑‍💻 Create a Local Project in VS Code
 Set up the initial file for your website:
 
@@ -91,7 +91,7 @@ Set up the initial file for your website:
 
 ---
 
-<StepCard stepNumber="4">
+<StepCard stepNumber={stepNumber++}>
 ## 🚀 Initialize and Publish to GitHub
 Stage, commit, and publish your project to the cloud.
 VS Code lets you manage the Git workflow
@@ -115,7 +115,7 @@ and select **Publish to GitHub public repository**.
 
 ---
 
-<StepCard stepNumber="5">
+<StepCard stepNumber={stepNumber++}>
 ## 🌿 Work with Branches: Italian vs. English
 ---
 Complete workflow: **`Edit → Stage → Commit`** on separate branches.
@@ -152,7 +152,7 @@ Branches let you develop in parallel without affecting the main branch (`main`).
 
 ---
  
-<StepCard stepNumber="6">
+<StepCard stepNumber={stepNumber++}>
 ## 🔍 Verify That the Branches Are Different
 To see the real "magic" of Git and confirm that both versions coexist in the same project without overwriting each other, follow these steps:
 
