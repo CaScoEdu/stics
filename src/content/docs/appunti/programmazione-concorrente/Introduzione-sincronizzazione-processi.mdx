@@ -13,6 +13,8 @@ import Mermaid from "@/components/Mermaid.astro";
 import StepCard from '@/components/StepCard.astro';
 import Checklist from '@/components/Checklist.astro';
 
+export let stepNumber = 1;
+
 <Aside type="tip" title="Prerequisiti">
 - concetti di base sui processi
 - distinzione tra esecuzione sequenziale e concorrente
@@ -31,7 +33,7 @@ import Checklist from '@/components/Checklist.astro';
 </LinkButton>
 
 ---
-<StepCard stepNumber="1">
+<StepCard stepNumber={stepNumber++}>
 ## ⚔️ Competizione e Collaborazione
 Quando più [processi](https://it.wikipedia.org/wiki/Processo_(informatica)) vengono eseguiti in un sistema di elaborazione, essi possono interagire tra loro in due modi principali:
 
@@ -51,7 +53,7 @@ comportamenti imprevedibili o stati di grave corruzione dei dati.
 
 ---
 
-<StepCard stepNumber="2">
+<StepCard stepNumber={stepNumber++}>
 ## 🔒 [Risorsa condivisa](https://it.wikipedia.org/wiki/Concorrenza_(informatica)), [Sezione critica](https://it.wikipedia.org/wiki/Sezione_critica) e [Mutua esclusione](https://it.wikipedia.org/wiki/Mutua_esclusione)
 Quando i processi competono per l'accesso a elementi comuni (come variabili
 globali, file o strutture dati), si definisce **risorsa condivisa** qualsiasi
@@ -91,7 +93,7 @@ Per preservare la coerenza dei dati ed evitare le cosiddette [race condition](ht
 
 ---
 
-<StepCard stepNumber="3">
+<StepCard stepNumber={stepNumber++}>
 ## Il Protocollo di Accesso (Richiedi - Utilizza - Rilascia)
 Per garantire la mutua esclusione e fare in modo che ogni processo ottenga
 l'accesso in tempi finiti, l'accesso a una risorsa deve seguire rigorosamente
@@ -109,7 +111,7 @@ un protocollo standard strutturato in tre fasi:
 
 ---
 
-<StepCard stepNumber="4">
+<StepCard stepNumber={stepNumber++}>
 ## Esempio Pratico: La [Pila](https://it.wikipedia.org/wiki/Pila_(informatica)) (Stack)
 
 Un esempio classico di struttura dati condivisa soggetta a competizione è la
@@ -137,7 +139,7 @@ comportamento della pila **con o senza mutua esclusione**.
 
 ---
 
-<StepCard stepNumber="5">
+<StepCard stepNumber={stepNumber++}>
 ## ⚠️ I Rischi della Sincronizzazione: [Deadlock](https://it.wikipedia.org/wiki/Deadlock) e [Starvation](https://it.wikipedia.org/wiki/Starvation_(informatica))
 
 La gestione della sincronizzazione e dell'attesa delle risorse può esporre il

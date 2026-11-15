@@ -14,6 +14,8 @@ import IconGroup from '@/components/IconGroup.astro';
 import StepCard from '@/components/StepCard.astro';
 import Checklist from '@/components/Checklist.astro';
 
+export let stepNumber = 1;
+
 <Aside type="tip" title="Prerequisiti">
 - concetti di base su processi
 - differenza tra esecuzione sequenziale e concorrente
@@ -33,7 +35,8 @@ guarda il video introduttivo
 </LinkButton>
 
 ---
-<StepCard stepNumber="1">
+
+<StepCard stepNumber={stepNumber++}>
 ## 🚦 I Semafori e la Variabile Intera `S`
 Nel 1968, [**Edsger W. Dijkstra**](https://en.wikipedia.org/wiki/Edsger_W._Dijkstra) propose l'utilizzo di due primitive fondamentali per risolvere qualsiasi problema di interazione e sincronizzazione fra processi: **`wait`** e **`signal`**.
 

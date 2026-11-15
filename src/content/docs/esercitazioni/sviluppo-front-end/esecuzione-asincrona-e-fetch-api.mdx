@@ -5,6 +5,7 @@ description: Esecuzione asincrona JavaScript e Fetch API.
 
 import {
     Aside,
+    FileTree,
     Icon,
     LinkButton,
     TabItem,
@@ -15,14 +16,15 @@ import Checklist from '@/components/Checklist.astro';
 import IconGroup from '@/components/IconGroup.astro';
 import StepCard from '@/components/StepCard.astro';
 
+export let stepNumber = 1;
+
+
 <Aside type="tip" title="Prerequisiti">
 - saper creare e modificare file HTML e JavaScript
 - conoscere le variabili, le funzioni e l'uso del DOM
 - sapere aprire una pagina nel browser e usare gli strumenti di sviluppo
 - avere accesso a Internet per usare eventuali servizi online o risorse esterne
 </Aside>
-
----
 
 <LinkButton
     href="https://youtu.be/R4HCYWLVHZQ"
@@ -33,13 +35,23 @@ import StepCard from '@/components/StepCard.astro';
 guarda il video introduttivo
 </LinkButton>
 
----
 
 <StepCard stepNumber="1">
 
 ## Il codice essenziale `index.html`
 In questa esercitazione introduciamo il concetto di [**esecuzione asincrona**](https://it.wikipedia.org/wiki/Programmazione_asincrona) e l'uso della [**Fetch API**](https://it.wikipedia.org/wiki/Fetch) con il codice più semplice possibile. Al clic su un pulsante, la pagina recupera il contenuto di `hello.txt` e lo mostra senza bloccare l'interfaccia. Per seguire l'esempio, crea `index.html` e `hello.txt` nella stessa cartella: vedremo il flusso essenziale di `fetch()` e `await`, senza aggiungere funzionalità non necessarie.
 
+### 📁 Struttura dei file del progetto
+
+Prima di scrivere il codice, assicurati di creare i due file nella stessa cartella di lavoro:
+
+<FileTree>
+- async-fetch-project/
+  - **index.html** Pagina principale con la struttura HTML e lo script JavaScript
+  - **hello.txt** File di testo di esempio da recuperare in modo asincrono
+</FileTree>
+
+Qui nel seguito il contenuto dei due file:
 
 <Tabs>
 

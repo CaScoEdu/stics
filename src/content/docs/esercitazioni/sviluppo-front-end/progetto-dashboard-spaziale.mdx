@@ -7,6 +7,7 @@ import {
     Aside,
     Badge,
     Card,
+    FileTree,
     Icon,
     LinkButton,
     LinkCard,
@@ -18,6 +19,9 @@ import Mermaid from "@/components/Mermaid.astro";
 import Checklist from '@/components/Checklist.astro';
 import IconGroup from '@/components/IconGroup.astro';
 import StepCard from '@/components/StepCard.astro';
+
+export let stepNumber = 1;
+
 
 <Aside type="tip" title="Prerequisiti">
 - saper creare file HTML, CSS e JavaScript e collegarli tra loro
@@ -31,6 +35,24 @@ import StepCard from '@/components/StepCard.astro';
 ---
 
 <StepCard stepNumber={1}>
+### 📁 Struttura dei file del progetto
+
+Per realizzare questo esercizio, crea una cartella di lavoro sul tuo computer e inserisci i file necessari con questa organizzazione:
+
+<FileTree>
+- missione-spaziale/
+  - **index.html** Interfaccia utente con i pulsanti e la console di comando
+  - **style.css** Fogli di stile personalizzati in stile terminale
+  - **app.js** Logica JavaScript asincrona con la Fetch API
+  - **log1.txt** File di testo del registro del Giorno 1
+  - **log2.txt** File di testo del registro del Giorno 42
+</FileTree>
+</StepCard>
+
+
+---
+
+<StepCard stepNumber={2}>
 
 ## 🧱 La Struttura [HTML](https://it.wikipedia.org/wiki/HTML) (`index.html`)
 
@@ -79,7 +101,7 @@ gli eventi JavaScript da codice.
 
 ---
 
-<StepCard stepNumber={2}>
+<StepCard stepNumber={3}>
 
 ## 🎨 Lo Stile Grafico (<code>style.css</code> / [CSS](https://it.wikipedia.org/wiki/Cascading_Style_Sheets))
 Creiamo un file separato <code>style.css</code> per dare alla pagina
@@ -133,7 +155,7 @@ presenti nel file di testo vengano rispettati a schermo.
 
 ---
 
-<StepCard stepNumber={3}>
+<StepCard stepNumber={4}>
 
 ## 📄 I File di Dati (I Diari di Bordo)
 Creiamo nella stessa cartella del progetto due file di testo:   
@@ -154,7 +176,7 @@ I sensori indicano un segnale non identificato. Richiesta verifica immediata.
 
 ---
 
-<StepCard stepNumber={4}>
+<StepCard stepNumber={5}>
 
 ## ⚙️ La Logica [JavaScript](https://it.wikipedia.org/wiki/JavaScript) (<code>app.js</code>)
 Costruiamo la logica dello script dividendola in blocchi concettuali.

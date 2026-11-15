@@ -4,38 +4,34 @@ description: "Primo passo del progetto Mappa Campus: realizzazione della struttu
 ---
 
 import {
-  Aside,
-  Badge,
-  Card,
-  Icon,
-  LinkButton,
-  Steps,
+    Aside,
+    FileTree,
+    LinkButton,
+    Steps,
 } from "@astrojs/starlight/components";
-import CustomPageHeader from '@/components/CustomPageHeader.astro';
-import IconGroup from '@/components/IconGroup.astro';
+import StepCard from '@/components/StepCard.astro';
+import Checklist from '@/components/Checklist.astro';
 
-<CustomPageHeader 
-    pageType="Projects" 
-    pageTypeIcon="puzzle" 
-    badgeTextList={["Mappa Interattiva", "Passo 1"]}
-    techIconList={["seti:html", "seti:css", "vscode","github"]}
-    asideIntroTitle="Introduzione"
-    youTubeLink="https://youtu.be/dESwU9GzFBc"
-    youTubeText="guarda il video introduttivo"
-    asidePrerequisitesTitle="Prerequisiti"
+export let stepNumber = 1;
+
+<Aside type="tip" title="📚 Prerequisiti per questa lezione">
+- 🌐 conoscere i fondamenti di [HTML](https://it.wikipedia.org/wiki/HTML), [CSS](https://it.wikipedia.org/wiki/CSS) e [JavaScript](https://it.wikipedia.org/wiki/JavaScript)
+- ✏️ saper creare, leggere e modificare elementi [SVG](https://it.wikipedia.org/wiki/Scalable_Vector_Graphics)
+- 🧩 conoscere variabili, funzioni e l'uso del [DOM](https://it.wikipedia.org/wiki/Document_Object_Model)
+- 🔍 essere in grado di aprire la pagina nel browser e usare gli strumenti di sviluppo
+- 💻 avere accesso a Internet per eventuali risorse esterne o servizi online
+</Aside>
+
+<LinkButton
+    href="https://youtu.be/dESwU9GzFBc"
+    variant="primary"
+    icon="youtube"
+    iconPlacement="end"
 >
-<p slot="intro">
-Primo passo del progetto Mappa Campus: realizzazione della struttura grafica vettoriale in SVG all'interno della pagina HTML e separazione degli stili visivi nel file <code>style.css</code>.
+guarda il video introduttivo
+</LinkButton>
 
-</p>
-<p slot="prerequisites">
-- **Visual Studio Code** già installato sul computer.
-</p>
-</CustomPageHeader>
-
----
-
-Nella seguente figura, è visualizzata la mappa che andremo a realizzare.
+🗺️ Nella seguente figura è visualizzata la mappa che andremo a realizzare.
 
 <svg viewBox="0 0 800 600" width="100%" height="auto" style="border: 2px solid #ccc; border-radius: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.1);">
 
@@ -97,21 +93,32 @@ Nella seguente figura, è visualizzata la mappa che andremo a realizzare.
 </svg>
 
 <Aside>
-  L'SVG è completamente vettoriale e si adatta automaticamente alle dimensioni
+  💡 L'[SVG](https://it.wikipedia.org/wiki/Scalable_Vector_Graphics) è completamente vettoriale e si adatta automaticamente alle dimensioni
   dello schermo del lettore.
 </Aside>
 
+### 📁 Struttura dei file del progetto
+
+Al termine di questa lezione, la cartella del progetto conterrà due file principali nella directory radice:
+
+<FileTree>
+- campus-map/
+  - **index.html** Pagina HTML principale che contiene la struttura SVG
+  - **style.css** Foglio di stile per il layout della pagina e le etichette degli edifici
+</FileTree>
+
 ---
 
-### 1. Organizzazione in Layer (Z-Order)
+<StepCard stepNumber={1}>
 
-In SVG l'ordine di scrittura del codice stabilisce l'ordine di sovrapposizione visiva degli elementi sullo schermo:
+### 🗂️ Organizzazione in Layer (Z-Order)
 
-- Il primo elemento scritto sta sullo sfondo.
-- Gli elementi successivi vengono disegnati al di sopra.
+In [SVG](https://it.wikipedia.org/wiki/Scalable_Vector_Graphics) l'ordine di scrittura del codice stabilisce l'ordine di sovrapposizione visiva degli elementi sullo schermo:
 
-Raggruppiamo gli elementi della mappa in tre layer logici principali 
-usando il tag `<g>` (group):
+- 🟩 Il primo elemento scritto sta sullo sfondo.
+- ⬆️ Gli elementi successivi vengono disegnati al di sopra.
+
+🧱 Raggruppiamo gli elementi della mappa in tre layer logici principali usando il tag `<g>` ([group](https://it.wikipedia.org/wiki/Scalable_Vector_Graphics#Gruppi_e_translazioni)):
 
 ```html
 <svg
@@ -128,13 +135,16 @@ usando il tag `<g>` (group):
   <g id="layer-edifici">...</g>
 </svg>
 ```
+
+</StepCard>
+
 ---
 
-### 2. Creazione del file di stile `style.css`
-<Icon name="seti:css" size="2rem" label="css" color="DeepSkyBlue"/>
+<StepCard stepNumber={2}>
 
+### 🎨 Creazione del file di stile `style.css`
 
-Per mantenere un'architettura web pulita, separiamo il layout grafico dalle regole stilistiche. Crea un file chiamato `style.css` nella stessa cartella del progetto e incolla il seguente codice:
+Per mantenere un'architettura web pulita, separiamo il layout grafico dalle regole stilistiche. Crea un file chiamato `style.css` nella stessa cartella del progetto e incolla il seguente codice. Il foglio di stile in [CSS](https://it.wikipedia.org/wiki/CSS) permette di separare la presentazione della struttura HTML/SVG.
 
 ```css
 //style.css
@@ -177,13 +187,15 @@ svg {
   pointer-events: none;
 }
 ```
+
+</StepCard>
 ---
 
-### 3. Codice del file `index.html`
-  <Icon name="seti:html" size="2rem" label="html" color="DeepSkyBlue"/>
+<StepCard stepNumber={3}>
 
+### 🧑‍💻 Codice del file `index.html`
 
-Crea il file `index.html`, collegando il foglio di stile esterno `style.css` nell'intestazione ed inserendo la mappa SVG all'interno del body:
+📄 Crea il file `index.html` in [HTML](https://it.wikipedia.org/wiki/HTML), collegando il foglio di stile esterno [CSS](https://it.wikipedia.org/wiki/CSS) nell'intestazione ed inserendo la mappa [SVG](https://it.wikipedia.org/wiki/Scalable_Vector_Graphics) all'interno del body:
 
 ```html
 //index.html
@@ -261,25 +273,61 @@ Crea il file `index.html`, collegando il foglio di stile esterno `style.css` nel
   </body>
 </html>
 ```
+
+### Elementi principali dell'SVG
+
+  - [SVG](https://it.wikipedia.org/wiki/Scalable_Vector_Graphics) definisce l'area della grafica; [`viewBox`](https://it.wikipedia.org/wiki/Scalable_Vector_Graphics) stabilisce il sistema di coordinate.
+  - [`<g>`](https://it.wikipedia.org/wiki/Scalable_Vector_Graphics) raggruppa elementi correlati; [`id`](https://it.wikipedia.org/wiki/Attributo_(HTML)) assegna loro un identificativo.
+  - [`<rect>`](https://it.wikipedia.org/wiki/Scalable_Vector_Graphics) disegna rettangoli: `x` e `y` indicano la posizione, `width` e `height` le dimensioni, `fill` il colore e `rx` arrotonda gli angoli.
+  - [`<text>`](https://it.wikipedia.org/wiki/Scalable_Vector_Graphics) mostra un'etichetta; `x` e `y` ne indicano la posizione e gli stili ne definiscono l'aspetto e l'allineamento.
+
+
+</StepCard>
+
 ---
 
-    ### 4. Esercizi e Salvataggio del Controllo Versioni (Git / VSC)
-      <Icon name="vscode" size="2rem" label="vscode" color="DeepSkyBlue"/>
+<StepCard stepNumber={4}>
 
-- **Nuovo Edificio:** Aggiungi al layer degli edifici un rettangolo per la **Biblioteca** al centro del campus.
-- **Personalizzazione CSS:** Apri `style.css` e modifica i colori di riempimento degli edifici o aggiungi un bordo arrotondato personalizzato.
-- **Salvataggio del primo branch su Git / GitHub:**
+### 🧩 Esercizi e salvataggio del controllo versioni ([Git](https://it.wikipedia.org/wiki/Git) / [GitHub](https://it.wikipedia.org/wiki/GitHub) / VS Code)
 
-<Icon name="github" size="2rem" label="GitHub" color="DeepSkyBlue"/>
-
-Apri il pannello **Source Control** di VS Code (`Ctrl + Shift + G`):
-
+### 🧪 Esercizi
 <Steps>
-      1. Crea un nuovo branch denominato `lezione-1`.
-      2. Esegui il commit dei file con il messaggio: `"Completata Lezione 1: Mappa SVG e style.css"`.
-      3. Effettua il **Publish Branch / Sync** per sincronizzare la lezione sul tuo repository GitHub.
+1. 🏫 **Nuovo edificio:** Aggiungi al layer degli edifici un rettangolo per la **Biblioteca** al centro del campus.
+2. 🎨 **Personalizzazione CSS:** Apri `style.css` e modifica i colori di riempimento degli edifici o aggiungi un bordo arrotondato personalizzato.
 </Steps>
 
-<Aside type="tip" title="Ottimo lavoro!">
-  Hai completato con successo la prima lezione del progetto Mappa Campus. Ora puoi procedere con la seconda lezione, che introdurrà l'interattività locale e il menu a tendina.
+
+### 💾 Salvataggio del primo branch su [Git](https://it.wikipedia.org/wiki/Git) / [GitHub](https://it.wikipedia.org/wiki/GitHub)
+
+Apri il pannello **Source Control** di VS Code (`Ctrl + Shift + G`) 🔧:
+
+<Steps>
+      1. 🌿 Crea un nuovo branch denominato `lezione-1`.
+      2. ✅ Esegui il commit dei file con il messaggio: `"Completata Lezione 1: Mappa SVG e style.css"`.
+      3. 🚀 Effettua il **Publish Branch / Sync** per sincronizzare la lezione sul tuo repository GitHub.
+</Steps>
+
+</StepCard>
+
+<Aside type="note" title="Sintesi Concetti Chiave" icon="puzzle">
+- [SVG](https://it.wikipedia.org/wiki/Scalable_Vector_Graphics): formato vettoriale usato per costruire la mappa del campus.
+- [`viewBox`](https://it.wikipedia.org/wiki/Scalable_Vector_Graphics): definisce l'area di coordinate e le proporzioni della mappa.
+- [`<g>`](https://it.wikipedia.org/wiki/Scalable_Vector_Graphics): raggruppa gli elementi SVG in layer, come terreno, percorsi ed edifici.
+- [`<rect>`](https://it.wikipedia.org/wiki/Scalable_Vector_Graphics): disegna le superfici della mappa e i corpi degli edifici; attributi come `x`, `y`, `width` e `height` ne definiscono posizione e dimensioni.
+- [`<text>`](https://it.wikipedia.org/wiki/Scalable_Vector_Graphics): aggiunge le etichette degli edifici; le classi [CSS](https://it.wikipedia.org/wiki/CSS) permettono di uniformarne l'aspetto.
+- [`id`](https://it.wikipedia.org/wiki/Attributo_(HTML)): identifica i layer e i singoli edifici, rendendoli più facili da trovare e modificare.
+- [style.css](https://it.wikipedia.org/wiki/CSS): contiene gli stili della pagina e della mappa, separati dalla struttura HTML/SVG.
 </Aside>
+
+<Checklist id="progetto-mappa-campus-svg" title="✅ Verifica dell'apprendimento">
+- [ ] So spiegare a cosa serve SVG e come il `viewBox` definisce l'area della mappa
+- [ ] So riconoscere i layer SVG e descrivere il ruolo dei gruppi `<g>`
+- [ ] So creare e posizionare un edificio usando `<rect>` e le relative coordinate
+- [ ] So aggiungere un'etichetta con `<text>` e assegnare identificatori agli elementi
+- [ ] So collegare `style.css` e personalizzare l'aspetto della mappa
+- [ ] So aggiungere un nuovo edificio al layer corretto e salvare le modifiche con Git
+<Aside type="tip" title="Ottimo lavoro!" slot="reward">
+  Ora sai organizzare una mappa del campus in SVG, aggiungere edifici ed etichette
+  e personalizzarne l'aspetto con CSS.
+</Aside>
+</Checklist>

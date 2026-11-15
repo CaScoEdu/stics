@@ -7,6 +7,7 @@ import {
     Aside,
     Badge,
     Card,
+    FileTree,
     Icon,
     LinkButton,
     LinkCard,
@@ -18,6 +19,8 @@ import Mermaid from "@/components/Mermaid.astro";
 import Checklist from '@/components/Checklist.astro';
 import IconGroup from '@/components/IconGroup.astro';
 import StepCard from '@/components/StepCard.astro';
+
+export let stepNumber = 1;
 
 <Aside type="tip" title="Prerequisites">
 - know how to create HTML, CSS, and JavaScript files and link them together
@@ -31,6 +34,21 @@ import StepCard from '@/components/StepCard.astro';
 ---
 
 <StepCard stepNumber={1}>
+### 📁 Project file structure
+
+To complete this exercise, create a working folder on your computer and add the required files with this organization:
+
+<FileTree>
+- missione-spaziale/
+  - **index.html** User interface with the buttons and command console
+  - **style.css** Custom styles in terminal style
+  - **app.js** Asynchronous JavaScript logic with the Fetch API
+  - **log1.txt** Day 1 mission log text file
+  - **log2.txt** Day 42 mission log text file
+</FileTree>
+</StepCard>
+
+<StepCard stepNumber={2}>
 
 ## 🧱 The [HTML](https://en.wikipedia.org/wiki/HTML) Structure (`index.html`)
 
@@ -77,7 +95,7 @@ Each of the three buttons has a unique ID so JavaScript events can be attached t
 
 ---
 
-<StepCard stepNumber={2}>
+<StepCard stepNumber={3}>
 
 ## 🎨 Styling (<code>style.css</code> / [CSS](https://en.wikipedia.org/wiki/CSS))
 Let's create a separate <code>style.css</code> file to give the page
@@ -128,7 +146,7 @@ button:hover {
 
 ---
 
-<StepCard stepNumber={3}>
+<StepCard stepNumber={4}>
 
 ## 📄 Data Files (Flight Logs)
 Create two text files in the same project folder:
@@ -149,7 +167,7 @@ Sensors indicate an unidentified signal. Immediate investigation requested.
 
 ---
 
-<StepCard stepNumber={4}>
+<StepCard stepNumber={5}>
 
 ## ⚙️ The [JavaScript](https://en.wikipedia.org/wiki/JavaScript) Logic (<code>app.js</code>)
 Let's build the script logic by dividing it into conceptual sections.

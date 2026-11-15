@@ -6,6 +6,7 @@ description: Asynchronous JavaScript execution and Fetch API.
 import {
     Aside,
     Icon,
+    FileTree,
     LinkButton,
     TabItem,
     Tabs
@@ -15,14 +16,14 @@ import Checklist from '@/components/Checklist.astro';
 import IconGroup from '@/components/IconGroup.astro';
 import StepCard from '@/components/StepCard.astro';
 
+export let stepNumber = 1;
+
 <Aside type="tip" title="Prerequisites">
 - know how to create and modify HTML and JavaScript files
 - know variables, functions and DOM usage
 - know how to open a page in the browser and use developer tools
 - have Internet access to use online services or external resources
 </Aside>
-
----
 
 <LinkButton
     href="https://youtu.be/R4HCYWLVHZQ"
@@ -33,13 +34,22 @@ import StepCard from '@/components/StepCard.astro';
 watch the introductory video
 </LinkButton>
 
----
-
 <StepCard stepNumber="1">
 
 ## The essential code <code>index.html</code>
 In this exercise we introduce the concept of [**asynchronous execution**](https://en.wikipedia.org/wiki/Asynchronous_programming) and the use of the [**Fetch API**](https://en.wikipedia.org/wiki/Fetch_API) with the simplest possible code. On button click, the page retrieves the content of `hello.txt` and displays it without blocking the interface. To follow the example, create `index.html` and `hello.txt` in the same folder: we will see the essential flow of `fetch()` and `await`, without adding unnecessary functionality.
 
+### 📁 Project file structure
+
+Before writing the code, make sure you create both files in the same working folder:
+
+<FileTree>
+- async-fetch-project/
+  - **index.html** Main page with the HTML structure and JavaScript script
+  - **hello.txt** Sample text file to be fetched asynchronously
+</FileTree>
+
+Below is the content of the two files:
 
 <Tabs>
 

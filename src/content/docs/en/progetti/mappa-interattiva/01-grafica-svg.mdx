@@ -1,39 +1,39 @@
 ---
-title: "01. Creating an SVG Map"
-description: "First step of the Campus Map project: creating the vector graphics structure in SVG inside the HTML page and separating visual styles into the style.css file."
+title: "01. Creating the SVG Map"
+description: "First step of the Campus Map project: creating the vector graphic structure in SVG inside the HTML page and separating visual styles into the style.css file."
 ---
 
 import {
     Aside,
     Badge,
     Card,
+    FileTree,
     Icon,
     LinkButton,
     Steps,
 } from "@astrojs/starlight/components";
-import CustomPageHeader from '@/components/CustomPageHeader.astro';
 import IconGroup from '@/components/IconGroup.astro';
+import StepCard from '@/components/StepCard.astro';
+import Checklist from '@/components/Checklist.astro';
 
-<CustomPageHeader 
-    pageType="Projects" 
-    pageTypeIcon="puzzle" 
-    badgeTextList={["Interactive Map", "Step 1"]}
-    techIconList={["seti:html", "seti:javascript", "vscode","github"]}
-    asideIntroTitle="Introduction"
-    youTubeLink="https://youtu.be/dESwU9GzFBc"
-    youTubeText="watch the introductory video"
-    asidePrerequisitesTitle="Prerequisites"
+<Aside type="tip" title="📚 Prerequisites for this lesson">
+- 🌐 know the basics of [HTML](https://en.wikipedia.org/wiki/HTML), [CSS](https://en.wikipedia.org/wiki/CSS), and [JavaScript](https://en.wikipedia.org/wiki/JavaScript)
+- ✏️ be able to create, read, and modify [SVG](https://en.wikipedia.org/wiki/Scalable_Vector_Graphics) elements
+- 🧩 know variables, functions, and the use of the [DOM](https://en.wikipedia.org/wiki/Document_Object_Model)
+- 🔍 be able to open the page in the browser and use the developer tools
+- 💻 have access to the Internet for any external resources or online services
+</Aside>
+
+<LinkButton
+    href="https://youtu.be/dESwU9GzFBc"
+    variant="primary"
+    icon="youtube"
+    iconPlacement="end"
 >
-<p slot="intro">
-First step of the Campus Map project: creating the vector graphics structure in SVG inside the HTML page and separating visual styles into the <code>style.css</code> file.
+watch the introductory video
+</LinkButton>
 
-</p>
-<p slot="prerequisites">
-- **Visual Studio Code** installed on your computer.
-</p>
-</CustomPageHeader>
-
-The following figure shows the map we are going to create.
+🗺️ The following figure shows the map we are going to build.
 
 <svg viewBox="0 0 800 600" width="100%" height="auto" style="border: 2px solid #ccc; border-radius: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.1);">
 
@@ -95,20 +95,31 @@ The following figure shows the map we are going to create.
 </svg>
 
 <Aside>
-The SVG is fully vector-based and automatically adapts to the reader's screen
-size.
+  💡 [SVG](https://en.wikipedia.org/wiki/Scalable_Vector_Graphics) is fully vector-based and automatically adapts to the reader's screen size.
 </Aside>
+
+### 📁 Project file structure
+
+At the end of this lesson, your project folder will contain two main files inside the root directory:
+
+<FileTree>
+- campus-map/
+  - **index.html** Main HTML page containing the SVG structure
+  - **style.css** Stylesheet for page layout and building labels
+</FileTree>
 
 ---
 
-### 1. Organizing Layers (Z-Order)
+<StepCard stepNumber={1}>
 
-In SVG, the order in which the code is written determines the visual stacking order of elements on the screen:
+### 🗂️ Layer organization (Z-order)
 
-- The first element written appears in the background.
-- Subsequent elements are drawn on top.
+In [SVG](https://en.wikipedia.org/wiki/Scalable_Vector_Graphics), the order in which the code is written determines the visual stacking order of the elements on the screen:
 
-Let's group the map elements into three main logical layers using the `<g>` (group) tag:
+- 🟩 The first element written is in the background.
+- ⬆️ Subsequent elements are drawn on top of it.
+
+🧱 We group the map elements into three main logical layers using the `<g>` tag ([group](https://en.wikipedia.org/wiki/Scalable_Vector_Graphics#Groups_and_transforms)):
 
 ```html
 <svg
@@ -118,7 +129,7 @@ Let's group the map elements into three main logical layers using the `<g>` (gro
   <!-- Layer 1: Ground (Background) -->
   <g id="layer-terreno">...</g>
 
-  <!-- Layer 2: Walkways -->
+  <!-- Layer 2: Pedestrian Paths -->
   <g id="layer-percorsi">...</g>
 
   <!-- Layer 3: Campus Buildings -->
@@ -126,16 +137,19 @@ Let's group the map elements into three main logical layers using the `<g>` (gro
 </svg>
 ```
 
+</StepCard>
+
 ---
 
-### 2. Creating the `style.css` stylesheet
-<Icon name="seti:css" size="2rem" label="css" color="DeepSkyBlue"/>
+<StepCard stepNumber={2}>
 
-To keep the web architecture clean, separate the graphic layout from the style rules. Create a file called `style.css` in the same project folder and paste in the following code:
+### 🎨 Creating the `style.css` stylesheet
+
+To keep a clean web architecture, we separate the graphical layout from the styling rules. Create a file named `style.css` in the same folder as the project and paste the following code. The stylesheet in [CSS](https://en.wikipedia.org/wiki/CSS) lets us separate the presentation from the HTML/SVG structure.
 
 ```css
 //style.css
-/* General page styles */
+/* general page styles */
 body {
   font-family:
     system-ui,
@@ -164,7 +178,7 @@ svg {
   height: auto;
 }
 
-/* Text label style for buildings */
+/* Style for building text labels */
 .label {
   font-size: 14px;
   font-weight: bold;
@@ -175,12 +189,14 @@ svg {
 }
 ```
 
+</StepCard>
 ---
 
-### 3. The `index.html` file
-<Icon name="seti:html" size="2rem" label="html" color="DeepSkyBlue"/>
+<StepCard stepNumber={3}>
 
-Create the `index.html` file, link the external `style.css` stylesheet in the header, and insert the SVG map inside the body:
+### 🧑‍💻 `index.html` file code
+
+📄 Create the `index.html` file in [HTML](https://en.wikipedia.org/wiki/HTML), linking the external [CSS](https://en.wikipedia.org/wiki/CSS) stylesheet in the head and placing the [SVG](https://en.wikipedia.org/wiki/Scalable_Vector_Graphics) map inside the body:
 
 ```html
 //index.html
@@ -208,7 +224,7 @@ Create the `index.html` file, link the external `style.css` stylesheet in the he
         <rect x="0" y="0" width="800" height="600" fill="#7ec850" />
       </g>
 
-      <!-- LAYER 2: WALKWAYS -->
+      <!-- LAYER 2: PEDESTRIAN PATHS -->
       <g id="layer-percorsi">
         <rect x="50" y="270" width="700" height="60" fill="#d1d5db" rx="4" />
         <rect x="180" y="80" width="50" height="440" fill="#d1d5db" rx="4" />
@@ -223,7 +239,7 @@ Create the `index.html` file, link the external `style.css` stylesheet in the he
           <text x="120" y="150" class="label">Offices</text>
         </g>
 
-        <!-- Classroom Building -->
+        <!-- Lecture Halls -->
         <g id="edificio-aule">
           <rect x="70" y="380" width="100" height="140" fill="#2563eb" rx="6" />
           <text x="120" y="450" class="label">Classrooms</text>
@@ -259,27 +275,60 @@ Create the `index.html` file, link the external `style.css` stylesheet in the he
 </html>
 ```
 
+### Main SVG elements
+
+  - [SVG](https://en.wikipedia.org/wiki/Scalable_Vector_Graphics) defines the graphics area; [`viewBox`](https://en.wikipedia.org/wiki/Scalable_Vector_Graphics) sets the coordinate system.
+  - [`<g>`](https://en.wikipedia.org/wiki/Scalable_Vector_Graphics) groups related elements; [`id`](https://en.wikipedia.org/wiki/HTML/Attributes) assigns them an identifier.
+  - [`<rect>`](https://en.wikipedia.org/wiki/Scalable_Vector_Graphics) draws rectangles: `x` and `y` define the position, `width` and `height` define the size, `fill` sets the color, and `rx` rounds the corners.
+  - [`<text>`](https://en.wikipedia.org/wiki/Scalable_Vector_Graphics) displays a label; `x` and `y` define its position and styles define its appearance and alignment.
+
+
+</StepCard>
+
 ---
 
-    ### 4. Exercises and Version Control (Git / VS Code)
-      <Icon name="vscode" size="2rem" label="vscode" color="DeepSkyBlue"/>
+<StepCard stepNumber={4}>
 
-- **New Building:** Add a rectangle for the **Library** to the buildings layer, in the center of the campus.
-- **CSS Customization:** Open `style.css` and change the buildings' fill colors or add a custom rounded border.
-- **Saving your first branch to Git / GitHub:**
+### 🧩 Exercises and version control saving ([Git](https://en.wikipedia.org/wiki/Git) / [GitHub](https://en.wikipedia.org/wiki/GitHub) / VS Code)
 
-<Icon name="github" size="2rem" label="GitHub" color="DeepSkyBlue"/>
-
-Open the **Source Control** panel in VS Code (`Ctrl + Shift + G`):
-
+### 🧪 Exercises
 <Steps>
-      1. Create a new branch named `lesson-1`.
-      2. Commit the files with the message: `"Completed Lesson 1: SVG Map and style.css"`.
-      3. Select **Publish Branch / Sync** to sync the lesson to your GitHub repository.
+1. 🏫 **New building:** Add a rectangle to the buildings layer for the **Library** in the center of the campus.
+2. 🎨 **CSS customization:** Open `style.css` and change the fill colors of the buildings or add a custom rounded border.
 </Steps>
 
----
 
-<Aside type="tip" title="Great job!">
-You have successfully completed the first step of the Campus Map project. You can now proceed to the second lesson, which will introduce local interactivity and the dropdown menu.
+### 💾 Saving the first branch on [Git](https://en.wikipedia.org/wiki/Git) / [GitHub](https://en.wikipedia.org/wiki/GitHub)
+
+Open the **Source Control** panel in VS Code (`Ctrl + Shift + G`) 🔧:
+
+<Steps>
+      1. 🌿 Create a new branch named `lesson-1`.
+      2. ✅ Commit the files with the message: `"Completed Lesson 1: SVG Map and style.css"`.
+      3. 🚀 Perform **Publish Branch / Sync** to synchronize the lesson to your GitHub repository.
+</Steps>
+
+</StepCard>
+
+<Aside type="note" title="Key Concepts Summary" icon="puzzle">
+- [SVG](https://en.wikipedia.org/wiki/Scalable_Vector_Graphics): vector format used to build the campus map.
+- [`viewBox`](https://en.wikipedia.org/wiki/Scalable_Vector_Graphics): defines the coordinate area and the proportions of the map.
+- [`<g>`](https://en.wikipedia.org/wiki/Scalable_Vector_Graphics): groups SVG elements into layers such as ground, paths, and buildings.
+- [`<rect>`](https://en.wikipedia.org/wiki/Scalable_Vector_Graphics): draws the map surfaces and building bodies; attributes like `x`, `y`, `width`, and `height` define their position and size.
+- [`<text>`](https://en.wikipedia.org/wiki/Scalable_Vector_Graphics): adds building labels; [CSS](https://en.wikipedia.org/wiki/CSS) classes make them uniform in appearance.
+- [`id`](https://en.wikipedia.org/wiki/HTML/Attributes): identifies layers and individual buildings, making them easier to find and modify.
+- [style.css](https://en.wikipedia.org/wiki/CSS): contains the page and map styles, separated from the HTML/SVG structure.
 </Aside>
+
+<Checklist id="progetto-mappa-campus-svg" title="✅ Learning check">
+- [ ] I can explain what SVG is and how the `viewBox` defines the map area
+- [ ] I can recognize SVG layers and describe the role of `<g>` groups
+- [ ] I can create and position a building using `<rect>` and its coordinates
+- [ ] I can add a label with `<text>` and assign identifiers to elements
+- [ ] I can link `style.css` and customize the appearance of the map
+- [ ] I can add a new building to the correct layer and save changes with Git
+<Aside type="tip" title="Great job!" slot="reward">
+  Now you know how to organize a campus map in SVG, add buildings and labels,
+  and style it with CSS.
+</Aside>
+</Checklist>
