@@ -116,22 +116,31 @@ You are now working on an independent copy of Lesson 1, ready to evolve!
 
 Add the visual rules at the end of your `style.css` file to handle mouse hover and the highlight effect (yellow border and glow) when a building is selected:
 
-```css
-//style.css
-/* Hover effect on all building groups */
-#layer-edifici > g {
-  cursor: pointer;
-  transition: opacity 0.2s ease;
+```diff lang="css" title="style.css"
+/* style for building text labels */
+.label {
+  font-size: 14px;
+  font-weight: bold;
+  fill: #ffffff;
+  text-anchor: middle;
+  dominant-baseline: middle;
+  pointer-events: none;
 }
-#layer-edifici > g:hover {
-  opacity: 0.85;
-}
-/* Style applied to the SELECTED building via JS */
-.attivo rect {
-  stroke: #facc15 !important; /* Bright yellow */
-  stroke-width: 5px !important;
-  filter: drop-shadow(0px 0px 10px #facc15);
-}
+- /* part to add at the end of the file */
++ /* Hover effect on all building groups */
++ #layer-edifici > g {
++   cursor: pointer;
++   transition: opacity 0.2s ease;
++ }
++ #layer-edifici > g:hover {
++   opacity: 0.85;
++ }
++ /* Style applied to the SELECTED building via JS */
++ .attivo rect {
++   stroke: #facc15 !important; /* Bright yellow */
++   stroke-width: 5px !important;
++   filter: drop-shadow (0px 0px 10px #facc15);
++ }
 ```
 
 </StepCard>
