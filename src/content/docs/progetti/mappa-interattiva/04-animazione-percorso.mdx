@@ -49,12 +49,14 @@ guarda il video introduttivo
 Al termine di questa lezione, la cartella del progetto conterrà questi file nella directory radice:
 
 <FileTree>
-- campus-map/
-  - **index.html** Pagina HTML principale che contiene la struttura SVG e il menu di selezione
-  - **style.css** Foglio di stile per il layout della pagina, i dettagli grafici e l'evidenziazione degli edifici
-  - **script.js** File JavaScript che carica la mappa e i dati con `fetch()` e aggiorna il DOM
-  - **mappa.svg** Grafica vettoriale della mappa, caricata nella pagina
-  - **locali.json** Elenco degli edifici, usato per popolare il menu di selezione
+- progetto mappa interattiva campus/
+  - **dijkstra.js** Modulo JavaScript con l'algoritmo di Dijkstra per il calcolo del percorso minimo[cite: 2]
+  - **grafo.json** Struttura dati del grafo con i nodi e gli archi pesati dei percorsi[cite: 2]
+  - **index.html** Pagina HTML principale che ospita la mappa e i controlli di selezione[cite: 2]
+  - **locali.json** Elenco degli edifici, usato per popolare dinamicamente i menu di selezione[cite: 2]
+  - **mappa.svg** Grafica vettoriale della mappa, caricata nella pagina[cite: 2]
+  - **script.js** Logica principale che carica i file con `fetch()`, gestisce gli eventi e disegna il percorso nel DOM[cite: 2]
+  - **style.css** Foglio di stile per il layout della pagina, l'evidenziazione degli edifici e l'animazione del percorso[cite: 2]
 </FileTree>
 </StepCard>
 
@@ -63,25 +65,31 @@ Al termine di questa lezione, la cartella del progetto conterrà questi file nel
 ### 🧩 Diagramma dei componenti
 
   <Mermaid chart={`
-  flowchart LR
+  flowchart TD
     Browser[Browser Web]
     HTML[index.html]
     CSS[style.css]
     JS[script.js]
+    DIJKSTRA[dijkstra.js]
     SVG[mappa.svg]
-    JSON[locali.json]
+    LOCALI[locali.json]
+    GRAFO[grafo.json]
     Mappa[SVG della mappa nel DOM]
-    Menu[Menu di selezione e dettagli]
+    Menu[Menu Partenza e Destinazione]
 
     Browser -->|carica la pagina| HTML
     HTML -->|collega lo stile| CSS
     HTML -->|avvia il codice| JS
+    JS -->|importa modulo| DIJKSTRA
     JS -->|"fetch()"| SVG
-    JS -->|"fetch()"| JSON
+    JS -->|"fetch()"| LOCALI
+    JS -->|"fetch()"| GRAFO
     SVG -->|inserisce il markup| Mappa
-    JSON -->|popola le option| Menu
-    Menu -->|selezione utente| JS
-    JS -->|aggiorna evidenziazione| Mappa
+    LOCALI -->|popola le option| Menu
+    Menu -->|selezione partenza/arrivo| JS
+    GRAFO -->|fornisce nodi e archi| DIJKSTRA
+    DIJKSTRA -->|restituisce percorso minimo| JS
+    JS -->|disegna percorso ed evidenzia| Mappa
 
     classDef browser fill:#1e3a8a,stroke:#3b82f6,color:#fff,stroke-width:2px;
     classDef html fill:#2563eb,stroke:#1d4ed8,color:#fff,stroke-width:2px;
@@ -90,17 +98,20 @@ Al termine di questa lezione, la cartella del progetto conterrà questi file nel
 
     class Browser browser;
     class HTML,CSS html;
-    class JS app;
-    class SVG,JSON data;
+    class JS,DIJKSTRA app;
+    class SVG,LOCALI,GRAFO data;
     class Mappa,Menu html;
 `} />
 
 diagramma fatto con [Mermaid](https://mermaid.live/edit#pako:eNqNk1FvmzAQx7-K5b60EokgaQjjYdOW9GnaVrVTpQ3y4NkHWAUfso1SluS719jJNm0v4wXu7nf_-3PgA-UogOa0anHPG6Yt-botFXHXo3XRdfEkjbQEVSsVEGNRw-6GzGZvyQeNewNFuJFeoxi4NbvQfM5O3MbJFO-FINJCZ4hFwl3mzE1FT22BSwGHB2Bi9EwD_JngYN-dAhmAiT1-BOiJabDvpaqP51n_UN_AHMk9G4s7ZUGTno0dKEsEWCbbi09X9-OfWCvF4f7MMM6htyAus33Vi37GI3kAq8fiscE9Aa1Rkw6MYTWcJX3Zizq5v_u9qQ2qSuqu-KKFM8ZDBOKykhCHraCC6-Kuc46JBg6yt7ubUgXQ2LGF8JlIJds2v4KsWsGbyFiNz5Bf3S5ZfLv-E570_pcNpgNcVdUS4l9w9SPjcUwjWmspaG71ABHtQDufLqSHSaaktoEOSpq7Rw1ieJlxbFGXtFQn19oz9R2xu3RrHOqG5hVrjYuGXjALW8lqzX4joNy-NjgoS_OVV6D5gb7QfLlO5mm2SBbJOk5WaZpEdHTZ1TzOsjTN0sS92nKRniL604-M59naCYCQ7n_-FA6APwenV1CD_oo/)
 
-Il browser carica la pagina e lo script usa `fetch()` 
-per recuperare `mappa.svg` e `locali.json`. 
-La mappa viene inserita nel [DOM](https://it.wikipedia.org/wiki/Document_Object_Model), mentre i dati popolano il menu; quando l’utente seleziona un edificio, lo script ne aggiorna l’evidenziazione.
-
+- Il browser carica la pagina index.html (che applica style.css) 
+e avvia script.js.
+- Lo script importa il modulo dijkstra.js e usa fetch() 
+per recuperare mappa.svg, locali.json e grafo.json. 
+- La mappa viene inserita nel DOM, mentre l'elenco dei locali 
+popola i menu di partenza e destinazione; 
+- Quando l’utente effettua una selezione, lo script passa i nodi del grafo all'algoritmo di Dijkstra per calcolare il percorso minimo, aggiornando l’evidenziazione degli edifici e disegnando il tragitto sulla mappa.
 </StepCard>
 
 ---
@@ -108,264 +119,184 @@ La mappa viene inserita nel [DOM](https://it.wikipedia.org/wiki/Document_Object_
 
 <StepCard stepNumber={stepNumber++}>
 
-### 🌿 Creazione del Branch di Lavoro `lezione-3`
-Prima di aggiungere il caricamento dinamico con `fetch()`, creiamo un branch dedicato per isolare le modifiche di questa lezione:
+### 🌿 Creazione del Branch di Lavoro `lezione-4`
+Prima di integrare la struttura del grafo e l'algoritmo di Dijkstra per il calcolo dei percorsi minimi, creiamo un branch dedicato per isolare le modifiche di questa lezione:
 
 <Steps>
 1. Apri il pannello Source Control in VS Code (`Ctrl + Shift + G`). 
-2. Clicca sul nome del branch corrente in basso a sinistra (o in alto nel pannello) e
-seleziona `Crea un nuovo branch...` (`Create new branch...`). 
-3. Digita il nome del nuovo branch: `lezione-3` e premi Invio.
+2. Clicca sul nome del branch corrente in basso a sinistra (o in alto nel pannello) e seleziona `Crea un nuovo branch...` (`Create new branch...`). 
+3. Digita il nome del nuovo branch: `lezione-4` e premi Invio.
 </Steps>
-Ora stai lavorando su una copia indipendente dalla Lezione 2, pronta per aggiungere il caricamento di `mappa.svg` e `locali.json` tramite `fetch()`!
-
+Ora stai lavorando su una copia indipendente dalla Lezione 3, pronta per aggiungere `grafo.json`, `dijkstra.js` e la logica di navigazione tra gli edifici!
 </StepCard>
 
 <StepCard stepNumber={stepNumber++}>
 
-### 🖼️ Esternalizzazione della Grafica: `mappa.svg`
-Separiamo il codice grafico dall'HTML principale 
-creando un file `mappa.svg` nella radice del progetto.
-Impostiamo `width="100%"` e `height="100%"` 
-per renderlo completamente responsive all'interno del suo contenitore:
+### Aggiunta Layer degli Snodi Stradali nella mappa.svg
+Per fare in modo che i percorsi seguano le strade 
+ed evitino di tagliare i prati "a volo d'uccello", dobbiamo 
+definire dei punti (snodi) sui percorsi pedonali, in corrispondenza di:
+
+- #### incroci tra i percorsi:
+
+<div style={{ display: 'flex', justifyContent: 'center', margin: '1.5rem 0' }}>
+  <svg viewBox="0 0 600 280" width="100%" style={{ maxWidth: '600px', borderRadius: '10px', border: '2px solid #334155', background: '#7ec850' }} xmlns="http://www.w3.org/2000/svg">
+    {/* Sfondo Prato */}
+    <rect width="600" height="280" fill="#7ec850" />
+
+    {/* Percorso pedonale orizzontale */}
+    <rect x="0" y="115" width="600" height="50" fill="#d1d5db" />
+
+    {/* Percorso pedonale verticale */}
+    <rect x="275" y="0" width="50" height="280" fill="#d1d5db" />
+
+    {/* Assi centrali tratteggiati dei due percorsi */}
+    <line x1="16" y1="140" x2="584" y2="140" stroke="#64748b" strokeWidth="2" strokeDasharray="6,6" />
+    <line x1="300" y1="16" x2="300" y2="264" stroke="#64748b" strokeWidth="2" strokeDasharray="6,6" />
+
+    {/* Etichette dei due percorsi */}
+    <text x="16" y="128" fontFamily="Verdana, sans-serif" fontSize="11" fontWeight="bold" fill="#475569" style={{ textAnchor: 'start' }}>Percorso A</text>
+    <text x="334" y="24" fontFamily="Verdana, sans-serif" fontSize="11" fontWeight="bold" fill="#1e293b" style={{ textAnchor: 'start' }}>Percorso B</text>
+
+    {/* Simbolo angolo retto 90° */}
+    <polyline points="300,124 316,124 316,140" fill="none" stroke="#1e293b" strokeWidth="2" />
+    <text x="334" y="131" fontFamily="Verdana, sans-serif" fontSize="11" fontWeight="bold" fill="#1e293b" style={{ textAnchor: 'start' }}>90°</text>
+
+    {/* Nodo di Incrocio al punto di intersezione (300, 140) */}
+    <circle cx="300" cy="140" r="8" fill="#dc2626" stroke="#ffffff" strokeWidth="2.5" />
+
+    {/* Badge etichetta snodo centrato */}
+    <rect x="128" y="176" width="144" height="24" rx="4" fill="#1e293b" opacity="0.95" />
+    <text x="200" y="192" fontFamily="Verdana, sans-serif" fontSize="11" fontWeight="bold" fill="#ffffff" style={{ textAnchor: 'middle' }}>Snodo di Incrocio</text>
+
+    {/* Linea guida sottile dal badge al nodo */}
+    <line x1="272" y1="184" x2="293" y2="147" stroke="#1e293b" strokeWidth="1.5" strokeDasharray="3,3" />
+  </svg>
+</div>
+
+- #### diramazioni ortogonali sui percorsi verso i locali: 
+
+<div style={{ display: 'flex', justifyContent: 'center', margin: '1.5rem 0' }}>
+  <svg viewBox="0 0 600 320" width="100%" style={{ maxWidth: '600px', borderRadius: '10px', border: '2px solid #334155', background: '#7ec850' }} xmlns="http://www.w3.org/2000/svg">
+    {/* Sfondo Prato */}
+    <rect width="600" height="320" fill="#7ec850" />
+
+    {/* Percorso pedonale principale (strada orizzontale) */}
+    <rect x="0" y="135" width="600" height="50" fill="#d1d5db" />
+    <text x="16" y="147" fontFamily="Verdana, sans-serif" fontSize="11" fontWeight="bold" fill="#475569" style={{ textAnchor: 'start' }}>Percorso principale</text>
+
+    {/* Edificio 1 (in alto a sinistra: x=100..260, centro x=180) */}
+    <rect x="100" y="18" width="160" height="80" rx="6" fill="#1e3a8a" />
+    <text x="180" y="38" fontFamily="Verdana, sans-serif" fontSize="13" fontWeight="bold" fill="#ffffff" style={{ textAnchor: 'middle' }}>Edificio A</text>
+
+    {/* Edificio 2 (in basso a destra: x=340..500, centro x=420) */}
+    <rect x="340" y="222" width="160" height="80" rx="6" fill="#ea580c" />
+    <text x="420" y="286" fontFamily="Verdana, sans-serif" fontSize="13" fontWeight="bold" fill="#ffffff" style={{ textAnchor: 'middle' }}>Edificio B</text>
+
+    {/* Asse centrale della strada */}
+    <line x1="16" y1="160" x2="584" y2="160" stroke="#64748b" strokeWidth="2" strokeDasharray="6,6" />
+
+    {/* Diramazione ortogonale 1 */}
+    <line x1="180" y1="160" x2="180" y2="58" stroke="#facc15" strokeWidth="4" />
+    <polyline points="180,144 196,144 196,160" fill="none" stroke="#1e293b" strokeWidth="2" />
+    <text x="202" y="152" fontFamily="Verdana, sans-serif" fontSize="11" fontWeight="bold" fill="#1e293b" style={{ textAnchor: 'start' }}>90°</text>
+
+    {/* Diramazione ortogonale 2 */}
+    <line x1="420" y1="160" x2="420" y2="262" stroke="#facc15" strokeWidth="4" />
+    <polyline points="420,176 436,176 436,160" fill="none" stroke="#1e293b" strokeWidth="2" />
+    <text x="442" y="175" fontFamily="Verdana, sans-serif" fontSize="11" fontWeight="bold" fill="#1e293b" style={{ textAnchor: 'start' }}>90°</text>
+
+    {/* Snodo 1 + Etichetta perfettamente centrata nel badge */}
+    <circle cx="180" cy="160" r="7" fill="#dc2626" stroke="#ffffff" strokeWidth="2" />
+    <rect x="112" y="194" width="136" height="24" rx="4" fill="#1e293b" opacity="0.95" />
+    <text x="180" y="210" fontFamily="Verdana, sans-serif" fontSize="11" fontWeight="bold" fill="#ffffff" style={{ textAnchor: 'middle' }}>Snodo Stradale 1</text>
+
+    {/* Snodo 2 + Etichetta perfettamente centrata nel badge */}
+    <circle cx="420" cy="160" r="7" fill="#dc2626" stroke="#ffffff" strokeWidth="2" />
+    <rect x="352" y="102" width="136" height="24" rx="4" fill="#1e293b" opacity="0.95" />
+    <text x="420" y="118" fontFamily="Verdana, sans-serif" fontSize="11" fontWeight="bold" fill="#ffffff" style={{ textAnchor: 'middle' }}>Snodo Stradale 2</text>
+
+    {/* Nodi destinazione al centro degli edifici */}
+    <circle cx="180" cy="58" r="6" fill="#facc15" stroke="#1e293b" strokeWidth="2" />
+    <text x="180" y="80" fontFamily="Verdana, sans-serif" fontSize="11" fill="#e2e8f0" style={{ textAnchor: 'middle' }}>Centro</text>
+
+    <circle cx="420" cy="262" r="6" fill="#facc15" stroke="#1e293b" strokeWidth="2" />
+    <text x="420" y="244" fontFamily="Verdana, sans-serif" fontSize="11" fill="#ffedd5" style={{ textAnchor: 'middle' }}>Centro</text>
+  </svg>
+</div>
+
+#### id significativi per i percorsi
+Per facilitare il posizionamento degli snodi, 
+inseriamo id significativi per i percorsi in mappa.svg:
 
 ```diff lang="xml" title="mappa.svg"
-- <svg viewBox="0 0 800 600" width="800" height="600" xmlns="http://www.w3.org/2000/svg">
-+ <svg viewBox="0 0 800 600" width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
-  <g id="layer-terreno">
-    <rect x="0" y="0" width="800" height="600" fill="#7ec850" />
-  </g>
 
-- // copia il resto della tuo codice svg
-+ <!-- Inserisci qui sotto i layer dei percorsi e degli edifici sviluppati in precedenza -->
-+ <g id="layer-percorsi">
-+   <!-- ... -->
-+ </g>
-+ <g id="layer-edifici">
-+   <!-- ... -->
-+ </g>
-  
-</svg>
+      <!-- LAYER 2: PERCORSI PEDONALI -->
+        <g id="layer-percorsi">
+-           <rect  x="50" y="270" width="700" height="60" fill="#d1d5db" rx="4" />
++           <rect id="percorso-orizzontale" x="50" y="270" width="700" height="60" fill="#d1d5db" rx="4" />
+
+-           <rect  x="180" y="80" width="50" height="440" fill="#d1d5db" rx="4" />
++           <rect id="percorso-est" x="570" y="80" width="50" height="440" fill="#d1d5db" rx="4" />
+
+-           <rect  x="180" y="80" width="50" height="440" fill="#d1d5db" rx="4" />
++           <rect id="percorso-ovest" x="180" y="80" width="50" height="440" fill="#d1d5db" rx="4" />
+        </g>
 ```
 
-</StepCard>
-
-<StepCard stepNumber={stepNumber++}>
-
-### 🏢 Dati in `locali.json`
-Creiamo il file `locali.json` per archiviare gli identificativi degli edifici (corrispondenti agli id presenti nell'SVG) e i nomi leggibili da mostrare nei menu a tendina:
-
-```diff lang="json" title="locali.json"
-[
-   { "id": "edificio-uffici", "nome": "Uffici Amministrativi" },
-   { "id": "edificio-aule", "nome": "Edificio Aule" },
-+  // TODO: Aggiungi qui gli altri edifici presenti nel tuo file mappa.svg (es. Laboratori, Mensa, ecc.)
- ]
-```
-
-<Aside type="tip" title="Presta attenzione agli id!">
-Gli `id` dei locali  devono essere gli 
-stessi utilizzati nella `mappa.svg`.
+<Aside type="tip" title="Hai personalizzati i percorsi?">
+In questo caso personalizza, se necessario, gli id in modo che rispecchino
+la geometria dei tuoi percorsi.
 </Aside>
 
-</StepCard>
+#### il layer degli snodi
+Ora introduciamo in fondo allla mappa.svg il layer degli snodi, posizionando i primi punti di accesso ortogonali agli edifici e gli incroci principali:
 
-<StepCard stepNumber={stepNumber++}>
-### 🎨 Stili in `style.css`
+```diff lang="xml" title="mappa.svg"
+    <!-- LAYER GIA' ESISTENTI -->
 
-Aggiorniamo poi `style.css` con le regole responsive per il contenitore della mappa e le classi CSS per l'evidenziazione simmetrica di partenza e destinazione.
-
-```diff lang="css" title="style.css"
-- /* cancella tutto il codice css precedente */
-- /* --- codice css precedente ...  */
-- /* sostituisci con il nuovo css qui sotto in verde */
-+ body {
-+   font-family: Verdana, sans-serif;
-+   text-align: center;
-+   margin: 20px;
-+   background-color: #f8fafc;
-+ }
-+ 
-+ .controls {
-+   margin-bottom: 20px;
-+   display: flex;
-+   justify-content: center;
-+   gap: 15px;
-+ }
-+ 
-+ select {
-+   padding: 8px 12px;
-+   font-size: 14px;
-+   border-radius: 6px;
-+   border: 1px solid #cbd5e1;
-+ }
-+ 
-+ #mappa-container {
-+   width: 100%;
-+   max-width: 900px;
-+   margin: 0 auto;
-+   aspect-ratio: 4 / 3;
-+ }
-+ 
-+ #mappa-container svg {
-+   width: 100%;
-+   height: 100%;
-+   display: block;
-+   background: #fff;
-+   border: 2px solid #334155;
-+   border-radius: 8px;
-+ }
-+ 
-+ #layer-edifici g {
-+   cursor: pointer;
-+   transition: opacity 0.2s;
-+ }
-+ 
-+ #layer-edifici g:hover {
-+   opacity: 0.85;
-+ }
-+ 
-+ .label {
-+   fill: white;
-+   font-size: 16px;
-+   font-weight: bold;
-+   text-anchor: middle;
-+   dominant-baseline: middle;
-+   pointer-events: none;
-+ }
-+ 
-+ /* Evidenziazione simmetrica */
-+ .selezionato-da rect {
-+   fill: #16a34a !important; /* Verde per Partenza */
-+   stroke: #052e16;
-+   stroke-width: 4px;
-+ }
-+ 
-+ .selezionato-a rect {
-+   fill: #dc2626 !important; /* Rosso per Destinazione */
-+   stroke: #450a0a;
-+   stroke-width: 4px;
-+ }
-```
-
-</StepCard>
-
-<StepCard stepNumber={stepNumber++}>
-
-
-### ⚙️ Logica Asincrona in `script.js`
-Gestiamo il caricamento dell'SVG e del JSON tramite `fetch()` 
-e `async/await`, collegando sia i menu `<select>`
- sia il clic diretto sugli edifici della mappa
-
-```javascript title="script.js"
-document.addEventListener("DOMContentLoaded", () => {
-  caricaMappaSVG();
-  caricaLocaliJSON();
-});
-
-async function caricaMappaSVG() {
-  const risposta = await fetch("mappa.svg");
-  document.getElementById("mappa-container").innerHTML = await risposta.text();
-}
-
-async function caricaLocaliJSON() {
-  const risposta = await fetch("locali.json");
-  const locali = await risposta.json();
-
-  const selectDa = document.getElementById("select-da");
-  const selectA = document.getElementById("select-a");
-
-  locali.forEach(l => {
-    selectDa.innerHTML += `<option value="${l.id}">${l.nome}</option>`;
-    selectA.innerHTML += `<option value="${l.id}">${l.nome}</option>`;
-  });
-}
-
-function aggiornaEvidenziazione() {
-  const idDa = document.getElementById("select-da").value;
-  const idA = document.getElementById("select-a").value;
-
-  // Rimuove eventuali evidenziazioni precedenti
-  document.querySelectorAll("#layer-edifici g").forEach(edificio => {
-    edificio.classList.remove("selezionato-da", "selezionato-a");
-  });
-
-  // Applica le nuove classi simmetriche
-  if (idDa) {
-    document.getElementById(idDa)?.classList.add("selezionato-da");
-  }
-  if (idA) {
-    document.getElementById(idA)?.classList.add("selezionato-a");
-  }
-}
-
-function selezionaDaMappa(idEdificio) {
-  const selectDa = document.getElementById("select-da");
-  const selectA = document.getElementById("select-a");
-
-  if (!selectDa.value) {
-    selectDa.value = idEdificio;
-  } else if (!selectA.value && selectDa.value !== idEdificio) {
-    selectA.value = idEdificio;
-  } else {
-    selectDa.value = idEdificio;
-    selectA.value = "";
-  }
-
-  aggiornaEvidenziazione();
-}
-```
-
-</StepCard>
-
-<StepCard stepNumber={stepNumber++}>
-
-### 🧱 Struttura HTML in index.html
-Il file HTML principale si alleggerisce notevolmente, ospitando soltanto i due menu a tendina e il contenitore vuoto in cui verrà iniettato mappa.svg:
-
-```diff lang="html" title="index.html"
-<!DOCTYPE html>
-<html lang="it">
-
-<head>
-  <!-- head invariato -->
-<head>
-
-<body>
-  <h1>🗺️ Calcolo Percorso Campus</h1>
-
-- <!-- cancella il PANNELLO DI CONTROLLO CON MENU A TENDINA -->
-- <div style="margin-bottom: 15px; background: white; padding: 10px; border-radius: 8px; border: 1px solid #cbd5e1;">
-- <!-- contenuto del div del menu a tendina  -->
-- </div>
-
-+ <!-- inserisci nuovo div "controls" -->
-+  <div class="controls">
-+   <select id="select-da" onchange="aggiornaEvidenziazione()">
-+      <option value="">-- Partenza --</option>
-+    </select>
++   <!-- NUOVO LAYER SNODI STRADALI E DI ACCESSO  -->
++   <g id="layer-snodi">
++   <!-- Snodi di accesso ortogonali agli edifici -->
++       <circle id="snodo-uffici" cx="205" cy="150" r="4" fill="#dc2626" />
++       <circle id="snodo-aule" cx="205" cy="430" r="4" fill="#dc2626" />
++       <circle id="snodo-mensa" cx="310" cy="300" r="4" fill="#dc2626" />
 +
-+    <select id="select-a" onchange="aggiornaEvidenziazione()">
-+      <option value="">-- Destinazione --</option>
-+    </select>
-+  </div>
++       <!-- Snodi situati agli incroci stradali principali -->
++       <circle id="snodo-incrocio-ovest" cx="205" cy="300" r="4" fill="#0284c7" />
++       <circle id="snodo-incrocio-est" cx="595" cy="300" r="4" fill="#0284c7" />
++ </g>
 
-- <!-- cancella la Struttura Mappa SVG Embedded -->
-- <!-- Struttura Mappa SVG Embedded -->
--    <svg>
--       <!-- codice svg -->
--    </svg>
+</svg>
 
-+ <!-- inserisci nuovo div mappa-container -->
-+  <div id="mappa-container"></div>
-
-  <script src="script.js"></script>
-</body>
-</html>
 ```
 
+#### visibilità degli snodi sulla mappa
+Per facilitare il posizionamento e la calibrazione visiva, 
+aggiungiamo nel file
+style.css questa regola:
+```diff lang="css" title="style.css"
+
++ /* Regola in style.css: commenta o decommenta display per mostrare/nascondere gli snodi */
++ #layer-snodi {
++ /* display: none; */
++ }
+
+```
+
+<Aside type="tip" title="Suggerimento Operativo">
+Lascia la riga display: none; commentata durante la configurazione per vedere i pallini rossi e blu posizionati al centro delle strade. La attiveremo (nascondendoli) solo a lavoro ultimato.
+</Aside>
+
+<Aside type="caution" title="Esercizio di consolidamento" icon="puzzle">
+Completa il layer-snodi aggiungendo i nodi ortogonali mancanti 
+per i Laboratori e la Palestra 
+(e per gli eventuali nuovi locali aggiunti da te), 
+assicurandoti che ogni snodo si trovi esattamente 
+al centro delle corsie stradali!
+</Aside>
 </StepCard>
+
 <StepCard stepNumber={stepNumber++}>
 ## 🧪 Collaudo
 Esegui il progetto è verifica che le selezioni dei locali avvengano correttamente.
