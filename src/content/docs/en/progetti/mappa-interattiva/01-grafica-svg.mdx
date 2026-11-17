@@ -1,6 +1,6 @@
 ---
 title: "01. Creating an SVG Map"
-description: "First step of the Campus Map project: creating the vector graphic structure in SVG inside the HTML page and separating visual styles into style.css."
+description: "First step of the Campus Map project: build the vector graphic structure in SVG inside the HTML page and separate the visual styles into style.css."
 ---
 
 import {
@@ -17,9 +17,9 @@ export let stepNumber = 1;
 
 <Aside type="tip" title="📚 Prerequisites for this lesson">
 - know the basics of [HTML](https://en.wikipedia.org/wiki/HTML), [CSS](https://en.wikipedia.org/wiki/CSS), and [JavaScript](https://en.wikipedia.org/wiki/JavaScript)
-- be able to create, read, and edit [SVG](https://en.wikipedia.org/wiki/Scalable_Vector_Graphics) elements
+- know how to create, read, and modify [SVG](https://en.wikipedia.org/wiki/Scalable_Vector_Graphics) elements
 - understand variables, functions, and how to use the [DOM](https://en.wikipedia.org/wiki/Document_Object_Model)
-- be able to open a page in a browser and use the developer tools
+- be able to open the page in a browser and use the developer tools
 - have Internet access for any external resources or online services
 </Aside>
 
@@ -29,7 +29,7 @@ export let stepNumber = 1;
     icon="youtube"
     iconPlacement="end"
 >
-watch the introduction video
+Watch the introductory video
 </LinkButton>
 
 ## Analysis and Design
@@ -37,70 +37,48 @@ watch the introduction video
 <StepCard stepNumber={stepNumber++}>
 ### The Campus Map in SVG
 
-🗺️ The following figure shows the map
-we will create in SVG format.
+🗺️ The following figure shows the map we will create in SVG format.
 
-<svg viewBox="0 0 800 600" width="100%" height="auto" style="border: 2px solid #ccc; border-radius: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.1);">
-
-<g id="layer-ground">
+<svg
+  viewBox="0 0 800 600"
+  width="100%"
+  height="auto"
+  style={{ border: '2px solid #ccc', borderRadius: '8px', boxShadow: '0 4px 10px rgba(0,0,0,0.1)' }}
+>
+  <g id="layer-terreno">
     <rect x="0" y="0" width="800" height="600" fill="#7ec850" />
-</g>
-<g id="layer-paths">
+  </g>
+  <g id="layer-percorsi">
     <rect x="50" y="270" width="700" height="60" fill="#d1d5db" rx="4" />
     <rect x="180" y="80" width="50" height="440" fill="#d1d5db" rx="4" />
-</g>
-<g id="layer-buildings">
-    
-    <g id="building-offices">
-    <rect x="70" y="80" width="100" height="140" fill="#1e3a8a" rx="6" />
-    <text x="120" y="150"  style="font-size: 14px;
-    font-weight: bold;
-    fill: #ffffff;
-    text-anchor: middle;
-    dominant-baseline: middle;">Offices</text>
+    <rect x="570" y="80" width="50" height="440" fill="#d1d5db" rx="4" />
+  </g>
+  <g id="layer-edifici">
+    <g id="edificio-uffici">
+      <rect x="70" y="80" width="100" height="140" fill="#1e3a8a" rx="6" />
+      <text x="120" y="150" fontSize="14" fontWeight="bold" fill="#ffffff" dominantBaseline="middle" style={{ textAnchor: 'middle' }}>Offices</text>
     </g>
-
-    <g id="building-classrooms">
-    <rect x="70" y="380" width="100" height="140" fill="#2563eb" rx="6" />
-    <text x="120" y="450" style="font-size: 14px;
-    font-weight: bold;
-    fill: #ffffff;
-    text-anchor: middle;
-    dominant-baseline: middle;">Classrooms</text>
+    <g id="edificio-aule">
+      <rect x="70" y="380" width="100" height="140" fill="#2563eb" rx="6" />
+      <text x="120" y="450" fontSize="14" fontWeight="bold" fill="#ffffff" dominantBaseline="middle" style={{ textAnchor: 'middle' }}>Classrooms</text>
     </g>
-
-    <g id="building-labs">
-    <rect x="630" y="80" width="100" height="140" fill="#7c3aed" rx="6" />
-    <text x="680" y="150" style="font-size: 14px;
-    font-weight: bold;
-    fill: #ffffff;
-    text-anchor: middle;
-    dominant-baseline: middle;">Labs</text>
+    <g id="edificio-laboratori">
+      <rect x="630" y="80" width="100" height="140" fill="#7c3aed" rx="6" />
+      <text x="680" y="150" fontSize="14" fontWeight="bold" fill="#ffffff" dominantBaseline="middle" style={{ textAnchor: 'middle' }}>Labs</text>
     </g>
-
-    <g id="building-cafeteria">
-    <rect x="240" y="180" width="140" height="80" fill="#ea580c" rx="6" />
-    <text x="310" y="220" style="font-size: 14px;
-    font-weight: bold;
-    fill: #ffffff;
-    text-anchor: middle;
-    dominant-baseline: middle;">Cafeteria</text>
+    <g id="edificio-mensa">
+      <rect x="240" y="180" width="140" height="80" fill="#ea580c" rx="6" />
+      <text x="310" y="220" fontSize="14" fontWeight="bold" fill="#ffffff" dominantBaseline="middle" style={{ textAnchor: 'middle' }}>Cafeteria</text>
     </g>
-
-    <g id="building-gym">
-    <rect x="630" y="380" width="100" height="140" fill="#dc2626" rx="6" />
-    <text x="680" y="450" style="font-size: 14px;
-    font-weight: bold;
-    fill: #ffffff;
-    text-anchor: middle;
-    dominant-baseline: middle;">Gym</text>
+    <g id="edificio-palestra">
+      <rect x="630" y="380" width="100" height="140" fill="#dc2626" rx="6" />
+      <text x="680" y="450" fontSize="14" fontWeight="bold" fill="#ffffff" dominantBaseline="middle" style={{ textAnchor: 'middle' }}>Gym</text>
     </g>
-
   </g>
 </svg>
 
 <Aside>
-  💡 [SVG](https://en.wikipedia.org/wiki/Scalable_Vector_Graphics) is fully vector-based and automatically adapts to the reader's screen size.
+  💡 [SVG](https://en.wikipedia.org/wiki/Scalable_Vector_Graphics) is entirely vector-based and automatically adapts to the reader's screen size.
 </Aside>
 
 </StepCard>
@@ -109,22 +87,21 @@ we will create in SVG format.
 
 ### 🗂️ Layer organization (stacking order)
 
-In [SVG](https://it.wikipedia.org/wiki/Scalable_Vector_Graphics), the order in which the code is written determines the visual stacking order of elements on the screen:
+In [SVG](https://en.wikipedia.org/wiki/Scalable_Vector_Graphics), the order in which the code is written determines the visual stacking order of elements on the screen:
 
 - 🟩 The first element written appears in the background.
 - ⬆️ Subsequent elements are drawn on top of it.
 
-🧱 We group the map elements into three main logical layers using the `<g>` tag ([group](https://en.wikipedia.org/wiki/Scalable_Vector_Graphics#Groups_and_transforms)):
+🧱 We group the map elements into three main logical layers using the `<g>` ([group](https://en.wikipedia.org/wiki/Scalable_Vector_Graphics#Groups_and_transforms)) tag:
 
 ```html
 <svg
   viewBox="0 0 800 600"
-  xmlns="[http://www.w3.org/2000/svg](http://www.w3.org/2000/svg)"
->
+    xmlns="http://www.w3.org/2000/svg">
   <!-- Layer 1: Ground (background) -->
   <g id="layer-ground">...</g>
 
-  <!-- Layer 2: Pedestrian paths -->
+  <!-- Layer 2: Paths -->
   <g id="layer-paths">...</g>
 
   <!-- Layer 3: Campus buildings -->
@@ -137,7 +114,7 @@ In [SVG](https://it.wikipedia.org/wiki/Scalable_Vector_Graphics), the order in w
 
 ### 📁 Project file structure
 
-At the end of this lesson, the project folder will contain two main files in its root directory:
+By the end of this lesson, the project folder will contain two main files in its root directory:
 
 <FileTree>
 - campus-map/
@@ -153,18 +130,18 @@ At the end of this lesson, the project folder will contain two main files in its
 
   <Mermaid chart={`
   graph TD
-    subgraph Client [Client Environment]
-      Browser[Web Browser]
+    subgraph Client [Client environment]
+        Browser[Browser Web]
     end
 
-    subgraph ProjectFiles [Project Files]
+    subgraph ProjectFiles [Project files]
       HTML[index.html] -->|Links stylesheet| CSS[style.css]
       HTML -->|Embeds and structures| SVG[Map SVG structure]
 
-        subgraph SVG_Structure [SVG Composition]
-          SVG --> Terreno[Ground layer]
-          SVG --> Percorsi[Paths layer]
-          SVG --> Edifici[Buildings & Labels layer]
+        subgraph SVG_Structure [Composizione SVG]
+            SVG --> Terreno[Ground layer]
+            SVG --> Percorsi[Paths layer]
+            SVG --> Edifici[Buildings & labels layer]
         end
     end
 
@@ -184,13 +161,13 @@ At the end of this lesson, the project folder will contain two main files in its
 
 Diagram created with [Mermaid](https://mermaid.live/edit#pako:eNqNk1FvmzAQx7-K5b60EokgaQjjYdOW9GnaVrVTpQ3y4NkHWAUfso1SluS719jJNm0v4wXu7nf_-3PgA-UogOa0anHPG6Yt-botFXHXo3XRdfEkjbQEVSsVEGNRw-6GzGZvyQeNewNFuJFeoxi4NbvQfM5O3MbJFO-FINJCZ4hFwl3mzE1FT22BSwGHB2Bi9EwD_JngYN-dAhmAiT1-BOiJabDvpaqP51n_UN_AHMk9G4s7ZUGTno0dKEsEWCbbi09X9-OfWCvF4f7MMM6htyAus33Vi37GI3kAq8fiscE9Aa1Rkw6MYTWcJX3Zizq5v_u9qQ2qSuqu-KKFM8ZDBOKykhCHraCC6-Kuc46JBg6yt7ubUgXQ2LGF8JlIJds2v4KsWsGbyFiNz5Bf3S5ZfLv-E570_pcNpgNcVdUS4l9w9SPjcUwjWmspaG71ABHtQDufLqSHSaaktoEOSpq7Rw1ieJlxbFGXtFQn19oz9R2xu3RrHOqG5hVrjYuGXjALW8lqzX4joNy-NjgoS_OVV6D5gb7QfLlO5mm2SBbJOk5WaZpEdHTZ1TzOsjTN0sS92nKRniL604-M59naCYCQ7n_-FA6APwenV1CD_oo/)
 
- A **component diagram** is a UML structural diagram used to model the physical, static view of a system. Its main purpose is to show the organization and dependencies among software modules, code files, libraries, and resources, highlighting how different project elements are assembled and interact with one another and with the runtime environment, such as the **browser**.
+ A **component diagram** is a UML structural diagram used to model the physical, static view of a system. Its main purpose is to show the organization and dependencies among software modules, code files, libraries, and resources, highlighting how the different parts of a project fit together and interact with one another and with the runtime environment, such as the **browser**.
 
 #### 🔍 Diagram explanation
 This diagram represents the clean, modular architecture developed in the first lesson of the Campus Map project:
 
 - **Runtime environment**: the **web browser** acts as the client and loads and interprets the project's main entry point.
-- **File structure and separation of concerns**: `index.html` acts as the central coordinator, delegating styling and visual appearance to the external `style.css` file while embedding the map's vector code directly.
+- **File structure and separation of concerns**: `index.html` acts as the central coordinator, delegating styling to the external `style.css` file and embedding the map's vector code directly.
 - **SVG organization**: the vector structure (`SVG`) is further divided into logical layers such as `layer-ground`, `layer-paths`, and `layer-buildings` to manage the map's visual composition.
 
 </StepCard>
@@ -201,10 +178,9 @@ This diagram represents the clean, modular architecture developed in the first l
 
 ### 🧑‍💻 The `index.html` file
 
-📄 Create the `index.html` file in [HTML](https://en.wikipedia.org/wiki/HTML), linking the external [CSS](https://en.wikipedia.org/wiki/CSS) stylesheet in the head and placing the [SVG](https://en.wikipedia.org/wiki/Scalable_Vector_Graphics) map inside the body:
+📄 Create the `index.html` file, link the external [CSS](https://en.wikipedia.org/wiki/CSS) stylesheet in the header, and add the [SVG](https://en.wikipedia.org/wiki/Scalable_Vector_Graphics) map inside the body:
 
-```html
-<!-- index.html -->
+```html title="index.html"
 <!DOCTYPE html>
 <html lang="en">
   <head>
@@ -222,14 +198,13 @@ This diagram represents the clean, modular architecture developed in the first l
       viewBox="0 0 800 600"
       width="800"
       height="600"
-      xmlns="[http://www.w3.org/2000/svg](http://www.w3.org/2000/svg)"
-    >
+            xmlns="http://www.w3.org/2000/svg"    >
       <!-- LAYER 1: GROUND (Green lawn) -->
       <g id="layer-ground">
         <rect x="0" y="0" width="800" height="600" fill="#7ec850" />
       </g>
 
-      <!-- LAYER 2: PEDESTRIAN PATHS -->
+      <!-- LAYER 2: PATHS -->
       <g id="layer-paths">
         <rect x="50" y="270" width="700" height="60" fill="#d1d5db" rx="4" />
         <rect x="180" y="80" width="50" height="440" fill="#d1d5db" rx="4" />
@@ -238,13 +213,13 @@ This diagram represents the clean, modular architecture developed in the first l
 
       <!-- LAYER 3: CAMPUS BUILDINGS -->
       <g id="layer-buildings">
-        <!-- Administrative Offices -->
+        <!-- Administrative offices -->
         <g id="building-offices">
           <rect x="70" y="80" width="100" height="140" fill="#1e3a8a" rx="6" />
           <text x="120" y="150" class="label">Offices</text>
         </g>
 
-        <!-- Classroom Building -->
+        <!-- Classrooms building -->
         <g id="building-classrooms">
           <rect x="70" y="380" width="100" height="140" fill="#2563eb" rx="6" />
           <text x="120" y="450" class="label">Classrooms</text>
@@ -281,10 +256,10 @@ This diagram represents the clean, modular architecture developed in the first l
 ```
 ### Main SVG elements
 
-  - [SVG](https://en.wikipedia.org/wiki/Scalable_Vector_Graphics) defines the graphic area; [`viewBox`](https://en.wikipedia.org/wiki/Scalable_Vector_Graphics) sets the coordinate system.
-  - [`<g>`](https://en.wikipedia.org/wiki/Scalable_Vector_Graphics) groups related elements; [`id`](https://en.wikipedia.org/wiki/HTML_attribute) assigns them an identifier.
-  - [`<rect>`](https://en.wikipedia.org/wiki/Scalable_Vector_Graphics) draws rectangles: `x` and `y` specify the position, `width` and `height` the dimensions, `fill` the color, and `rx` rounds the corners.
-  - [`<text>`](https://en.wikipedia.org/wiki/Scalable_Vector_Graphics) displays a label; `x` and `y` specify its position, while styles define its appearance and alignment.
+- [SVG](https://en.wikipedia.org/wiki/Scalable_Vector_Graphics) defines the graphic area; [`viewBox`](https://en.wikipedia.org/wiki/Scalable_Vector_Graphics) sets the coordinate system.
+- [`<g>`](https://en.wikipedia.org/wiki/Scalable_Vector_Graphics) groups related elements; [`id`](https://en.wikipedia.org/wiki/HTML_attribute) assigns them an identifier.
+- [`<rect>`](https://en.wikipedia.org/wiki/Scalable_Vector_Graphics) draws rectangles: `x` and `y` specify the position, `width` and `height` the dimensions, `fill` the color, and `rx` rounds the corners.
+- [`<text>`](https://en.wikipedia.org/wiki/Scalable_Vector_Graphics) displays a label; `x` and `y` specify its position, while styles define its appearance and alignment.
 
 
 </StepCard>
@@ -292,10 +267,9 @@ This diagram represents the clean, modular architecture developed in the first l
 <StepCard stepNumber={stepNumber++}>
 ### 🎨 Creating the `style.css` stylesheet
 
-To keep the web architecture organized, we separate the page layout from the style rules. Create a file named `style.css` in the same project folder and paste in the following code. A [CSS](https://en.wikipedia.org/wiki/CSS) stylesheet lets us separate presentation from the HTML/SVG structure.
+To keep the web architecture organized, we separate the layout from the style rules. Create a file named `style.css` in the same project folder and paste in the following code. A [CSS](https://en.wikipedia.org/wiki/CSS) stylesheet lets us separate presentation from the HTML/SVG structure.
 
-```css
-//style.css
+```css title="style.css"
 /* General page styles */
 body {
   font-family:
@@ -340,7 +314,6 @@ svg {
 
 ---
 
-
 <StepCard stepNumber={stepNumber++}>
 
 ### 🧪 Exercises
@@ -358,32 +331,36 @@ svg {
 Open the **Source Control** panel in VS Code (`Ctrl + Shift + G`) 🔧:
 
 <Steps>
-      1. 🌿 Create a new branch named `lesson-1`.
-      2. ✅ Commit the files with the message: `"Completed Lesson 1: SVG Map and style.css"`.
-      3. 🚀 Use **Publish Branch / Sync** to sync the lesson to your GitHub repository.
+1. 🌿 Create a new branch named `lesson-1`.
+2. ✅ Commit the files with the message: `"Completed Lesson 1: SVG Map and style.css"`.
+3. 🚀 Select **Publish Branch / Sync** to sync the lesson to your GitHub repository.
 </Steps>
 
 </StepCard>
 
 <Aside type="note" title="Key Concepts Summary" icon="puzzle">
+
 - [SVG](https://en.wikipedia.org/wiki/Scalable_Vector_Graphics): a vector format used to build the campus map.
 - [`viewBox`](https://en.wikipedia.org/wiki/Scalable_Vector_Graphics): defines the map's coordinate area and proportions.
 - [`<g>`](https://en.wikipedia.org/wiki/Scalable_Vector_Graphics): groups SVG elements into layers, such as the ground, paths, and buildings.
-- [`<rect>`](https://en.wikipedia.org/wiki/Scalable_Vector_Graphics): draws map surfaces and building outlines; attributes such as `x`, `y`, `width`, and `height` define their position and dimensions.
-- [`<text>`](https://en.wikipedia.org/wiki/Scalable_Vector_Graphics): adds building labels; [CSS](https://en.wikipedia.org/wiki/CSS) classes let you style them consistently.
-- [`id`](https://en.wikipedia.org/wiki/HTML_attribute): identifies layers and individual buildings, making them easier to find and edit.
-- [style.css](https://en.wikipedia.org/wiki/CSS): contains the page and map styles, separate from the HTML/SVG structure.
+- [`<rect>`](https://en.wikipedia.org/wiki/Scalable_Vector_Graphics): draws map surfaces and building shapes; attributes such as `x`, `y`, `width`, and `height` define their position and dimensions.
+- [`<text>`](https://en.wikipedia.org/wiki/Scalable_Vector_Graphics): adds building labels; [CSS](https://en.wikipedia.org/wiki/CSS) classes help keep their appearance consistent.
+- [`id`](https://en.wikipedia.org/wiki/HTML_attribute): identifies layers and individual buildings, making them easier to find and modify.
+- [`style.css`](https://en.wikipedia.org/wiki/CSS): contains the page and map styles, separate from the HTML/SVG structure.
+
 </Aside>
 
 <Checklist id="progetto-mappa-campus-svg" title="✅ Learning Check">
+
 - [ ] I can explain what SVG is used for and how `viewBox` defines the map area
 - [ ] I can identify SVG layers and describe the role of `<g>` groups
 - [ ] I can create and position a building using `<rect>` and its coordinates
 - [ ] I can add a label with `<text>` and assign identifiers to elements
 - [ ] I can link `style.css` and customize the map's appearance
-- [ ] I can add a new building to the correct layer and save changes with Git
+- [ ] I can add a new building to the correct layer and save my changes with Git
+
 <Aside type="tip" title="Great job!" slot="reward">
-  You can now organize a campus map in SVG, add buildings and labels,
-  and customize its appearance with CSS.
+  You can now organize a campus map in SVG, add buildings and labels, and customize its appearance with CSS.
 </Aside>
+
 </Checklist>

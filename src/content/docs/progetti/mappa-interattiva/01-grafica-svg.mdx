@@ -35,67 +35,46 @@ guarda il video introduttivo
 ## Analisi e Progettazione
 
 <StepCard stepNumber={stepNumber++}>
-### la Mappa del Campus in SVG
+### La Mappa del Campus in SVG
 
 🗺️ Nella seguente figura è visualizzata la 
 mappa che andremo a realizzare in formato SVG.
 
-<svg viewBox="0 0 800 600" width="100%" height="auto" style="border: 2px solid #ccc; border-radius: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.1);">
-
-<g id="layer-terreno">
+<svg
+  viewBox="0 0 800 600"
+  width="100%"
+  height="auto"
+  style={{ border: '2px solid #ccc', borderRadius: '8px', boxShadow: '0 4px 10px rgba(0,0,0,0.1)' }}
+>
+  <g id="layer-terreno">
     <rect x="0" y="0" width="800" height="600" fill="#7ec850" />
-</g>
-<g id="layer-percorsi">
+  </g>
+  <g id="layer-percorsi">
     <rect x="50" y="270" width="700" height="60" fill="#d1d5db" rx="4" />
     <rect x="180" y="80" width="50" height="440" fill="#d1d5db" rx="4" />
-</g>
-<g id="layer-edifici">
-    
+    <rect x="570" y="80" width="50" height="440" fill="#d1d5db" rx="4" />
+  </g>
+  <g id="layer-edifici">
     <g id="edificio-uffici">
-    <rect x="70" y="80" width="100" height="140" fill="#1e3a8a" rx="6" />
-    <text x="120" y="150"  style="font-size: 14px;
-    font-weight: bold;
-    fill: #ffffff;
-    text-anchor: middle;
-    dominant-baseline: middle;">Uffici</text>
+      <rect x="70" y="80" width="100" height="140" fill="#1e3a8a" rx="6" />
+      <text x="120" y="150" fontSize="14" fontWeight="bold" fill="#ffffff" dominantBaseline="middle" style={{ textAnchor: 'middle' }}>Uffici</text>
     </g>
-
     <g id="edificio-aule">
-    <rect x="70" y="380" width="100" height="140" fill="#2563eb" rx="6" />
-    <text x="120" y="450" style="font-size: 14px;
-    font-weight: bold;
-    fill: #ffffff;
-    text-anchor: middle;
-    dominant-baseline: middle;">Aule</text>
+      <rect x="70" y="380" width="100" height="140" fill="#2563eb" rx="6" />
+      <text x="120" y="450" fontSize="14" fontWeight="bold" fill="#ffffff" dominantBaseline="middle" style={{ textAnchor: 'middle' }}>Aule</text>
     </g>
-
     <g id="edificio-laboratori">
-    <rect x="630" y="80" width="100" height="140" fill="#7c3aed" rx="6" />
-    <text x="680" y="150" style="font-size: 14px;
-    font-weight: bold;
-    fill: #ffffff;
-    text-anchor: middle;
-    dominant-baseline: middle;">Laboratori</text>
+      <rect x="630" y="80" width="100" height="140" fill="#7c3aed" rx="6" />
+      <text x="680" y="150" fontSize="14" fontWeight="bold" fill="#ffffff" dominantBaseline="middle" style={{ textAnchor: 'middle' }}>Laboratori</text>
     </g>
-
     <g id="edificio-mensa">
-    <rect x="240" y="180" width="140" height="80" fill="#ea580c" rx="6" />
-    <text x="310" y="220" style="font-size: 14px;
-    font-weight: bold;
-    fill: #ffffff;
-    text-anchor: middle;
-    dominant-baseline: middle;">Mensa</text>
+      <rect x="240" y="180" width="140" height="80" fill="#ea580c" rx="6" />
+      <text x="310" y="220" fontSize="14" fontWeight="bold" fill="#ffffff" dominantBaseline="middle" style={{ textAnchor: 'middle' }}>Mensa</text>
     </g>
-
     <g id="edificio-palestra">
-    <rect x="630" y="380" width="100" height="140" fill="#dc2626" rx="6" />
-    <text x="680" y="450" style="font-size: 14px;
-    font-weight: bold;
-    fill: #ffffff;
-    text-anchor: middle;
-    dominant-baseline: middle;">Palestra</text>
+      <rect x="630" y="380" width="100" height="140" fill="#dc2626" rx="6" />
+      <text x="680" y="450" fontSize="14" fontWeight="bold" fill="#ffffff" dominantBaseline="middle" style={{ textAnchor: 'middle' }}>Palestra</text>
     </g>
-
   </g>
 </svg>
 
@@ -120,8 +99,7 @@ In [SVG](https://it.wikipedia.org/wiki/Scalable_Vector_Graphics), l'ordine in cu
 ```html
 <svg
   viewBox="0 0 800 600"
-  xmlns="[http://www.w3.org/2000/svg](http://www.w3.org/2000/svg)"
->
+    xmlns="http://www.w3.org/2000/svg">
   <!-- Layer 1: Terreno (sfondo) -->
   <g id="layer-terreno">...</g>
 
@@ -204,8 +182,7 @@ Questo diagramma rappresenta l'architettura pulita e modulare sviluppata nella p
 
 📄 Crea il file `index.html` in [HTML](https://it.wikipedia.org/wiki/HTML), collegando il foglio di stile esterno [CSS](https://it.wikipedia.org/wiki/CSS) nell'intestazione ed inserendo la mappa [SVG](https://it.wikipedia.org/wiki/Scalable_Vector_Graphics) all'interno del body:
 
-```html
-<!-- index.html -->
+```html title="index.html"
 <!DOCTYPE html>
 <html lang="it">
   <head>
@@ -223,8 +200,7 @@ Questo diagramma rappresenta l'architettura pulita e modulare sviluppata nella p
       viewBox="0 0 800 600"
       width="800"
       height="600"
-      xmlns="[http://www.w3.org/2000/svg](http://www.w3.org/2000/svg)"
-    >
+            xmlns="http://www.w3.org/2000/svg"    >
       <!-- LAYER 1: TERRENO (Prato verde) -->
       <g id="layer-terreno">
         <rect x="0" y="0" width="800" height="600" fill="#7ec850" />
@@ -282,10 +258,10 @@ Questo diagramma rappresenta l'architettura pulita e modulare sviluppata nella p
 ```
 ### Elementi principali dell'SVG
 
-  - [SVG](https://it.wikipedia.org/wiki/Scalable_Vector_Graphics) definisce l'area della grafica; [`viewBox`](https://it.wikipedia.org/wiki/Scalable_Vector_Graphics) stabilisce il sistema di coordinate.
-  - [`<g>`](https://it.wikipedia.org/wiki/Scalable_Vector_Graphics) raggruppa elementi correlati; [`id`](https://it.wikipedia.org/wiki/Attributo_(HTML)) assegna loro un identificativo.
-  - [`<rect>`](https://it.wikipedia.org/wiki/Scalable_Vector_Graphics) disegna rettangoli: `x` e `y` indicano la posizione, `width` e `height` le dimensioni, `fill` il colore e `rx` arrotonda gli angoli.
-  - [`<text>`](https://it.wikipedia.org/wiki/Scalable_Vector_Graphics) mostra un'etichetta; `x` e `y` ne indicano la posizione e gli stili ne definiscono l'aspetto e l'allineamento.
+- [SVG](https://it.wikipedia.org/wiki/Scalable_Vector_Graphics) definisce l'area della grafica; [`viewBox`](https://it.wikipedia.org/wiki/Scalable_Vector_Graphics) stabilisce il sistema di coordinate.
+- [`<g>`](https://it.wikipedia.org/wiki/Scalable_Vector_Graphics) raggruppa elementi correlati; [`id`](https://it.wikipedia.org/wiki/Attributo_(HTML)) assegna loro un identificativo.
+- [`<rect>`](https://it.wikipedia.org/wiki/Scalable_Vector_Graphics) disegna rettangoli: `x` e `y` indicano la posizione, `width` e `height` le dimensioni, `fill` il colore e `rx` arrotonda gli angoli.
+- [`<text>`](https://it.wikipedia.org/wiki/Scalable_Vector_Graphics) mostra un'etichetta; `x` e `y` ne indicano la posizione e gli stili ne definiscono l'aspetto e l'allineamento.
 
 
 </StepCard>
@@ -295,8 +271,7 @@ Questo diagramma rappresenta l'architettura pulita e modulare sviluppata nella p
 
 Per mantenere un'architettura web ordinata, separiamo il layout grafico dalle regole di stile. Crea un file chiamato `style.css` nella stessa cartella del progetto e incolla il seguente codice. Il foglio di stile in [CSS](https://it.wikipedia.org/wiki/CSS) ci permette di separare la presentazione dalla struttura HTML/SVG.
 
-```css
-//style.css
+```css title="style.css"
 /* stili generali della pagina */
 body {
   font-family:
@@ -341,7 +316,6 @@ svg {
 
 ---
 
-
 <StepCard stepNumber={stepNumber++}>
 
 ### 🧪 Esercizi
@@ -359,32 +333,36 @@ svg {
 Apri il pannello **Source Control** di VS Code (`Ctrl + Shift + G`) 🔧:
 
 <Steps>
-      1. 🌿 Crea un nuovo branch denominato `lezione-1`.
-      2. ✅ Esegui il commit dei file con il messaggio: `"Completata Lezione 1: Mappa SVG e style.css"`.
-      3. 🚀 Effettua il **Publish Branch / Sync** per sincronizzare la lezione sul tuo repository GitHub.
+1. 🌿 Crea un nuovo branch denominato `lezione-1`.
+2. ✅ Esegui il commit dei file con il messaggio: `"Completata Lezione 1: Mappa SVG e style.css"`.
+3. 🚀 Effettua il **Publish Branch / Sync** per sincronizzare la lezione sul tuo repository GitHub.
 </Steps>
 
 </StepCard>
 
 <Aside type="note" title="Sintesi Concetti Chiave" icon="puzzle">
+
 - [SVG](https://it.wikipedia.org/wiki/Scalable_Vector_Graphics): formato vettoriale usato per costruire la mappa del campus.
 - [`viewBox`](https://it.wikipedia.org/wiki/Scalable_Vector_Graphics): definisce l'area di coordinate e le proporzioni della mappa.
 - [`<g>`](https://it.wikipedia.org/wiki/Scalable_Vector_Graphics): raggruppa gli elementi SVG in layer, come terreno, percorsi ed edifici.
 - [`<rect>`](https://it.wikipedia.org/wiki/Scalable_Vector_Graphics): disegna le superfici della mappa e i corpi degli edifici; attributi come `x`, `y`, `width` e `height` ne definiscono posizione e dimensioni.
 - [`<text>`](https://it.wikipedia.org/wiki/Scalable_Vector_Graphics): aggiunge le etichette degli edifici; le classi [CSS](https://it.wikipedia.org/wiki/CSS) permettono di uniformarne l'aspetto.
 - [`id`](https://it.wikipedia.org/wiki/Attributo_(HTML)): identifica i layer e i singoli edifici, rendendoli più facili da trovare e modificare.
-- [style.css](https://it.wikipedia.org/wiki/CSS): contiene gli stili della pagina e della mappa, separati dalla struttura HTML/SVG.
+- [`style.css`](https://it.wikipedia.org/wiki/CSS): contiene gli stili della pagina e della mappa, separati dalla struttura HTML/SVG.
+
 </Aside>
 
 <Checklist id="progetto-mappa-campus-svg" title="✅ Verifica dell'apprendimento">
+
 - [ ] So spiegare a cosa serve SVG e come il `viewBox` definisce l'area della mappa
 - [ ] So riconoscere i layer SVG e descrivere il ruolo dei gruppi `<g>`
 - [ ] So creare e posizionare un edificio usando `<rect>` e le relative coordinate
 - [ ] So aggiungere un'etichetta con `<text>` e assegnare identificatori agli elementi
 - [ ] So collegare `style.css` e personalizzare l'aspetto della mappa
 - [ ] So aggiungere un nuovo edificio al layer corretto e salvare le modifiche con Git
+
 <Aside type="tip" title="Ottimo lavoro!" slot="reward">
-  Ora sai organizzare una mappa del campus in SVG, aggiungere edifici ed etichette
-  e personalizzarne l'aspetto con CSS.
+  Ora sai organizzare una mappa del campus in SVG, aggiungere edifici ed etichette e personalizzarne l'aspetto con CSS.
 </Aside>
+
 </Checklist>

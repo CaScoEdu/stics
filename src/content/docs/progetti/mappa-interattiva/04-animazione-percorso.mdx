@@ -5,18 +5,11 @@ description: "Progetto Mappa Interattiva Campus - Lezione 4: modellazione della 
 
 import {
     Aside,
-    Badge,
-    Card,
     FileTree,
-    Icon,
     LinkButton,
-    LinkCard,
-    Steps,
-    TabItem,
-    Tabs
+    Steps
 } from "@astrojs/starlight/components";
 import Mermaid from "@/components/Mermaid.astro";
-import IconGroup from '@/components/IconGroup.astro';
 import StepCard from '@/components/StepCard.astro';
 import Checklist from '@/components/Checklist.astro';
 
@@ -24,11 +17,12 @@ export let stepNumber = 1;
 
 <Aside type="tip" title="Prerequisiti per questa lezione">
 - aver completato la lezione precedente e avere a disposizione i file `index.html`, `style.css` e `mappa.svg` della mappa
-- conoscere le basi di [HTML](https://it.wikipedia.org/wiki/HTML), [CSS](https://it.wikipedia.org/wiki/CSS) e [JavaScript](https://it.wikipedia.org/wiki/JavaScript), in particolare funzioni ed eventi
-- conoscere le basi del [DOM](https://it.wikipedia.org/wiki/Document_Object_Model) e saper selezionare elementi HTML e SVG tramite `id`
-- conoscere la sintassi di base degli oggetti e degli array JavaScript e dei dati in formato JSON
-- avere familiarità con le richieste `fetch()`, le funzioni `async`/`await` e la gestione delle Promise
-- saper avviare il progetto con un server locale e usare gli strumenti di sviluppo del browser
+- conoscere le basi di [HTML](https://it.wikipedia.org/wiki/HTML), [CSS](https://it.wikipedia.org/wiki/CSS) e [JavaScript](https://it.wikipedia.org/wiki/JavaScript), con particolare attenzione a funzioni, oggetti, array e gestione degli eventi
+- conoscere il [DOM](https://it.wikipedia.org/wiki/Document_Object_Model) e saper selezionare elementi HTML e SVG tramite `id`
+- sapere leggere e manipolare dati in formato [JSON](https://it.wikipedia.org/wiki/JSON) e avere familiarità con `fetch()`, `async`/`await` e le Promise
+- aver già lavorato con [SVG](https://it.wikipedia.org/wiki/Scalable_Vector_Graphics) e capire come utilizzare punti, linee e percorsi per rappresentare una rete di spostamenti
+- conoscere il concetto di [grafo pesato](https://it.wikipedia.org/wiki/Grafo) e di percorso minimo, in particolare l'idea di nodi, archi e pesi
+- saper avviare il progetto con un server locale e usare gli strumenti di sviluppo del browser per verificare il comportamento dell'animazione
 </Aside>
 
 <LinkButton
@@ -39,6 +33,31 @@ export let stepNumber = 1;
 >
 guarda il video introduttivo
 </LinkButton>
+
+<Aside type="caution" title="✅ Linee guida per una implementazione solida" >
+Prima di passare all'implementazione, conviene definire un po' di regole trasversali che rendono questa esercitazione complessa più robusta e più facile da seguire:
+
+- usa sempre `id` coerenti e univoci per gli edifici, gli snodi e i layer SVG (`edificio-*`, `snodo-*`, `layer-*`);
+- aggiungi un piccolo layer di debug per gli snodi, così sia facile verificare che ogni punto sia posizionato al centro delle strade;
+- fai in modo che il percorso venga resettato prima di disegnare una nuova linea, per evitare sovrapposizioni e classi residue;
+- gestisci anche il caso in cui il grafo non contiene un collegamento valido: il risultato deve essere un percorso vuoto e non un errore visibile;
+- usa `Live Server` per testare `fetch()` e non aprire direttamente il file locale, per evitare blocchi CORS del browser;
+- definisci una convenzione di pesi che resti coerente in tutto il progetto: brevi tratti di accesso = peso basso, dorsali principali = peso più alto;
+
+Queste piccole scelte migliorano molto la leggibilità del progetto, riducono i bug e aiutano la fase di debugging.
+</Aside>
+
+### 🎯 Obiettivo della lezione
+
+In questa lezione trasformiamo la mappa da una semplice rappresentazione grafica a una vera rete di spostamenti: i locali diventano nodi del [grafo](https://it.wikipedia.org/wiki/Grafo), i percorsi pedonali diventano archi pesati e il browser calcola automaticamente il tragitto più corto tra due punti con l'[algoritmo di Dijkstra](https://it.wikipedia.org/wiki/Algoritmo_di_Dijkstra). L'output finale è una navigazione interattiva, con evidenziazione dei locali e una linea animata che segue il percorso scelto.
+
+<Aside type="note" title="Risultato atteso">
+Al termine della lezione avrai un'applicazione in cui, selezionando partenza e destinazione, il sistema:
+- legge il grafo dal file JSON,
+- applica Dijkstra per trovare il percorso minimo,
+- disegna la poligonale sulla mappa,
+- evidenzia gli edifici coinvolti e mostra la serpentina animata.
+</Aside>
 
 ## 🧭 Progettazione
 
@@ -105,10 +124,10 @@ Al termine di questa lezione, la cartella del progetto conterrà questi file nel
 
 diagramma fatto con [Mermaid](https://mermaid.live/edit#pako:eNqNk1FvmzAQx7-K5b60EokgaQjjYdOW9GnaVrVTpQ3y4NkHWAUfso1SluS719jJNm0v4wXu7nf_-3PgA-UogOa0anHPG6Yt-botFXHXo3XRdfEkjbQEVSsVEGNRw-6GzGZvyQeNewNFuJFeoxi4NbvQfM5O3MbJFO-FINJCZ4hFwl3mzE1FT22BSwGHB2Bi9EwD_JngYN-dAhmAiT1-BOiJabDvpaqP51n_UN_AHMk9G4s7ZUGTno0dKEsEWCbbi09X9-OfWCvF4f7MMM6htyAus33Vi37GI3kAq8fiscE9Aa1Rkw6MYTWcJX3Zizq5v_u9qQ2qSuqu-KKFM8ZDBOKykhCHraCC6-Kuc46JBg6yt7ubUgXQ2LGF8JlIJds2v4KsWsGbyFiNz5Bf3S5ZfLv-E570_pcNpgNcVdUS4l9w9SPjcUwjWmspaG71ABHtQDufLqSHSaaktoEOSpq7Rw1ieJlxbFGXtFQn19oz9R2xu3RrHOqG5hVrjYuGXjALW8lqzX4joNy-NjgoS_OVV6D5gb7QfLlO5mm2SBbJOk5WaZpEdHTZ1TzOsjTN0sS92nKRniL604-M59naCYCQ7n_-FA6APwenV1CD_oo/)
 
-- Il browser carica la pagina index.html (che applica style.css) 
-e avvia script.js.
-- Lo script importa il modulo dijkstra.js e usa fetch() 
-per recuperare mappa.svg, locali.json e grafo.json. 
+- Il browser carica la pagina `index.html` (che applica `style.css`) 
+e avvia `script.js`.
+- Lo script importa il modulo `dijkstra.js` e usa `fetch()` 
+per recuperare `mappa.svg`, `locali.json` e `grafo.json`. 
 - La mappa viene inserita nel DOM, mentre l'elenco dei locali 
 popola i menu di partenza e destinazione; 
 - Quando l’utente effettua una selezione, lo script passa i nodi del grafo all'algoritmo di Dijkstra per calcolare il percorso minimo, aggiornando l’evidenziazione degli edifici e disegnando il tragitto sulla mappa.
@@ -132,12 +151,12 @@ Ora stai lavorando su una copia indipendente dalla Lezione 3, pronta per aggiung
 
 <StepCard stepNumber={stepNumber++}>
 
-### Aggiunta Layer degli Snodi Stradali nella mappa.svg
+### 🧭 Aggiunta Layer degli Snodi Stradali nella `mappa.svg`
 Per fare in modo che i percorsi seguano le strade 
 ed evitino di tagliare i prati "a volo d'uccello", dobbiamo 
 definire dei punti (snodi) sui percorsi pedonali, in corrispondenza di:
 
-- #### incroci tra i percorsi:
+- #### 🚦 incroci tra i percorsi:
 
 <div style={{ display: 'flex', justifyContent: 'center', margin: '1.5rem 0' }}>
   <svg viewBox="0 0 600 280" width="100%" style={{ maxWidth: '600px', borderRadius: '10px', border: '2px solid #334155', background: '#7ec850' }} xmlns="http://www.w3.org/2000/svg">
@@ -174,7 +193,7 @@ definire dei punti (snodi) sui percorsi pedonali, in corrispondenza di:
   </svg>
 </div>
 
-- #### diramazioni ortogonali sui percorsi verso i locali: 
+- #### 🧩 diramazioni ortogonali sui percorsi verso i locali: 
 
 <div style={{ display: 'flex', justifyContent: 'center', margin: '1.5rem 0' }}>
   <svg viewBox="0 0 600 320" width="100%" style={{ maxWidth: '600px', borderRadius: '10px', border: '2px solid #334155', background: '#7ec850' }} xmlns="http://www.w3.org/2000/svg">
@@ -225,9 +244,9 @@ definire dei punti (snodi) sui percorsi pedonali, in corrispondenza di:
   </svg>
 </div>
 
-#### id significativi per i percorsi
+#### 🏷️ id significativi per i percorsi
 Per facilitare il posizionamento degli snodi, 
-inseriamo id significativi per i percorsi in mappa.svg:
+inseriamo `id` significativi per i percorsi in `mappa.svg`:
 
 ```diff lang="xml" title="mappa.svg"
 
@@ -244,13 +263,23 @@ inseriamo id significativi per i percorsi in mappa.svg:
         </g>
 ```
 
-<Aside type="tip" title="Hai personalizzati i percorsi?">
+<Aside type="caution" title="Hai personalizzati i percorsi?">
 In questo caso personalizza, se necessario, gli id in modo che rispecchino
 la geometria dei tuoi percorsi.
 </Aside>
 
-#### il layer degli snodi
-Ora introduciamo in fondo allla mappa.svg il layer degli snodi, posizionando i primi punti di accesso ortogonali agli edifici e gli incroci principali:
+#### ✅ Convenzione sui nomi dei nodi
+Per evitare problemi successivi all'integrazione del grafo, conviene usare un naming convention chiaro e costante:
+
+- usa prefissi coerenti come `snodo-`, `edificio-`, `locale-`, `incrocio-`;
+- mantieni sempre id univoci all'interno dell'SVG;
+- usa gli stessi nomi anche nel file `grafo.json` e nel codice JavaScript;
+- evita spazi, maiuscole inconsistenti o id generici come `punto1`, `punto2`.
+
+Questa regola semplifica sia la lettura del grafo sia la funzione `ottieniCoordinateNodo()`, che si basa su `document.getElementById(idNodo)`.
+
+#### 🧱 il layer degli snodi
+Ora introduciamo in fondo alla `mappa.svg` il layer degli snodi, posizionando i primi punti di accesso ortogonali agli edifici e gli incroci principali:
 
 ```diff lang="xml" title="mappa.svg"
     <!-- LAYER GIA' ESISTENTI -->
@@ -270,11 +299,16 @@ Ora introduciamo in fondo allla mappa.svg il layer degli snodi, posizionando i p
 </svg>
 
 ```
+<Aside type="tip" title="Come saranno generati i percorsi?">
+I percorsi da un locale a un altro saranno costituiti da segmenti da un 
+nodo a un altro fino a destinazione. Grazie all'algoritmo di Dijkstra
+verrà identificata il percorso più corto tra tutti i percorsi possibili.
+</Aside>
 
-#### visibilità degli snodi sulla mappa
+#### 👀 visibilità degli snodi sulla mappa
 Per facilitare il posizionamento e la calibrazione visiva, 
 aggiungiamo nel file
-style.css questa regola:
+`style.css` questa regola:
 ```diff lang="css" title="style.css"
 
 + /* Regola in style.css: commenta o decommenta display per mostrare/nascondere gli snodi */
@@ -285,7 +319,7 @@ style.css questa regola:
 ```
 
 <Aside type="tip" title="Suggerimento Operativo">
-Lascia la riga display: none; commentata durante la configurazione per vedere i pallini rossi e blu posizionati al centro delle strade. La attiveremo (nascondendoli) solo a lavoro ultimato.
+Lascia la riga `display: none;` commentata durante la configurazione per vedere i pallini rossi e blu posizionati al centro delle strade. La attiveremo (nascondendoli) solo a lavoro ultimato.
 </Aside>
 
 <Aside type="caution" title="Esercizio di consolidamento" icon="puzzle">
@@ -298,8 +332,340 @@ al centro delle corsie stradali!
 </StepCard>
 
 <StepCard stepNumber={stepNumber++}>
-## 🧪 Collaudo
-Esegui il progetto è verifica che le selezioni dei locali avvengano correttamente.
+
+### 🕸️ Definizione del Grafo con gli Snodi (`grafo.json`)
+Ora che abbiamo posizionato gli snodi stradali in `mappa.svg`, dobbiamo aggiornare il file `grafo.json`. I collegamenti non uniranno più direttamente gli edifici, ma passeranno attraverso i nodi di snodo.
+
+<Aside type="tip" title="Ricordiamo i concetti di Grafo Non Orientato e Pesato">
+- **Non orientato**: I collegamenti ([archi](https://it.wikipedia.org/wiki/Grafo)) sono bidirezionali. Se lo snodo `A` è collegato allo snodo `B` con un certo peso, la stessa percorrenza vale in entrambi i
+versi.
+- **Pesato**: Ogni arco ha un costo numerico (il peso, es. metri o secondi), utilizzato da **Dijkstra** per calcolare il percorso minimo.
+</Aside>
+
+Ecco un frammento corretto di grafo.json che modella il passaggio dagli uffici agli incroci tramite gli snodi:
+
+```json title="grafo.json"
+{
+  "edificio-uffici": {
+    "snodo-uffici": 30
+  },
+  "snodo-uffici": {
+    "edificio-uffici": 30,
+    "snodo-incrocio-ovest": 100
+  },
+  "snodo-incrocio-ovest": {
+    "snodo-uffici": 100,
+    "snodo-aule": 100,
+    "snodo-mensa": 100
+  }
+}
+```
+
+#### 🔍 Come è strutturato `grafo.json`?
+Questo file rappresenta il grafo stradale e di collegamento del campus utilizzando un oggetto `JSON` nidificato (una mappa o tabella di adiacenza):
+
+- **Chiavi principali (nodi)**: Ogni chiave di primo livello (come `"edificio-uffici"` o `"snodo-incrocio-ovest"`) rappresenta un punto di riferimento della mappa, sia esso un edificio o un incrocio strategico.
+
+- **Oggetti interni (archi e pesi)**: All'interno di ogni nodo troviamo un ulteriore oggetto che elenca i vicini direttamente raggiungibili e, come valore numerico, il peso (la distanza in metri o il costo di percorrenza) necessario per spostarsi da un punto all'altro.
+
+- **Bidirezionalità**: Noterai che i collegamenti sono speculari (es. da `edificio-uffici` a `snodo-uffici` e viceversa), rispettando la natura di grafo non orientato in cui le strade sono percorribili in entrambi i sensi.
+
+<Aside type="tip" title="📏 Dal peso stimato alla distanza geometrica esatta">
+
+Nelle prime fasi di modellazione di un grafo, l'utilizzo di valori fissi e approssimativi (come **100** per le dorsali principali e **30** per i brevi raccordi di uscita verso i locali) è una scelta **estremamente pragmatica ed efficace per fini didattici**. 
+
+##### 💡 Perché l'approccio approssimativo è "OK" per i nostri fini:
+1. **Focus sull'algoritmo:** Permette agli studenti di concentrarsi sulla logica di funzionamento di **Dijkstra** e sulla struttura dati del grafo (`grafo.json`), senza il rischio di distrarsi con calcoli geometrici ripetitivi.
+2. **Proporzione logica corretta:** Ai fini del calcolo del percorso minimo, ciò che conta davvero non è l'unità di misura reale (metri o chilometri), ma la **relazione di costo** tra i vari archi. Assegnare un peso maggiore alle strade lunghe e uno minore ai vialetti di accesso garantisce che l'algoritmo scelga comunque la strada corretta.
+
+##### 🎯 Come calcolare la distanza reale in punti (pixel)
+
+Per un rigore geometrico assoluto, i pesi degli archi dovrebbero corrispondere esattamente alla distanza in pixel sul piano cartesiano del `viewBox` dell'SVG (`0 0 800 600`). 
+
+Poiché nella nostra mappa i percorsi stradali sono **ortogonali** (cioè si muovono esclusivamente in orizzontale o in verticale), il calcolo della distanza tra due nodi A e B è estremamente semplice e non richiede formule complesse come il teorema di Pitagora:
+
+- **Spostamento orizzontale:** La distanza corrisponde alla differenza delle coordinate `x` in valore assoluto:  
+  `Distanza = |x₂ - x₁|`
+
+- **Spostamento verticale:** La distanza corrisponde alla differenza delle coordinate `y` in valore assoluto:  
+  `Distanza = |y₂ - y₁|`
+
+*Esempio pratico:* Se un tratto di strada verticale parte dal punto `y = 80` e arriva a `y = 220`, il peso esatto dell'arco nel file `grafo.json` sarà semplicemente `|220 - 80| = 140` punti.
+</Aside>
+
+<Aside type="caution" title="Esercizio di consolidamento" icon="puzzle">
+- Completa il file `grafo.json` 
+aggiungendo i nodi mancanti per collegare la Mensa, i Laboratori, 
+la Palestra e l'incrocio est (snodo-incrocio-est) con i relativi pesi stimati!
+- ricordati di collegare anche i locali che hai aggiunto nella tua mappa personalizzata!
+
+</Aside>
+</StepCard>
+
+<StepCard stepNumber={stepNumber++}>
+### ⚙️ L'Algoritmo di Dijkstra (`dijkstra.js`)
+<Aside type="tip" title="Come funziona Dijkstra?">
+- L'algoritmo parte da un nodo di origine e imposta la distanza iniziale verso di esso a `0`, e verso tutti gli altri nodi a `Infinito (∞)`. 
+- Esplora progressivamente i nodi vicini non ancora visitati, aggiornando il cammino più breve registrato fino a raggiungere il nodo di destinazione.
+</Aside>
+Separiamo la logica algoritmica creandola all'interno di un file dedicato, `dijkstra.js`:
+
+```javascript title="dijkstra.js"
+ /**
+ * Algoritmo di Dijkstra per trovare il percorso minimo su un grafo pesato
+ */
+function calcolaDijkstra(grafo, inizio, fine) {
+  if (!grafo || !Object.hasOwn(grafo, inizio) || !Object.hasOwn(grafo, fine)) {
+    return [];
+  }
+
+  const distanze = {};
+  const precedenti = {};
+  const nodiNonVisitati = new Set();
+
+  // Inizializzazione delle distanze
+  Object.keys(grafo).forEach(nodo => {
+    distanze[nodo] = Infinity;
+    precedenti[nodo] = null;
+    nodiNonVisitati.add(nodo);
+  });
+  distanze[inizio] = 0;
+
+  while (nodiNonVisitati.size > 0) {
+    // Trova il nodo non visitato con la distanza minore
+    let nodoCorrente = null;
+    nodiNonVisitati.forEach(nodo => {
+      if (nodoCorrente === null || distanze[nodo] < distanze[nodoCorrente]) {
+        nodoCorrente = nodo;
+      }
+    });
+
+    if (distanze[nodoCorrente] === Infinity || nodoCorrente === fine) break;
+
+    nodiNonVisitati.delete(nodoCorrente);
+
+    // Aggiorna le distanze dei vicini
+    const vicini = grafo[nodoCorrente] || {};
+    for (let vicino in vicini) {
+      if (nodiNonVisitati.has(vicino)) {
+        let nuovaDistanza = distanze[nodoCorrente] + vicini[vicino];
+        if (nuovaDistanza < distanze[vicino]) {
+          distanze[vicino] = nuovaDistanza;
+          precedenti[vicino] = nodoCorrente;
+        }
+      }
+    }
+  }
+
+  // Ricostruzione del percorso a ritroso
+  const percorso = [];
+  let at = fine;
+  while (at !== null && at !== undefined) {
+    percorso.unshift(at);
+    at = precedenti[at];
+  }
+
+  return percorso[0] === inizio ? percorso : [];
+}
+```
+</StepCard>
+
+<StepCard stepNumber={stepNumber++}>
+
+### 🧠 Aggiornamento di `script.js`
+
+🧠 Panoramica delle funzioni di logica e tracciamento
+-   `aggiornaEvidenziazione()` (aggiornata):
+
+    È il vero e proprio "motore centrale" dell'interazione. 
+    Si attiva ogni volta che l'utente seleziona una 
+    partenza o una destinazione:
+    - ripulisce la mappa da vecchi segni,
+    - applica le classi visive ai menu e agli edifici,
+    - carica in modo asincrono il file `grafo.json` tramite `fetch()`, 
+    - invoca l'algoritmo di **Dijkstra** per calcolare il percorso minimo e infine comanda il disegno della linea.
+
+- `selezionaDaMappa(idEdificio)`:
+
+    Permette all'utente di interagire direttamente cliccando sugli edifici della mappa SVG anziché usare i menu a tendina. Gestisce la selezione in modo "intelligente": il primo clic imposta la Partenza, il secondo la Destinazione, e i successivi ripartono da capo azzerando la scelta precedente.
+
+- `ottieniCoordinateNodo(idNodo)`:
+
+    Una funzione di supporto geometrico fondamentale. 
+    Interroga il DOM della mappa SVG per trovare l'elemento 
+    corrispondente a un determinato ID 
+    (che si tratti di un cerchio elementi con tag `<circle>` 
+    o di un rettangolo `<rect>`), 
+    ne legge gli attributi posizionali e
+    ne calcola il centro esatto, 
+    restituendo le coordinate x,y pronte per essere tracciate.
+
+- `disegnaPercorsoAnimato(nodi)`:
+
+    Prende l'array di ID dei nodi calcolato da Dijkstra, converte ciascuno in coordinate reali usando la funzione precedente e crea dinamicamente un elemento grafico SVG restituendo un tag `<polyline>`. Lo inserisce con precisione nel DOM (esattamente sotto il layer degli edifici) per mostrare visivamente la strada da percorrere sulla mappa.
+
+- `rimuoviSelezioniPrecedenti()`:
+
+    La funzione di pulizia (reset). Prima di calcolare e mostrare un nuovo percorso, si occupa di rimuovere le classi CSS di evidenziazione dai vecchi edifici selezionati e di eliminare dal DOM l'eventuale polilinea disegnata in precedenza, evitando sovrapposizioni grafiche.
+
+<Aside type="tip" title="Ottimizzazione dei Layer SVG">
+Inseriremo il percorso dinamico tra il layer delle strade e quello degli edifici usando insertBefore, così la linea passerà sotto i locali senza coprire le etichette di testo!
+</Aside>
+
+- Sostituisci la funzione `aggiornaEvidenziazione()` 
+- Aggiungi le nuove funzioni 
+    - `ottieniCoordinateNodo(idNodo)`
+    - `disegnaPercorsoAnimato(nodi)`
+    - `rimuoviSelezioniPrecedenti()`
+    
+```diff lang="javascript" title="script.js"
+
+-function aggiornaEvidenziazione() {
+-  
+-  /* codice vecchia funzione */
+-
+- }
++// Aggiornamento della funzione di evidenziazione
++async function aggiornaEvidenziazione() {
++  rimuoviSelezioniPrecedenti();
++  
++  const idPartenza = document.getElementById("select-da").value;
++  const idDestinazione = document.getElementById("select-a").value;
++
++  if (idPartenza) document.getElementById(idPartenza)?.classList.add("attivo-partenza");
++  if (idDestinazione) document.getElementById(idDestinazione)?.classList.add("attivo-destinazione");
++
++  // Calcolo e tracciamento del percorso con Dijkstra
++  if (idPartenza && idDestinazione) {
++    try {
++      const risposta = await fetch("grafo.json");
++      const grafo = await risposta.json();
++
++      const percorsoNodi = calcolaDijkstra(grafo, idPartenza, idDestinazione);
++      
++      if (percorsoNodi.length > 0) {
++        disegnaPercorsoAnimato(percorsoNodi);
++      }
++    } catch (errore) {
++      console.error("Errore nel calcolo del percorso:", errore);
++    }
++  }
++}
++
++// Funzione che legge le coordinate direttamente dagli elementi dell'SVG
++function ottieniCoordinateNodo(idNodo) {
++  const elemento = document.getElementById(idNodo);
++  if (!elemento) return null;
++
++  if (elemento.tagName.toLowerCase() === "circle") {
++    return `${elemento.getAttribute("cx")},${elemento.getAttribute("cy")}`;
++  }
++
++  const rect = elemento.querySelector("rect") || elemento;
++  const x = parseFloat(rect.getAttribute("x")) + parseFloat(rect.getAttribute("width")) / 2;
++  const y = parseFloat(rect.getAttribute("y")) + parseFloat(rect.getAttribute("height")) / 2;
++  
++  return `${x},${y}`;
++}
++
++// Disegno della poligonale inserita tra le strade e gli edifici
++function disegnaPercorsoAnimato(nodi) {
++  const svgRoot = document.querySelector("#mappa-container svg");
++  if (!svgRoot) return;
++
++  const puntiStringa = nodi
++    .map(id => ottieniCoordinateNodo(id))
++    .filter(Boolean)
++    .join(" ");
++
++  if (puntiStringa) {
++    const gDinamico = document.createElementNS("http://www.w3.org/2000/svg", "g");
++    gDinamico.id = "layer-percorso-dinamico";
++
++    const polyline = document.createElementNS("http://www.w3.org/2000/svg", "polyline");
++    polyline.setAttribute("points", puntiStringa);
++    polyline.setAttribute("class", "percorso-animato");
++
++    gDinamico.appendChild(polyline);
++
++    // Inseriamo il percorso dinamico esattamente prima del layer edifici
++    const layerEdifici = svgRoot.querySelector("#layer-edifici");
++    if (layerEdifici) {
++      svgRoot.insertBefore(gDinamico, layerEdifici);
++    } else {
++      svgRoot.appendChild(gDinamico);
++    }
++  }
++}
++
++function rimuoviSelezioniPrecedenti() {
++  document.querySelectorAll(".attivo-destinazione, .attivo-partenza").forEach(el => {
++    el.classList.remove("attivo-destinazione", "attivo-partenza");
++  });
++  document.querySelector("#layer-percorso-dinamico")?.remove();
++}
+
+/* funzione selezionaDaMappa inalterata: */
+
+function selezionaDaMappa(idEdificio) {
+    /* ... */
+}
+
+```
+
+</StepCard>
+
+<StepCard stepNumber={stepNumber++}>
+
+### 🐍 Stile Serpentina in `style.css`
+
+Aggiungi in fondo al file queste nuove regole CSS:
+
+```diff lang="css" title="style.css"
++/* Stile per la linea del percorso dinamico (Serpentina in movimento) */
++.percorso-animato {
++  fill: none;
++  stroke: #0284c7;
++  stroke-width: 6;
++  stroke-linecap: round;
++  stroke-linejoin: round;
++  stroke-dasharray: 12, 12;
++  animation: serpentina 1s linear infinite;
++  filter: drop-shadow(0px 0px 6px rgba(2, 132, 199, 0.6));
++}
++
++@keyframes serpentina {
++  from {
++    stroke-dashoffset: 24;
++  }
++  to {
++    stroke-dashoffset: 0;
++  }
++}
+
+```
+<Aside type="note" title="🐍 l'effetto serpentina">
+
+L'effetto "serpentina" (o effetto scia in movimento) si ottiene sfruttando una tecnica intelligente basata sulla manipolazione dei tratti di una linea SVG tramite CSS.
+
+Ecco come funziona in sintesi:
+
+1. `stroke-dasharray: 12, 12;`: Questa proprietà trasforma una linea continua in un tratteggio regolare, alternando segmenti pieni di 12 pixel e spazi vuoti di 12 pixel (per una lunghezza totale del pattern pari a 24 pixel).
+
+2. `stroke-dashoffset`: Questa proprietà determina il punto di partenza da cui inizia il tratteggio lungo la linea.
+
+3. L'animazione `@keyframes`: facendo scorrere ciclicamente il valore di `stroke-dashoffset` da `24` fino a `0` in modo lineare e continuo (`infinite`), i trattini si spostano in avanti lungo tutto il percorso.
+
+All'occhio umano, questo scorrimento continuo dei trattini crea la tipica illusione ottica di un flusso in movimento (stile "marcia delle formiche" o percorso animato del navigatore).
+</Aside>
+
+
+</StepCard>
+
+<StepCard stepNumber={stepNumber++}>
+### 🧪 Collaudo
+Esegui il progetto e verifica che le selezioni dei locali avvengano correttamente, mostrando 
+la serpentina del percorso tra partenza e destinazione.
 <Aside type="caution" title="Prevenzione errori CORS">
 Avvia sempre il progetto con **Live Server** in VS Code (e non aprendo direttamente il file con un doppio clic o come file locale `file://`) per evitare il blocco **CORS** imposto dai browser sulle chiamate asincrone <code>fetch()</code>.
 </Aside>
@@ -307,34 +673,36 @@ Avvia sempre il progetto con **Live Server** in VS Code (e non aprendo direttame
 
 <StepCard stepNumber={stepNumber++}>
 
-## 🚀 Commit e Sincronizzazione Finale (Git / GitHub)
+### 🚀 Commit e Sincronizzazione Finale (Git / GitHub)
 
 <Steps>
-1. **Verifica i file**: Apri il pannello **Source Control** di VS Code e controlla che tutti i file modificati e creati (`mappa.svg`, `locali.json`, `style.css`, `script.js` e `index.html`) siano presenti nell'area di staging.
-2. **Crea il commit**: Scrivi il messaggio di commit: `"Completata Lezione 3: Fetch asincrono, SVG responsive"` e conferma.
+1. **Verifica i file**: Apri il pannello **Source Control** di VS Code e controlla che tutti i file modificati e creati (`dijkstra.js`, `grafo.json`, `mappa.svg`, `locali.json`, `style.css`, `script.js` e `index.html`) siano presenti nell'area di staging.
+2. **Crea il commit**: Scrivi il messaggio di commit: `"Completata Lezione 4: Grafi, Dijkstra e animazione del percorso"` e conferma.
 3. **Sincronizza**: Effettua il **Publish Branch** o **Sync Changes** per inviare tutto su GitHub.
 </Steps>
 
 </StepCard>
 
 <Aside type="note" title="Sintesi Concetti Chiave" icon="puzzle">
-- [`mappa.svg`](https://it.wikipedia.org/wiki/Scalable_Vector_Graphics): separa la grafica della mappa dal file HTML e la rende responsive con larghezza e altezza a 100%.
-- [`fetch()`](https://developer.mozilla.org/it/docs/Web/API/Fetch_API/Using_Fetch): carica file esterni come `mappa.svg` e `locali.json` in modo asincrono; approfondisci la [programmazione asincrona](https://it.wikipedia.org/wiki/Programmazione_asincrona).
-- [`async` / `await`](https://developer.mozilla.org/it/docs/Web/JavaScript/Reference/Statements/async_function): aspetta il completamento delle richieste prima di usare i dati o inserire il contenuto nel DOM.
-- [`locali.json`](https://www.json.org/json-it.html): contiene la lista di edifici con `id` e `nome`, utile per popolare i menu a tendina; JSON significa [JavaScript Object Notation](https://it.wikipedia.org/wiki/JavaScript_Object_Notation).
-- [`innerHTML`](https://developer.mozilla.org/it/docs/Web/API/Element/innerHTML): inserisce il markup SVG caricato nel contenitore HTML della pagina, nel [DOM](https://it.wikipedia.org/wiki/Document_Object_Model).
-- [`classList`](https://developer.mozilla.org/it/docs/Web/API/Element/classList): aggiunge o rimuove classi come `.selezionato-da` e `.selezionato-a` per evidenziare i locali nel [DOM](https://it.wikipedia.org/wiki/Document_Object_Model).
+- [`grafo.json`](https://it.wikipedia.org/wiki/Grafo): rappresenta la rete del campus con nodi e archi pesati; i pesi indicano distanze o costi di percorrenza.
+- [Algoritmo di Dijkstra](https://it.wikipedia.org/wiki/Algoritmo_di_Dijkstra): trova il percorso minimo tra partenza e destinazione in un grafo con pesi non negativi.
+- [`dijkstra.js`](https://developer.mozilla.org/it/docs/Web/JavaScript/Guide/Modules): contiene l'algoritmo per calcolare il percorso minimo, separandolo dalla logica dell'interfaccia.
+- [`fetch()`](https://developer.mozilla.org/it/docs/Web/API/Fetch_API/Using_Fetch) e [`async` / `await`](https://developer.mozilla.org/it/docs/Web/JavaScript/Reference/Statements/async_function): caricano `grafo.json` in modo asincrono prima del calcolo del percorso.
+- [Coordinate SVG](https://developer.mozilla.org/it/docs/Web/SVG/Attribute): gli attributi `cx`, `cy`, `x` e `y` consentono di ricavare le posizioni dei nodi sulla mappa.
+- [`<polyline>`](https://developer.mozilla.org/en-US/docs/Web/SVG/Element/polyline) e [animazioni CSS](https://developer.mozilla.org/it/docs/Web/CSS/CSS_animations/Using_CSS_animations): disegnano e animano la serpentina del percorso.
+- [`classList`](https://developer.mozilla.org/it/docs/Web/API/Element/classList): applica o rimuove le classi di evidenziazione per partenza e destinazione.
 </Aside>
 
-<Checklist id="progetto-mappa-interattivita-locale" title="✅ Verifica dell'apprendimento">
-- [ ] So creare un branch dedicato per le modifiche della lezione
-- [ ] So separare la grafica della mappa in un file `mappa.svg` e renderla responsiva
-- [ ] So creare un file `locali.json` con `id` e nomi degli edifici
-- [ ] So usare `fetch()` e `async/await` per caricare dati e grafiche esterne
-- [ ] So popolare i menu `<select>` con le `option` dei locali e aggiornarne lo stato
-- [ ] So verificare nel browser che la mappa e i menu si carichino correttamente con Live Server
+<Checklist id="progetto-mappa-interattiva-percorso" title="✅ Verifica dell'apprendimento">
+- [ ] So aggiungere alla mappa SVG gli snodi stradali e assegnare loro id coerenti
+- [ ] So rappresentare in `grafo.json` i nodi e gli archi pesati, collegando i tratti percorribili
+- [ ] So implementare Dijkstra in `dijkstra.js` per trovare il percorso minimo
+- [ ] So caricare il grafo con `fetch()` e `async`/`await` al momento della selezione
+- [ ] So ricavare le coordinate dei nodi SVG e disegnare il percorso con una `<polyline>`
+- [ ] So evidenziare partenza e destinazione e animare la serpentina con CSS
+- [ ] So collaudare la selezione e la visualizzazione del percorso con Live Server
 <Aside type="tip" title="Ottimo lavoro!" slot="reward">
-  Ora sai come separare grafica e dati, caricare risorse esterne con `fetch()`
-  e costruire una mappa interattiva più ordinata e mantenibile.
+  Ora sai modellare una rete di percorsi come grafo, calcolare il tragitto minimo
+  con Dijkstra e visualizzarlo in modo animato sulla mappa SVG.
 </Aside>
 </Checklist>

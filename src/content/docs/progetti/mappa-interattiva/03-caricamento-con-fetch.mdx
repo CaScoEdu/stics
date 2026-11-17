@@ -5,18 +5,11 @@ description: "Progetto Mappa Interattiva Campus - Lezione 3: estrapolazione dell
 
 import {
     Aside,
-    Badge,
-    Card,
     FileTree,
-    Icon,
     LinkButton,
-    LinkCard,
-    Steps,
-    TabItem,
-    Tabs
+    Steps
 } from "@astrojs/starlight/components";
 import Mermaid from "@/components/Mermaid.astro";
-import IconGroup from '@/components/IconGroup.astro';
 import StepCard from '@/components/StepCard.astro';
 import Checklist from '@/components/Checklist.astro';
 
@@ -155,15 +148,17 @@ per renderlo completamente responsive all'interno del suo contenitore:
 ### 🏢 Dati in `locali.json`
 Creiamo il file `locali.json` per archiviare gli identificativi degli edifici (corrispondenti agli id presenti nell'SVG) e i nomi leggibili da mostrare nei menu a tendina:
 
-```diff lang="json" title="locali.json"
+```json title="locali.json"
 [
    { "id": "edificio-uffici", "nome": "Uffici Amministrativi" },
-   { "id": "edificio-aule", "nome": "Edificio Aule" },
-+  // TODO: Aggiungi qui gli altri edifici presenti nel tuo file mappa.svg (es. Laboratori, Mensa, ecc.)
- ]
+   { "id": "edificio-aule", "nome": "Edificio Aule" }
+]
 ```
+<Aside type="note" title="Completa locali.json" icon="puzzle">
+TODO: Aggiungi qui gli altri edifici presenti nel tuo file mappa.svg (es. Laboratori, Mensa, ecc.)
+</Aside>
 
-<Aside type="tip" title="Presta attenzione agli id!">
+<Aside type="caution" title="Presta attenzione agli id!">
 Gli `id` dei locali  devono essere gli 
 stessi utilizzati nella `mappa.svg`.
 </Aside>
@@ -252,7 +247,6 @@ Aggiorniamo poi `style.css` con le regole responsive per il contenitore della ma
 
 <StepCard stepNumber={stepNumber++}>
 
-
 ### ⚙️ Logica Asincrona in `script.js`
 Gestiamo il caricamento dell'SVG e del JSON tramite `fetch()` 
 e `async/await`, collegando sia i menu `<select>`
@@ -330,7 +324,7 @@ Il file HTML principale si alleggerisce notevolmente, ospitando soltanto i due m
 
 <head>
   <!-- head invariato -->
-<head>
+</head>
 
 <body>
   <h1>🗺️ Calcolo Percorso Campus</h1>
@@ -367,8 +361,8 @@ Il file HTML principale si alleggerisce notevolmente, ospitando soltanto i due m
 
 </StepCard>
 <StepCard stepNumber={stepNumber++}>
-## 🧪 Collaudo
-Esegui il progetto è verifica che le selezioni dei locali avvengano correttamente.
+### 🧪 Collaudo
+Esegui il progetto e verifica che le selezioni dei locali avvengano correttamente.
 <Aside type="caution" title="Prevenzione errori CORS">
 Avvia sempre il progetto con **Live Server** in VS Code (e non aprendo direttamente il file con un doppio clic o come file locale `file://`) per evitare il blocco **CORS** imposto dai browser sulle chiamate asincrone <code>fetch()</code>.
 </Aside>
@@ -376,7 +370,7 @@ Avvia sempre il progetto con **Live Server** in VS Code (e non aprendo direttame
 
 <StepCard stepNumber={stepNumber++}>
 
-## 🚀 Commit e Sincronizzazione Finale (Git / GitHub)
+### 🚀 Commit e Sincronizzazione Finale (Git / GitHub)
 
 <Steps>
 1. **Verifica i file**: Apri il pannello **Source Control** di VS Code e controlla che tutti i file modificati e creati (`mappa.svg`, `locali.json`, `style.css`, `script.js` e `index.html`) siano presenti nell'area di staging.
@@ -395,7 +389,7 @@ Avvia sempre il progetto con **Live Server** in VS Code (e non aprendo direttame
 - [`classList`](https://developer.mozilla.org/it/docs/Web/API/Element/classList): aggiunge o rimuove classi come `.selezionato-da` e `.selezionato-a` per evidenziare i locali nel [DOM](https://it.wikipedia.org/wiki/Document_Object_Model).
 </Aside>
 
-<Checklist id="progetto-mappa-interattivita-locale" title="✅ Verifica dell'apprendimento">
+<Checklist id="progetto-mappa-caricamento-dinamico" title="✅ Verifica dell'apprendimento">
 - [ ] So creare un branch dedicato per le modifiche della lezione
 - [ ] So separare la grafica della mappa in un file `mappa.svg` e renderla responsiva
 - [ ] So creare un file `locali.json` con `id` e nomi degli edifici

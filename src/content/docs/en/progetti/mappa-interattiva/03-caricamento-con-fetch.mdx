@@ -5,18 +5,11 @@ description: "Interactive Campus Map Project - Lesson 3: extracting the graphic 
 
 import {
     Aside,
-    Badge,
-    Card,
     FileTree,
-    Icon,
     LinkButton,
-    LinkCard,
-    Steps,
-    TabItem,
-    Tabs
+    Steps
 } from "@astrojs/starlight/components";
 import Mermaid from "@/components/Mermaid.astro";
-import IconGroup from '@/components/IconGroup.astro';
 import StepCard from '@/components/StepCard.astro';
 import Checklist from '@/components/Checklist.astro';
 
@@ -37,7 +30,7 @@ export let stepNumber = 1;
     icon="youtube"
     iconPlacement="end"
 >
-Watch the introductory video
+watch the introduction video
 </LinkButton>
 
 ## 🧭 Planning
@@ -63,7 +56,7 @@ At the end of this lesson, the project folder will contain these files in its ro
 ### 🧩 Component diagram
 
   <Mermaid chart={`
-  flowchart LR
+  flowchart TD
     Browser[Web Browser]
     HTML[index.html]
     CSS[style.css]
@@ -73,15 +66,15 @@ At the end of this lesson, the project folder will contain these files in its ro
     Mappa[Map SVG in the DOM]
     Menu[Selection menus and details]
 
-    Browser -->|carica la pagina| HTML
-    HTML -->|loads styles| CSS
-    HTML -->|runs code| JS
+    Browser -->|loads the page| HTML
+    HTML -->|applies the styles| CSS
+    HTML -->|runs the code| JS
     JS -->|"fetch()"| SVG
     JS -->|"fetch()"| JSON
-    SVG -->|inserts markup| Mappa
-    JSON -->|populates options| Menu
+    SVG -->|inserts the markup| Mappa
+    JSON -->|populates the options| Menu
     Menu -->|user selection| JS
-    JS -->|updates highlights| Mappa
+    JS -->|updates the highlight| Mappa
 
     classDef browser fill:#1e3a8a,stroke:#3b82f6,color:#fff,stroke-width:2px;
     classDef html fill:#2563eb,stroke:#1d4ed8,color:#fff,stroke-width:2px;
@@ -111,17 +104,17 @@ Before adding dynamic loading with `fetch()`, create a dedicated branch to isola
 
 <Steps>
 1. Open the Source Control panel in VS Code (`Ctrl + Shift + G`).
-2. Click the current branch name in the lower-left corner (or at the top of the panel) and select `Create new branch...`.
+2. Click the current branch name at the bottom left (or at the top of the panel) and select `Create new branch...`.
 3. Enter the new branch name: `lesson-3`, then press Enter.
 </Steps>
-You are now working on a copy separate from Lesson 2, ready to load `mappa.svg` and `locali.json` with `fetch()`!
+You are now working on a copy independent of Lesson 2, ready to add loading for `mappa.svg` and `locali.json` with `fetch()`!
 
 </StepCard>
 
 <StepCard stepNumber={stepNumber++}>
 
 ### 🖼️ Externalize the graphic: `mappa.svg`
-Separate the graphic markup from the main HTML by creating a `mappa.svg` file in the project root. Set `width="100%"` and `height="100%"` to make it fully responsive within its container:
+Separate the graphic code from the main HTML by creating a `mappa.svg` file in the project root. Set `width="100%"` and `height="100%"` to make it fully responsive within its container:
 
 ```diff lang="xml" title="mappa.svg"
 - <svg viewBox="0 0 800 600" width="800" height="600" xmlns="http://www.w3.org/2000/svg">
@@ -131,7 +124,7 @@ Separate the graphic markup from the main HTML by creating a `mappa.svg` file in
   </g>
 
 - // copy the rest of your SVG code
-+ <!-- Add the route and building layers created earlier below -->
++ <!-- Add the path and building layers developed earlier below -->
 + <g id="layer-percorsi">
 +   <!-- ... -->
 + </g>
@@ -153,11 +146,13 @@ Create the `locali.json` file to store building identifiers (matching the IDs in
 [
   { "id": "edificio-uffici", "nome": "Administrative Offices" },
   { "id": "edificio-aule", "nome": "Classroom Building" },
-+  // TODO: Add the other buildings in your mappa.svg file here (e.g. labs, cafeteria, etc.)
  ]
 ```
+<Aside type="note" title="Complete locali.json" icon="puzzle">
+TODO: Add the other buildings in your mappa.svg file here (e.g., laboratories, cafeteria, etc.).
+</Aside>
 
-<Aside type="tip" title="Make sure the IDs match!">
+<Aside type="caution" title="Make sure the IDs match!">
 The building `id` values must match those used in `mappa.svg`.
 </Aside>
 
@@ -245,9 +240,8 @@ Next, update `style.css` with responsive rules for the map container and CSS cla
 
 <StepCard stepNumber={stepNumber++}>
 
-
 ### ⚙️ Asynchronous logic in `script.js`
-Handle loading the SVG and JSON with `fetch()` and `async/await`, wiring up both the `<select>` menus and direct clicks on map buildings.
+Handle loading the SVG and JSON with `fetch()` and `async/await`, connecting both the `<select>` menus and direct clicks on map buildings.
 
 ```javascript title="script.js"
 document.addEventListener("DOMContentLoaded", () => {
@@ -313,7 +307,7 @@ function selezionaDaMappa(idEdificio) {
 <StepCard stepNumber={stepNumber++}>
 
 ### 🧱 HTML structure in index.html
-The main HTML file becomes much leaner, containing only the two selection menus and an empty container where `mappa.svg` will be inserted:
+The main HTML file is now much simpler, containing only the two selection menus and the empty container into which mappa.svg will be injected:
 
 ```diff lang="html" title="index.html"
 <!DOCTYPE html>
@@ -321,17 +315,17 @@ The main HTML file becomes much leaner, containing only the two selection menus 
 
 <head>
   <!-- head invariato -->
-<head>
+</head>
 
 <body>
   <h1>🗺️ Campus Route Planner</h1>
 
-- <!-- Delete the CONTROL PANEL WITH SELECTION MENUS -->
+- <!-- delete the DROPDOWN CONTROL PANEL -->
 - <div style="margin-bottom: 15px; background: white; padding: 10px; border-radius: 8px; border: 1px solid #cbd5e1;">
-- <!-- contents of the selection menu div -->
+- <!-- dropdown menu div content -->
 - </div>
 
-+ <!-- Add the new "controls" div -->
++ <!-- add the new "controls" div -->
 +  <div class="controls">
 +   <select id="select-da" onchange="aggiornaEvidenziazione()">
 +      <option value="">-- Origin --</option>
@@ -342,13 +336,13 @@ The main HTML file becomes much leaner, containing only the two selection menus 
 +    </select>
 +  </div>
 
-- <!-- Delete the embedded SVG map structure -->
+- <!-- delete the embedded SVG map structure -->
 - <!-- Embedded SVG map structure -->
 -    <svg>
--       <!-- SVG code -->
+-       <!-- codice svg -->
 -    </svg>
 
-+ <!-- Add the new mappa-container div -->
++ <!-- add the new mappa-container div -->
 +  <div id="mappa-container"></div>
 
   <script src="script.js"></script>
@@ -358,19 +352,19 @@ The main HTML file becomes much leaner, containing only the two selection menus 
 
 </StepCard>
 <StepCard stepNumber={stepNumber++}>
-## 🧪 Test
+### 🧪 Testing
 Run the project and verify that building selections work correctly.
 <Aside type="caution" title="Avoiding CORS errors">
-Always run the project with **Live Server** in VS Code (do not open the file directly by double-clicking it or as a local `file://` file) to avoid the **CORS** restrictions browsers apply to asynchronous <code>fetch()</code> requests.
+Always run the project with **Live Server** in VS Code (instead of opening the file directly with a double-click or as a local `file://` file) to avoid the **CORS** restrictions browsers apply to asynchronous <code>fetch()</code> requests.
 </Aside>
 </StepCard>
 
 <StepCard stepNumber={stepNumber++}>
 
-## 🚀 Final commit and synchronization (Git / GitHub)
+### 🚀 Final commit and synchronization (Git / GitHub)
 
 <Steps>
-1. **Review the files**: Open VS Code's **Source Control** panel and check that all modified and created files (`mappa.svg`, `locali.json`, `style.css`, `script.js`, and `index.html`) are staged.
+1. **Review the files**: Open VS Code's **Source Control** panel and check that all modified and created files (`mappa.svg`, `locali.json`, `style.css`, `script.js`, and `index.html`) are in the staging area.
 2. **Create the commit**: Enter the commit message `"Completed Lesson 3: Asynchronous Fetch, Responsive SVG"` and confirm.
 3. **Synchronize**: Use **Publish Branch** or **Sync Changes** to push everything to GitHub.
 </Steps>
@@ -379,17 +373,17 @@ Always run the project with **Live Server** in VS Code (do not open the file dir
 
 <Aside type="note" title="Key concepts summary" icon="puzzle">
 - [`mappa.svg`](https://en.wikipedia.org/wiki/Scalable_Vector_Graphics): separates the map graphic from the HTML file and makes it responsive with 100% width and height.
-- [`fetch()`](https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API/Using_Fetch): loads external files such as `mappa.svg` and `locali.json` asynchronously; learn more about [asynchronous programming](https://en.wikipedia.org/wiki/Asynchronous_programming).
+- [`fetch()`](https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API/Using_Fetch): asynchronously loads external files such as `mappa.svg` and `locali.json`; learn more about [asynchronous programming](https://en.wikipedia.org/wiki/Asynchrony).
 - [`async` / `await`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/async_function): waits for requests to complete before using the data or inserting content into the DOM.
-- [`locali.json`](https://www.json.org/json-en.html): contains a list of buildings with `id` and `name` values, which can be used to populate the selection menus; JSON stands for [JavaScript Object Notation](https://en.wikipedia.org/wiki/JSON).
+- [`locali.json`](https://www.json.org/json-en.html): contains a list of buildings with `id` and `nome` values, useful for populating selection menus; JSON stands for [JavaScript Object Notation](https://en.wikipedia.org/wiki/JSON).
 - [`innerHTML`](https://developer.mozilla.org/en-US/docs/Web/API/Element/innerHTML): inserts the loaded SVG markup into the page's HTML container in the [DOM](https://en.wikipedia.org/wiki/Document_Object_Model).
 - [`classList`](https://developer.mozilla.org/en-US/docs/Web/API/Element/classList): adds or removes classes such as `.selezionato-da` and `.selezionato-a` to highlight buildings in the [DOM](https://en.wikipedia.org/wiki/Document_Object_Model).
 </Aside>
 
-<Checklist id="progetto-mappa-interattivita-locale" title="✅ Learning checklist">
+<Checklist id="progetto-mappa-caricamento-dinamico" title="✅ Learning checklist">
 - [ ] I can create a dedicated branch for lesson changes
-- [ ] I can separate the map graphic into a `mappa.svg` file and make it responsive
-- [ ] I can create a `locali.json` file with building `id` values and names
+- [ ] I can separate the map graphic into an `mappa.svg` file and make it responsive
+- [ ] I can create a `locali.json` file with building IDs and names
 - [ ] I can use `fetch()` and `async/await` to load external data and graphics
 - [ ] I can populate `<select>` menus with building options and update their state
 - [ ] I can verify in the browser that the map and menus load correctly with Live Server
@@ -398,3 +392,4 @@ Always run the project with **Live Server** in VS Code (do not open the file dir
   and build a more organized and maintainable interactive map.
 </Aside>
 </Checklist>
+

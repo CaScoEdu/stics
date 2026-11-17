@@ -30,7 +30,7 @@ export let stepNumber = 1;
     icon="youtube"
     iconPlacement="end"
 >
-guarda il video introduttivo
+Guarda il video introduttivo
 </LinkButton>
 
 ## 🧭 Progettazione
@@ -141,7 +141,7 @@ quando un edificio viene selezionato:
 + .attivo rect {
 +   stroke: #facc15 !important; /* Giallo acceso */
 +   stroke-width: 5px !important;
-+   filter: drop-shadow (0px 0px 10px #facc15);
++   filter: drop-shadow(0px 0px 10px #facc15);
 + }
 ```
 
@@ -159,11 +159,10 @@ Crea un nuovo file denominato `script.js` nella cartella principale del progetto
 Al suo interno inseriremo la funzione che sfrutta `document.getElementById()`
 per recuperare l'elemento SVG corrispondente all'edificio scelto e applicargli la classe `.attivo`:
 
-```javascript
-//script.js
+```javascript title="script.js"
 // Funzione invocata al cambio del menu a tendina
 function evidenziaEdificioDaMenu() {
-    rimuoviSelezione Precedente();
+    rimuoviSelezionePrecedente();
     const selectMenu = document.getElementById("select-edificio");
     const idSelezionato = selectMenu.value;
     if (idSelezionato) {
@@ -208,8 +207,8 @@ Per rendere la mappa interattiva nella seconda lezione, modifichiamo il file `in
     Inserisci le opzioni (`<option>`) in base agli edifici che hai effettivamente creato nel tuo progetto.
     :::
 
-    ```diff lang="html"
-    <h1>🗺️ Mappa del Campus Interattiva</h1>
+    ```diff lang="html" title="index.html"
+    <h1>🗺️ Mappa del Campus Universitario</h1>
     + 
     + <!-- PANNELLO DI CONTROLLO CON MENU A TENDINA -->
     + <div style="margin-bottom: 15px; background: white; padding: 10px; border-radius: 8px; border: 1px solid #cbd5e1;">
@@ -227,7 +226,7 @@ Per rendere la mappa interattiva nella seconda lezione, modifichiamo il file `in
     Per permettere a ciascun edificio di rispondere al click del mouse, 
     collega l'attributo `onclick="selezionaDaMappa(...)"` ai gruppi `<g>` 
     dei singoli edifici all'interno di `<g id="layer-edifici">`.
-    ```diff lang="html"
+    ```diff lang="html" title="index.html"
         <!-- LAYER 3: CAMPUS BUILDINGS -->
         <g id="layer-edifici">
     -       <g id="edificio-uffici">
@@ -244,7 +243,7 @@ Per rendere la mappa interattiva nella seconda lezione, modifichiamo il file `in
 3. #### Collegamento del file JavaScript esterno
     Infine, appena prima della chiusura del corpo della pagina (`</body>`),
     inserisci il richiamo al file `script.js` che conterrà la logica di controllo.
-    ```diff lang="html"
+    ```diff lang="html" title="index.html"
 
             </g>
         </g>
@@ -262,7 +261,7 @@ Per rendere la mappa interattiva nella seconda lezione, modifichiamo il file `in
 
 <StepCard stepNumber={stepNumber++}>
 
-## 🧾 Commit e Sincronizzazione Finale (Git / GitHub)
+### 🧾 Commit e Sincronizzazione Finale (Git / GitHub)
 
 Ora che la Lezione 2 è completa e testata nel browser, salviamo il lavoro nel repository:
 <Steps>

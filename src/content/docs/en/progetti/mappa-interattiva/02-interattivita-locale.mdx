@@ -1,6 +1,6 @@
 ---
-title: "02. Local interactivity and external JS script"
-description: "In this lesson we create a new development branch, add a dropdown menu to select buildings, and separate the JavaScript logic into the external file script.js"
+title: "02. Local Interactivity and an External JavaScript File"
+description: "In this lesson, we create a new development branch, add a dropdown menu to select buildings, and move the JavaScript logic into an external script.js file."
 ---
 
 import {
@@ -14,15 +14,14 @@ import Mermaid from "@/components/Mermaid.astro";
 import StepCard from '@/components/StepCard.astro';
 import Checklist from '@/components/Checklist.astro';
 
-
 export let stepNumber = 1;
 
-<Aside type="tip" title="Prerequisites for this lesson">
-- have completed the previous lesson and have the `index.html` and `style.css` map files available
-- know the basics of [HTML](https://en.wikipedia.org/wiki/HTML), [CSS](https://en.wikipedia.org/wiki/CSS), and [JavaScript](https://en.wikipedia.org/wiki/JavaScript)
-- be able to read [SVG](https://en.wikipedia.org/wiki/Scalable_Vector_Graphics) elements and recognize their `id` attributes
-- know functions, events, CSS classes, and the basics of the [DOM](https://en.wikipedia.org/wiki/Document_Object_Model)
-- be able to open the page in the browser and use the development tools in VS Code and the browser
+<Aside type="tip" title="Prerequisites">
+- Complete the previous lesson and have the map's `index.html` and `style.css` files available
+- Know the basics of [HTML](https://en.wikipedia.org/wiki/HTML), [CSS](https://en.wikipedia.org/wiki/CSS), and [JavaScript](https://en.wikipedia.org/wiki/JavaScript)
+- Be able to read [SVG](https://en.wikipedia.org/wiki/Scalable_Vector_Graphics) elements and identify their `id` attributes
+- Understand functions, events, CSS classes, and the basics of the [DOM](https://en.wikipedia.org/wiki/Document_Object_Model)
+- Know how to open the page in a browser and use the developer tools in VS Code and the browser
 </Aside>
 
 <LinkButton
@@ -31,29 +30,28 @@ export let stepNumber = 1;
     icon="youtube"
     iconPlacement="end"
 >
-watch the intro video
+Watch the introductory video
 </LinkButton>
 
 ## 🧭 Planning
 
 <StepCard stepNumber={stepNumber++}>
 
-### 📁 Project file structure
+### 📁 Project File Structure
 
-At the end of this lesson, the project folder will contain three main files in the root directory:
+At the end of this lesson, the project folder will contain three main files in its root directory:
 
 <FileTree>
 - campus-map/
-  - **index.html** Main HTML page containing the SVG structure and the selection menu
-  - **style.css** Stylesheet for page layout, graphic details, and building highlighting
-  - **script.js** JavaScript file containing the logic to select buildings and update the DOM
+    - **index.html** Main HTML page containing the SVG structure and selection menu
+    - **style.css** Stylesheet for the page layout, visual details, and building highlighting
+    - **script.js** JavaScript file containing the logic for selecting buildings and updating the DOM
 </FileTree>
 </StepCard>
 
 <StepCard stepNumber={stepNumber++}>
 
-
-### 🧩 Component diagram
+### 🧩 Component Diagram
 
   <Mermaid chart={`
   graph TD
@@ -63,19 +61,19 @@ At the end of this lesson, the project folder will contain three main files in t
 
     subgraph ProjectFiles [Project Files]
         HTML[index.html] -->|Links stylesheet| CSS[style.css]
-        HTML -->|Embeds and structures| SVG[Campus Map SVG Structure]
-        HTML -->|Runs logic| JS[JS Script / Interactivity]
+        HTML -->|Embeds and structures| SVG[Map SVG Structure]
+        HTML -->|Runs logic| JS[JavaScript / Interactivity]
 
         subgraph SVG_Structure [SVG Composition]
-            SVG --> Ground[Ground Layer]
-            SVG --> Paths[Paths Layer]
-            SVG --> Buildings[Buildings & Labels Layer]
+            SVG --> Terreno[Ground Layer]
+            SVG --> Percorsi[Paths Layer]
+            SVG --> Edifici[Buildings & Labels Layer]
         end
     end
 
     Browser -->|Loads and renders| HTML
 
-    %% Visual styles for the diagram
+    %% Stili visivi per il diagramma
     classDef browser fill:#1e3a8a,stroke:#3b82f6,color:#fff,stroke-width:2px;
     classDef html fill:#2563eb,stroke:#1d4ed8,color:#fff,stroke-width:2px;
     classDef cssSvg fill:#059669,stroke:#047857,color:#fff,stroke-width:2px;
@@ -84,10 +82,10 @@ At the end of this lesson, the project folder will contain three main files in t
     class Browser browser;
     class HTML html;
     class CSS,SVG,JS cssSvg;
-    class Ground,Paths,Buildings layer;
+    class Terreno,Percorsi,Edifici layer;
 `} />
 
-diagram created with [Mermaid](https://mermaid.live/edit#pako:eNqNk1FvmzAQx7-K5b60EokgaQjjYdOW9GnaVrVTpQ3y4NkHWAUfso1SluS719jJNm0v4wXu7nf_-3PgA-UogOa0anHPG6Yt-botFXHXo3XRdfEkjbQEVSsVEGNRw-6GzGZvyQeNewNFuJFeoxi4NbvQfM5O3MbJFO-FINJCZ4hFwl3mzE1FT22BSwGHB2Bi9EwD_JngYN-dAhmAiT1-BOiJabDvpaqP51n_UN_AHMk9G4s7ZUGTno0dKEsEWCbbi09X9-OfWCvF4f7MMM6htyAus33Vi37GI3kAq8fiscE9Aa1Rkw6MYTWcJX3Zizq5v_u9qQ2qSuqu-KKFM8ZDBOKykhCHraCC6-Kuc46JBg6yt7ubUgXQ2LGF8JlIJds2v4KsWsGbyFiNz5Bf3S5ZfLv-E570_pcNpgNcVdUS4l9w9SPjcUwjWmspaG71ABHtQDufLqSHSaaktoEOSpq7Rw1ieJlxbFGXtFQn19oz9R2xu3RrHOqG5hVrjYuGXjALW8lqzX4joNy-NjgoS_OVV6D5gb7QfLlO5mm2SBbJOk5WaZpEdHTZ1TzOsjTN0sS92nKRniL604-M59naCYCQ7n_-FA6APwenV1CD_oo/)
+Diagram created with [Mermaid](https://mermaid.live/edit#pako:eNqNk1FvmzAQx7-K5b60EokgaQjjYdOW9GnaVrVTpQ3y4NkHWAUfso1SluS719jJNm0v4wXu7nf_-3PgA-UogOa0anHPG6Yt-botFXHXo3XRdfEkjbQEVSsVEGNRw-6GzGZvyQeNewNFuJFeoxi4NbvQfM5O3MbJFO-FINJCZ4hFwl3mzE1FT22BSwGHB2Bi9EwD_JngYN-dAhmAiT1-BOiJabDvpaqP51n_UN_AHMk9G4s7ZUGTno0dKEsEWCbbi09X9-OfWCvF4f7MMM6htyAus33Vi37GI3kAq8fiscE9Aa1Rkw6MYTWcJX3Zizq5v_u9qQ2qSuqu-KKFM8ZDBOKykhCHraCC6-Kuc46JBg6yt7ubUgXQ2LGF8JlIJds2v4KsWsGbyFiNz5Bf3S5ZfLv-E570_pcNpgNcVdUS4l9w9SPjcUwjWmspaG71ABHtQDufLqSHSaaktoEOSpq7Rw1ieJlxbFGXtFQn19oz9R2xu3RrHOqG5hVrjYuGXjALW8lqzX4joNy-NjgoS_OVV6D5gb7QfLlO5mm2SBbJOk5WaZpEdHTZ1TzOsjTN0sS92nKRniL604-M59naCYCQ7n_-FA6APwenV1CD_oo/)
 
 </StepCard>
 
@@ -96,15 +94,16 @@ diagram created with [Mermaid](https://mermaid.live/edit#pako:eNqNk1FvmzAQx7-K5b
 
 <StepCard stepNumber={stepNumber++}>
 
-### 🌿 Creating the working branch `lezione-2`
-Before starting to write the new code, we create a dedicated branch to isolate the changes for this lesson:
+### 🌿 Create the `lesson-2` Working Branch
+Before writing any new code, create a dedicated branch to isolate the changes for this lesson:
 
 <Steps>
-1. Open the Source Control panel in VS Code (`Ctrl + Shift + G`).
-2. Click the name of the current branch in the lower-left corner (or in the panel header) and select `Create a new branch...`.
-3. Type the name of the new branch: `lezione-2` and press Enter.
+1. Apri il pannello Source Control in VS Code (`Ctrl + Shift + G`). 
+2. Click the current branch name in the lower-left corner (or at the top of the panel) and
+select `Create new branch...`.
+3. Enter the new branch name: `lesson-2`, then press Enter.
 </Steps>
-You are now working on an independent copy of Lesson 1, ready to evolve!
+You are now working on a copy independent from Lesson 1, ready to be developed further!
 
 </StepCard>
 
@@ -112,12 +111,13 @@ You are now working on an independent copy of Lesson 1, ready to evolve!
 
 <StepCard stepNumber={stepNumber++}>
 
-### 🎨 Updating `style.css` (Hover effects and the `attivo` class)
+### 🎨 Update `style.css` (Hover Effects and the `active` Class)
 
-Add the visual rules at the end of your `style.css` file to handle mouse hover and the highlight effect (yellow border and glow) when a building is selected:
+Add the following visual rules to the end of your `style.css` file to change the
+cursor on hover and highlight a selected building with a yellow border and glow:
 
 ```diff lang="css" title="style.css"
-/* style for building text labels */
+/* Style for building text labels */
 .label {
   font-size: 14px;
   font-weight: bold;
@@ -126,8 +126,8 @@ Add the visual rules at the end of your `style.css` file to handle mouse hover a
   dominant-baseline: middle;
   pointer-events: none;
 }
-- /* part to add at the end of the file */
-+ /* Hover effect on all building groups */
+- /* Add the following at the end of the file */
++ /* Hover effect for all building groups */
 + #layer-edifici > g {
 +   cursor: pointer;
 +   transition: opacity 0.2s ease;
@@ -135,11 +135,11 @@ Add the visual rules at the end of your `style.css` file to handle mouse hover a
 + #layer-edifici > g:hover {
 +   opacity: 0.85;
 + }
-+ /* Style applied to the SELECTED building via JS */
-+ .attivo rect {
++ /* Style applied by JavaScript to the SELECTED building */
++ .active rect {
 +   stroke: #facc15 !important; /* Bright yellow */
 +   stroke-width: 5px !important;
-+   filter: drop-shadow (0px 0px 10px #facc15);
++   filter: drop-shadow(0px 0px 10px #facc15);
 + }
 ```
 
@@ -149,40 +149,41 @@ Add the visual rules at the end of your `style.css` file to handle mouse hover a
 
 <StepCard stepNumber={stepNumber++}>
 
-### 🧠 Creating the `script.js` file and using `document.getElementById()`
+### 🧠 Create `script.js` and Use `document.getElementById()`
 
-Create a new file named `script.js` in the main project folder.
 
-Inside it, we will add the function that uses `document.getElementById()` to retrieve the SVG element corresponding to the chosen building and apply the `.attivo` class to it:
+Create a new file named `script.js` in the project root folder.
 
-```javascript
-//script.js
-// Function called when the dropdown menu changes
+In it, add a function that uses `document.getElementById()` to retrieve the SVG element
+corresponding to the selected building and apply the `.active` class to it:
+
+```javascript title="script.js"
+// Called when the dropdown menu changes
 function highlightBuildingFromMenu() {
-    removePreviousSelection();
+    clearPreviousSelection();
     const selectMenu = document.getElementById("select-edificio");
-    const selectedId = selectMenu.value;
-    if (selectedId) {
-        // use getElementById to find the SVG element in the DOM
-        const buildingElement = document.getElementById(selectedId);
+    const idSelezionato = selectMenu.value;
+    if (idSelezionato) {
+        // Use getElementById to find the SVG element in the DOM
+        const buildingElement = document.getElementById(idSelezionato);
         if (buildingElement) {
-            buildingElement.classList.add("attivo");
+            buildingElement.classList.add("active");
         }
     }
 }
 
-// Function called by clicking directly on a building in the SVG map
-function selectFromMap(buildingId) {
+// Called when a building on the SVG map is clicked
+function selectFromMap (idEdificio) {
     const selectMenu = document.getElementById("select-edificio");
-    selectMenu.value = buildingId;
+    selectMenu.value = idEdificio;
     highlightBuildingFromMenu();
 }
 
 // Helper function to clear the previous selection
-function removePreviousSelection() {
-    const activeBuilding = document.querySelector(".attivo");
+function clearPreviousSelection() {
+    const activeBuilding = document.querySelector(".active");
     if (activeBuilding) {
-        activeBuilding.classList.remove("attivo");
+        activeBuilding.classList.remove("active");
     }
 }
 ```
@@ -192,55 +193,55 @@ function removePreviousSelection() {
 
 <StepCard stepNumber={stepNumber++}>
 
-### 🎛️ Adding interactivity in `index.html`
+### 🎛️ Add Interactivity to `index.html`
 
-To make the map interactive in the second lesson, we modify the `index.html` file by inserting a control panel with a dropdown menu, linking click events to the buildings, and including the external script.
+To make the map interactive in this lesson, edit `index.html` by adding a control panel with a dropdown menu, connecting click events to the buildings, and including the external script.
 
 <Steps>
 
-1. #### Inserting the control panel with the dropdown menu (`<select>`)
-    Add the control panel right before the `<svg>` tag.
+1. #### Add a Control Panel with a Dropdown Menu (`<select>`)
+    Add the control panel immediately before the `<svg>` tag.
     :::caution
-    Insert the options (`<option>`) based on the buildings you actually created in your project.
+    Add `<option>` elements for the buildings you have actually created in your project.
     :::
 
-    ```diff lang="html"
-    <h1>🗺️ Interactive Campus Map</h1>
+    ```diff lang="html" title="index.html"
+    <h1>🗺️ Mappa del Campus Universitario</h1>
     + 
-    + <!-- CONTROL PANEL WITH DROPDOWN MENU -->
+    + <!-- DROPDOWN CONTROL PANEL -->
     + <div style="margin-bottom: 15px; background: white; padding: 10px; border-radius: 8px; border: 1px solid #cbd5e1;">
-    +   <label for="select-edificio"><strong>🔍 Highlight Building:</strong></label>
+    +   <label for="select-edificio"><strong>🔍 Highlight a Building:</strong></label>
     +   <select id="select-edificio" onchange="highlightBuildingFromMenu()" style="padding: 6px; border-radius: 4px; border: 1px solid #0284c7;">
     +     <option value="">-- Select a destination --</option>
     +     <option value="edificio-uffici">Administrative Offices</option>
-    +     <!-- TODO: Add here the other custom buildings in your campus (e.g. Classrooms, Labs, etc.) -->
+    +     <!-- TODO: Add other buildings on your campus (e.g., classrooms, labs, etc.) -->
     +   </select>
     + </div>
     
     <svg viewBox="0 0 800 600" width="800" height="600" xmlns="http://www.w3.org/2000/svg">
     ```
-2. #### Adding `onclick` events to the SVG buildings
-    To allow each building to respond to mouse clicks,
-    attach the `onclick="selectFromMap(...)"` attribute to the `<g>` groups
-    of individual buildings inside `<g id="layer-edifici">`.
-    ```diff lang="html"
+2. #### Add `onclick` Events to the SVG Buildings
+    To make each building respond to a mouse click, connect the
+    `onclick="selectFromMap(...)"` attribute to each building's `<g>` group
+    inside `<g id="layer-edifici">`.
+    ```diff lang="html" title="index.html"
         <!-- LAYER 3: CAMPUS BUILDINGS -->
         <g id="layer-edifici">
     -       <g id="edificio-uffici">
-    +       <!-- Add the onclick attribute connected to the JavaScript function -->
+    +       <!-- Add the onclick attribute linked to the JavaScript function -->
     +       <g id="edificio-uffici" onclick="selectFromMap('edificio-uffici')">
             <rect x="70" y="80" width="100" height="140" fill="#1e3a8a" rx="6" />
             <text x="120" y="150" class="label">Offices</text>
             </g>
             
     -       <!-- Repeat for the other buildings... -->
-    +       <!-- TODO: Extend the onclick="selectFromMap('building-id')" attribute to all other buildings in your SVG -->
+    +       <!-- TODO: Add onclick="selectFromMap('building-id')" to all other buildings in your SVG -->
         </g>
     ```
-3. #### Linking the external JavaScript file
-    Finally, just before the closing body tag (`</body>`),
-    add the reference to the `script.js` file that will contain the control logic.
-    ```diff lang="html"
+3. #### Link the External JavaScript File
+    Finally, immediately before the closing body tag (`</body>`), add a reference
+    to `script.js`, which contains the control logic.
+    ```diff lang="html" title="index.html"
 
             </g>
         </g>
@@ -258,40 +259,38 @@ To make the map interactive in the second lesson, we modify the `index.html` fil
 
 <StepCard stepNumber={stepNumber++}>
 
-## 🧾 Final Commit and Sync (Git / GitHub)
+### 🧾 Final Commit and Sync (Git / GitHub)
 
-Now that Lesson 2 is complete and tested in the browser, let’s save the work in the repository:
+Now that Lesson 2 is complete and tested in the browser, save your work to the repository:
 <Steps>
-1. Go back to the `Source Control` tab in VS Code.
-2. Check that the modified and created files appear: `index.html`, `style.css`, and `script.js`.
-3. Write a clear commit message in the text box, for example:
-   "Completed Lesson 2: Local interactivity, dropdown menu, and script.js".
-4. Click the `Commit` button.
-5. Click `Publish Branch` (or `Sync Changes`) to upload the new `lezione-2` branch and its commits to your remote GitHub repository.
+1. Return to the `Source Control` view in VS Code.
+2. Check that the modified and new files appear: `index.html`, `style.css`, and `script.js`.
+3. Enter a clear commit message in the text box, for example:
+    "Complete Lesson 2: Local interactivity, dropdown menu, and script.js".
+4. Click `Commit`.
+5. Click `Publish Branch` (or `Sync Changes`) to push the new `lesson-2` branch and its commits to your GitHub remote repository.
 </Steps>
 
 </StepCard>
 
 <Aside type="note" title="Key Concepts Summary" icon="puzzle">
-- [`<select>` and `<option>`](https://en.wikipedia.org/wiki/HTML): create a dropdown menu to choose a building on the map.
-- [JavaScript events](https://en.wikipedia.org/wiki/JavaScript): `onchange` detects the menu selection and `onclick` detects the click on an SVG building.
+- [`<select>` and `<option>`](https://en.wikipedia.org/wiki/HTML): create a dropdown menu for choosing a building on the map.
+- [JavaScript events](https://en.wikipedia.org/wiki/JavaScript): `onchange` detects a menu selection, while `onclick` detects a click on an SVG building.
 - [`document.getElementById()`](https://developer.mozilla.org/en-US/docs/Web/API/Document/getElementById): retrieves the building identified by the selected value from the DOM.
-- [`classList`](https://developer.mozilla.org/en-US/docs/Web/API/Element/classList): adds or removes the `attivo` class to highlight the selected building.
+- [`classList`](https://developer.mozilla.org/en-US/docs/Web/API/Element/classList): adds or removes the `active` class to highlight the selected building.
 - [`script.js`](https://developer.mozilla.org/en-US/docs/Web/JavaScript): contains the interaction logic and is linked to the HTML page.
-- [CSS](https://en.wikipedia.org/wiki/CSS): defines the hover effect and the highlight style for the `.attivo` class.
+- [CSS](https://en.wikipedia.org/wiki/CSS): defines the hover effect and the highlighting style for the `.active` class.
 </Aside>
 
-<Checklist id="progetto-mappa-interattivita-locale" title="✅ Learning check">
-- [ ] I can create a dedicated branch for lesson changes
-- [ ] I can add a dropdown menu with options matching the buildings on the map
+<Checklist id="interactive-map-local-interactivity" title="✅ Learning Check">
+- [ ] I can create a dedicated branch for the lesson changes
+- [ ] I can add a dropdown menu with options corresponding to the buildings on the map
 - [ ] I can connect the `onchange` and `onclick` events to JavaScript functions
-- [ ] I can use `document.getElementById()` to locate a building in the DOM
-- [ ] I can add and remove the `.attivo` class to update the selection
-- [ ] I can link `script.js` and verify the map interactivity in the browser
+- [ ] I can use `document.getElementById()` to find a building in the DOM
+- [ ] I can add and remove the `.active` class to update the selection
+- [ ] I can link `script.js` and test the map's interactivity in a browser
 <Aside type="tip" title="Great job!" slot="reward">
-  Now you know how to add a dropdown menu, connect click and change events,
-  and highlight campus buildings with JavaScript and CSS.
+    You can now create an interactive campus map, connect a dropdown menu and building clicks,
+    and make the selection visible with JavaScript and CSS.
 </Aside>
 </Checklist>
-
-
