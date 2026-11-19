@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Produttore-Consumatore</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #f5f5f5;
+        }
+
+        #container {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 20px;
+            width: 80%;
+            max-width: 1200px;
+        }
+
+        #producer, #buffer, #consumer {
+            padding: 20px;
+            border: 2px solid #333;
+            border-radius: 10px;
+            text-align: center;
+            background-color: #ffffff;
+        }
+
+        h2 {
+            margin-bottom: 10px;
+        }
+
+        #messageBox {
+            padding: 20px;
+            border: 1px solid #333;
+            border-radius: 5px;
+            background-color: #eee;
+            margin: 20px 0;
+        }
+
+        .semaphore {
+            padding: 10px 20px;
+            margin: 10px 0;
+            border-radius: 20px;
+            color: white;
+            font-weight: bold;
+        }
+
+        .semaphore.green {
+            background-color: green;
+        }
+
+        .semaphore.red {
+            background-color: red;
+        }
+
+        button {
+            margin-top: 10px;
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+        }
+
+        button:disabled {
+            background-color: #aaa;
+            cursor: not-allowed;
+        }
+
+        p {
+            font-size: 18px;
+        }
+    </style>
+</head>
+<body>
+    <div id="container">
+        <!-- Produttore -->
+        <div id="producer">
+            <h2>Produttore</h2>
+            <p id="WAIT_PRELEVATO">WAIT(PRELEVATO)</p>
+            <div class="semaphore" id="SEMAPHORE_PRELEVATO">PRELEVATO</div>
+            <button id="PRODUCE_BTN">Genera Messaggio</button>
+        </div>
+        
+        <!-- Buffer -->
+        <div id="buffer">
+            <h2>Buffer</h2>
+            <div id="MESSAGE_BOX">Vuoto</div>
+        </div>
+        
+        <!-- Consumatore -->
+        <div id="consumer">
+            <h2>Consumatore</h2>
+            <p id="WAIT_DEPOSITATO">WAIT(DEPOSITATO)</p>
+            <div class="semaphore" id="SEMAPHORE_DEPOSITATO">DEPOSITATO</div>
+            <button id="CONSUME_BTN" disabled>Consuma Messaggio</button>
+        </div>
+    </div>
+    <script>
+        const PRODUCE_BTN = document.getElementById("PRODUCE_BTN");
+        const CONSUME_BTN = document.getElementById("CONSUME_BTN");
+        const MESSAGE_BOX = document.getElementById("MESSAGE_BOX");
+
+        const SEMAPHORE_PRELEVATO = document.getElementById("SEMAPHORE_PRELEVATO");
+        const SEMAPHORE_DEPOSITATO = document.getElementById("SEMAPHORE_DEPOSITATO");
+        const WAIT_PRELEVATO = document.getElementById("WAIT_PRELEVATO");
+        const WAIT_DEPOSITATO = document.getElementById("WAIT_DEPOSITATO");
+
+        let BUFFER = null; // Buffer con un solo spazio
+        let PRELEVATO = true; // Semaforo PRELEVATO
+        let DEPOSITATO = false; // Semaforo DEPOSITATO
+
+        function updateColors() {
+            SEMAPHORE_PRELEVATO.className = PRELEVATO ? "semaphore green" : "semaphore red";
+            SEMAPHORE_DEPOSITATO.className = DEPOSITATO ? "semaphore green" : "semaphore red";
+
+            // Modifica il colore del testo per WAIT(PRELEVATO) e WAIT(DEPOSITATO)
+            WAIT_PRELEVATO.style.color = PRELEVATO ? "black" : "red";
+            WAIT_DEPOSITATO.style.color = DEPOSITATO ? "black" : "red";
+        }
+
+        PRODUCE_BTN.addEventListener("click", () => {
+            if (PRELEVATO) {
+                BUFFER = "Messaggio";
+                MESSAGE_BOX.textContent = BUFFER;
+                PRELEVATO = false;
+                DEPOSITATO = true;
+                PRODUCE_BTN.disabled = true;
+                CONSUME_BTN.disabled = false;
+                updateColors();
+            }
+        });
+
+        CONSUME_BTN.addEventListener("click", () => {
+            if (DEPOSITATO) {
+                BUFFER = null;
+                MESSAGE_BOX.textContent = "Vuoto";
+                PRELEVATO = true;
+                DEPOSITATO = false;
+                PRODUCE_BTN.disabled = false;
+                CONSUME_BTN.disabled = true;
+                updateColors();
+            }
+        });
+
+        // Inizializzazione dei semafori
+        updateColors();
+    </script>
+</body>
+</html>

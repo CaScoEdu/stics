@@ -32,7 +32,54 @@ export let stepNumber = 1;
 guarda il video introduttivo
 </LinkButton>
 
-## Analisi e Progettazione
+## 📋 Analisi dei requisiti
+
+<StepCard stepNumber={stepNumber++}>
+
+### 🎯 Obiettivo della lezione
+
+- In questa lezione poniamo le basi del nostro portale cartografico: realizziamo la struttura grafica vettoriale in SVG all'interno della pagina HTML e separiamo gli stili visivi in un foglio di stile esterno (`style.css`).
+- L'output finale è una mappa vettoriale organizzata in layer logici (terreno, percorsi ed edifici) e stilizzata in modo pulito e responsive.
+
+<Aside type="note" title="Risultato atteso">
+Al termine della lezione avrai un'applicazione in cui:
+- la struttura della mappa è realizzata in formato vettoriale SVG;
+- gli elementi grafici sono suddivisi in layer logici tramite i tag di gruppo (`<g>`);
+- gli stili visivi della pagina e della mappa sono isolati nel file CSS esterno;
+- il codice è tracciato correttamente tramite un branch dedicato su Git e GitHub.
+</Aside>
+
+</StepCard>
+
+<StepCard stepNumber={stepNumber++}>
+
+### 👥 Diagramma dei Casi d'Uso
+
+  <Mermaid chart={`
+  flowchart LR
+    Utente(["🚶 Utente"])
+
+    subgraph Sistema ["Mappa Interattiva Campus (Lezione 1)"]
+        U1(["Visualizzare la Mappa Vettoriale del Campus"])
+    end
+
+    Utente --> U1
+
+    classDef actor fill:#1e3a8a,stroke:#3b82f6,color:#fff,stroke-width:2px;
+    classDef usecase fill:#2563eb,stroke:#1d4ed8,color:#fff,stroke-width:2px;
+    classDef system fill:#f8fafc,stroke:#64748b,stroke-width:2px,color:#0f172a;
+
+    class Utente actor;
+    class U1 usecase;
+    class Sistema system;
+`} />
+
+diagramma fatto con [Mermaid](https://mermaid.live/edit#pako:eNqNk1FvmzAQx7-K5b60EokgaQjjYdOW9GnaVrVTpQ3y4NkHWAUfso1SluS719jJNm0v4wXu7nf_-3PgA-UogOa0anHPG6Yt-botFXHXo3XRdfEkjbQEVSsVEGNRw-6GzGZvyQeNewNFuJFeoxi4NbvQfM5O3MbJFO-FINJCZ4hFwl3mzE1FT22BSwGHB2Bi9EwD_JngYN-dAhmAiT1-BOiJabDvpaqP51n_UN_AHMk9G4s7ZUGTno0dKEsEWCbbi09X9-OfWCvF4f7MMM6htyAus33Vi37GI3kAq8fiscE9Aa1Rkw6MYTWcJX3Zizq5v_u9qQ2qSuqu-KKFM8ZDBOKykhCHraCC6-Kuc46JBg6yt7ubUgXQ2LGF8JlIJds2v4KsWsGbyFiNz5Bf3S5ZfLv-E570_pcNpgNcVdUS4l9w9SPjcUwjWmspaG71ABHtQDufLqSHSaaktoEOSpq7Rw1ieJlxbFGXtFQn19oz9R2xu3RrHOqG5hVrjYuGXjALW8lqzX4joNy-NjgoS_OVV6D5gb7QfLlO5mm2SBbJOk5WaZpEdHTZ1TzOsjTN0sS92nKRniL604-M59naCYCQ7n_-FA6APwenV1CD_oo/)
+
+Il Diagramma dei Casi d'Uso descrive l'interazione essenziale dell'utente nella prima fase del progetto: l'utente accede al portale e visualizza la mappa vettoriale statica del campus, le cui risorse grafiche e stilistiche sono correttamente rese responsive dal browser.
+</StepCard>
+
+## 📐 Progettazione
 
 <StepCard stepNumber={stepNumber++}>
 ### La Mappa del Campus in SVG
@@ -128,6 +175,37 @@ Al termine di questa lezione, la cartella del progetto conterrà due file princi
 
 <StepCard stepNumber={stepNumber++}>
 
+### 🔀 Diagramma di Sequenza
+
+- A cosa serve: Illustra l'ordine cronologico degli eventi quando il browser carica la pagina e inizializza le risorse statiche.
+
+- Nota di lettura: Il tempo scorre verticalmente dall'alto verso il basso.
+
+<Mermaid chart={`
+sequenceDiagram
+actor Utente
+participant HTML as index.html
+participant CSS as style.css
+participant SVG as Mappa SVG (Embedded)
+participant Browser as Browser Web
+
+Utente->>Browser: Richiede l'apertura del sito
+Browser->>HTML: Carica il file index.html
+HTML->>CSS: Richiede il foglio di stile esterno (link rel="stylesheet")
+CSS-->>Browser: Restituisce le regole di stile (.label, body, svg)
+HTML->>SVG: Interpreta i layer strutturali (<g> e <rect>)
+Browser-->>Utente: Renderizza la pagina e mostra la mappa vettoriale
+`} />
+
+diagramma fatto con [Mermaid](https://mermaid.live/edit#pako:eNqNk1FvmzAQx7-K5b60EokgaQjjYdOW9GnaVrVTpQ3y4NkHWAUfso1SluS719jJNm0v4wXu7nf_-3PgA-UogOa0anHPG6Yt-botFXHXo3XRdfEkjbQEVSsVEGNRw-6GzGZvyQeNewNFuJFeoxi4NbvQfM5O3MbJFO-FINJCZ4hFwl3mzE1FT22BSwGHB2Bi9EwD_JngYN-dAhmAiT1-BOiJabDvpaqP51n_UN_AHMk9G4s7ZUGTno0dKEsEWCbbi09X9-OfWCvF4f7MMM6htyAus33Vi37GI3kAq8fiscE9Aa1Rkw6MYTWcJX3Zizq5v_u9qQ2qSuqu-KKFM8ZDBOKykhCHraCC6-Kuc46JBg6yt7ubUgXQ2LGF8JlIJds2v4KsWsGbyFiNz5Bf3S5ZfLv-E570_pcNpgNcVdUS4l9w9SPjcUwjWmspaG71ABHtQDufLqSHSaaktoEOSpq7Rw1ieJlxbFGXtFQn19oz9R2xu3RrHOqG5hVrjYuGXjALW8lqzX4joNy-NjgoS_OVV6D5gb7QfLlO5mm2SBbJOk5WaZpEdHTZ1TzOsjTN0sS92nKRniL604-M59naCYCQ7n_-FA6APwenV1CD_oo/)
+
+Il **Diagramma di Sequenza** descrive il flusso di caricamento iniziale 
+della **Lezione 1**: all'apertura della pagina, il **browser** elabora la struttura `HTML`, recupera il foglio di stile esterno `style.css` e interpreta il markup `SVG` strutturato in layer (`terreno`, `percorsi`, `edifici`), componendo infine la visualizzazione grafica per l'utente.
+</StepCard>
+
+
+<StepCard stepNumber={stepNumber++}>
+
 ### 🧩 Diagramma dei componenti
 
   <Mermaid chart={`
@@ -168,13 +246,13 @@ Un **diagramma dei componenti** (**Component Diagram**) è un diagramma struttur
 #### 🔍 Spiegazione del diagramma
 Questo diagramma rappresenta l'architettura pulita e modulare sviluppata nella prima lezione del progetto della Mappa del Campus:
 
-- **Ambiente di esecuzione**: il **Browser Web** funge da client e si occupa di caricare e interpretare il punto di accesso principale del progetto.
-- **Struttura dei file e separazione delle responsabilità**: la pagina `index.html` agisce da coordinatore centrale, delegando la grafica e l'aspetto visivo al file esterno `style.css` e incorporando direttamente il codice vettoriale della mappa.
-- **Organizzazione SVG**: la struttura vettoriale (`SVG`) è a sua volta suddivisa in livelli logici come `layer-terreno`, `layer-percorsi` e `layer-edifici` per gestire correttamente la composizione grafica della mappa.
+- **Ambiente di esecuzione**: il **Browser Web** funge da **client** e si occupa di caricare e interpretare il punto di accesso principale del progetto.
+- **Struttura dei file e separazione delle responsabilità**: la pagina `index.html` agisce da **coordinatore centrale**, delegando la grafica e l'aspetto visivo al file esterno `style.css` e incorporando direttamente il codice vettoriale della mappa.
+- **Organizzazione SVG**: la struttura vettoriale `SVG` è a sua volta suddivisa in livelli logici come `layer-terreno`, `layer-percorsi` e `layer-edifici` per gestire correttamente la composizione grafica della mappa.
 
 </StepCard>
 
-## Realizzazione
+## 🛠️ Realizzazione
 
 <StepCard stepNumber={stepNumber++}>
 

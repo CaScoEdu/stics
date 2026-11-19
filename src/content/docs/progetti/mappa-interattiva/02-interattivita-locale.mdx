@@ -33,7 +33,60 @@ export let stepNumber = 1;
 Guarda il video introduttivo
 </LinkButton>
 
-## 🧭 Progettazione
+## 📋 Analisi dei requisiti
+
+<StepCard stepNumber={stepNumber++}>
+
+### 🎯 Obiettivo della lezione
+
+- In questa lezione introduciamo l'interattività dinamica nel nostro portale cartografico: separiamo la logica di controllo in un file JavaScript esterno (`script.js`), aggiungiamo un pannello di controllo con un menu a tendina (`<select>`) per la selezione degli edifici e colleghiamo gli eventi di interazione (`onclick`) direttamente sugli elementi grafici SVG. 
+- L'output finale è una mappa reattiva in cui la scelta dell'utente (tramite menu o clic sul mouse) individua e illumina istantaneamente l'edificio corrispondente nel DOM.
+
+<Aside type="note" title="Risultato atteso">
+Al termine della lezione avrai un'applicazione in cui:
+- la logica JavaScript è isolata in un file esterno (`script.js`);
+- è presente un menu a tendina dinamico per selezionare gli edifici;
+- gli utenti possono cliccare direttamente sugli edifici della mappa SVG per evidenziarli;
+- il DOM viene manipolato in tempo reale tramite classi CSS e metodi come `getElementById()`.
+</Aside>
+
+</StepCard>
+
+<StepCard stepNumber={stepNumber++}>
+
+### 👥 Diagramma dei Casi d'Uso
+
+  <Mermaid chart={`
+  flowchart LR
+    Utente(["🚶 Utente"])
+
+    subgraph Sistema ["Mappa Interattiva Campus (Lezione 2)"]
+        U1(["Selezionare Edificio da Menu a Tendina"])
+        U2(["Selezionare Edificio con Clic sulla Mappa"])
+        U3(["Visualizzare Edificio Evidenziato"])
+    end
+
+    Utente --> U1
+    Utente --> U2
+    U1 -.->|"&lt;&lt;include&gt;&gt;"| U3
+    U2 -.->|"&lt;&lt;include&gt;&gt;"| U3
+
+    classDef actor fill:#1e3a8a,stroke:#3b82f6,color:#fff,stroke-width:2px;
+    classDef usecase fill:#2563eb,stroke:#1d4ed8,color:#fff,stroke-width:2px;
+    classDef system fill:#f8fafc,stroke:#64748b,stroke-width:2px,color:#0f172a;
+
+    class Utente actor;
+    class U1,U2,U3 usecase;
+    class Sistema system;
+`} />
+
+diagramma fatto con [Mermaid](https://mermaid.live/edit#pako:eNqNk1FvmzAQx7-K5b60EokgaQjjYdOW9GnaVrVTpQ3y4NkHWAUfso1SluS719jJNm0v4wXu7nf_-3PgA-UogOa0anHPG6Yt-botFXHXo3XRdfEkjbQEVSsVEGNRw-6GzGZvyQeNewNFuJFeoxi4NbvQfM5O3MbJFO-FINJCZ4hFwl3mzE1FT22BSwGHB2Bi9EwD_JngYN-dAhmAiT1-BOiJabDvpaqP51n_UN_AHMk9G4s7ZUGTno0dKEsEWCbbi09X9-OfWCvF4f7MMM6htyAus33Vi37GI3kAq8fiscE9Aa1Rkw6MYTWcJX3Zizq5v_u9qQ2qSuqu-KKFM8ZDBOKykhCHraCC6-Kuc46JBg6yt7ubUgXQ2LGF8JlIJds2v4KsWsGbyFiNz5Bf3S5ZfLv-E570_pcNpgNcVdUS4l9w9SPjcUwjWmspaG71ABHtQDufLqSHSaaktoEOSpq7Rw1ieJlxbFGXtFQn19oz9R2xu3RrHOqG5hVrjYuGXjALW8lqzX4joNy-NjgoS_OVV6D5gb7QfLlO5mm2SBbJOk5WaZpEdHTZ1TzOsjTN0sS92nKRniL604-M59naCYCQ7n_-FA6APwenV1CD_oo/)
+
+Il **Diagramma dei Casi d'Uso** illustra le interazioni dell'utente con la mappa interattiva: l'utente può scegliere un edificio servendosi del menu a tendina oppure cliccando direttamente sulla grafica SVG; entrambe le modalità includono obbligatoriamente (`<<include>>`) la funzionalità di evidenziazione visiva dell'elemento selezionato.
+
+</StepCard>
+
+## 📐 Progettazione
 
 <StepCard stepNumber={stepNumber++}>
 
@@ -43,13 +96,47 @@ Al termine di questa lezione, la cartella del progetto conterrà tre file princi
 
 <FileTree>
 - campus-map/
-  - **index.html** Pagina HTML principale che contiene la struttura SVG e il menu di selezione
-  - **style.css** Foglio di stile per il layout della pagina, i dettagli grafici e l'evidenziazione degli edifici
-  - **script.js** File JavaScript con la logica per selezionare gli edifici e aggiornare il DOM
+    - `index.html` Pagina HTML principale che contiene la struttura SVG e il menu di selezione
+    - `style.css` Foglio di stile per il layout della pagina, i dettagli grafici e l'evidenziazione degli edifici
+    - `script.js` File JavaScript con la logica per selezionare gli edifici e aggiornare il DOM
 </FileTree>
 </StepCard>
 
 <StepCard stepNumber={stepNumber++}>
+
+
+<StepCard stepNumber={stepNumber++}>
+
+### 🔀 Diagramma di Sequenza
+
+  <Mermaid chart={`
+  sequenceDiagram
+    actor Utente
+    participant HTML as index.html / DOM
+    participant JS as script.js
+    participant CSS as style.css
+
+    alt Selezione da Menu a Tendina
+        Utente->>HTML: Seleziona voce nel <select> (onchange)
+        HTML->>JS: Invocazione evidenziaEdificioDaMenu()
+    else Selezione Diretta da Mappa
+        Utente->>HTML: Clicca su edificio SVG (onclick)
+        HTML->>JS: Invocazione selezionaDaMappa(idEdificio)
+        JS->>HTML: Aggiorna valore del <select>
+    end
+
+    JS->>JS: rimuoviSelezionePrecedente()
+    JS->>HTML: document.getElementById(idSelezionato)
+    HTML-->>JS: Restituisce l'elemento SVG dell'edificio
+    JS->>CSS: Aggiunge la classe .attivo
+    CSS-->>Utente: Mostra l'edificio illuminato (bordo giallo e bagliore)
+`} />
+
+diagramma fatto con [Mermaid](https://mermaid.live/edit#pako:eNqNk1FvmzAQx7-K5b60EokgaQjjYdOW9GnaVrVTpQ3y4NkHWAUfso1SluS719jJNm0v4wXu7nf_-3PgA-UogOa0anHPG6Yt-botFXHXo3XRdfEkjbQEVSsVEGNRw-6GzGZvyQeNewNFuJFeoxi4NbvQfM5O3MbJFO-FINJCZ4hFwl3mzE1FT22BSwGHB2Bi9EwD_JngYN-dAhmAiT1-BOiJabDvpaqP51n_UN_AHMk9G4s7ZUGTno0dKEsEWCbbi09X9-OfWCvF4f7MMM6htyAus33Vi37GI3kAq8fiscE9Aa1Rkw6MYTWcJX3Zizq5v_u9qQ2qSuqu-KKFM8ZDBOKykhCHraCC6-Kuc46JBg6yt7ubUgXQ2LGF8JlIJds2v4KsWsGbyFiNz5Bf3S5ZfLv-E570_pcNpgNcVdUS4l9w9SPjcUwjWmspaG71ABHtQDufLqSHSaaktoEOSpq7Rw1ieJlxbFGXtFQn19oz9R2xu3RrHOqG5hVrjYuGXjALW8lqzX4joNy-NjgoS_OVV6D5gb7QfLlO5mm2SBbJOk5WaZpEdHTZ1TzOsjTN0sS92nKRniL604-M59naCYCQ7n_-FA6APwenV1CD_oo/)
+
+Descrizione tecnica per la documentazione:
+Il Diagramma di Sequenza descrive il flusso temporale dell'interattività introdotta nella Lezione 2: mostra come i due punti di ingresso (il cambio del menu a tendina o il clic diretto sulla grafica SVG) convergano sull'esecuzione delle funzioni di `script.js`, le quali interrogano il DOM tramite `document.getElementById()` e applicano la classe CSS `.attivo` per aggiornare lo stile grafico.
+</StepCard>
 
 ### 🧩 Diagramma dei componenti
 

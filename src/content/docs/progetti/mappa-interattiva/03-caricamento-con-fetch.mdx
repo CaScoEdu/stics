@@ -33,7 +33,66 @@ export let stepNumber = 1;
 guarda il video introduttivo
 </LinkButton>
 
-## 🧭 Progettazione
+## 📋 Analisi dei requisiti
+
+<StepCard stepNumber={stepNumber++}>
+
+### 🎯 Obiettivo della lezione
+
+- In questa lezione trasformiamo l'architettura della nostra applicazione: separiamo 
+la grafica vettoriale e i dati strutturati in file esterni dedicati (`mappa.svg` e `locali.json`), 
+per poi caricarli dinamicamente nel browser sfruttando le API asincrone di JavaScript
+ (`fetch`, `async` e `await`).
+ 
+ - L'output finale è una pagina leggera e modulare, con menu popolati automaticamente 
+ e un sistema di evidenziazione simmetrica (partenza e destinazione) sia da menu a tendina 
+ che tramite clic diretto sulla mappa.
+
+<Aside type="note" title="Risultato atteso">
+Al termine della lezione avrai un'applicazione in cui:
+- la grafica SVG è esternalizzata e responsive;
+- i dati dei locali sono letti da un file JSON esterno;
+- i menu di selezione si popolano autonomamente all'avvio;
+- la selezione di partenza e destinazione evidenzia visivamente gli edifici sulla mappa.
+</Aside>
+
+</StepCard>
+
+<StepCard stepNumber={stepNumber++}>
+
+### 👥 Diagramma dei Casi d'Uso
+
+<Mermaid chart={`
+ flowchart TD
+    Utente(["🚶 Utente"])
+
+    subgraph Sistema ["Mappa Interattiva Campus"]
+        U1(["Visualizzare la Mappa del Campus"])
+        U2(["Selezionare il Punto di Partenza"])
+        U3(["Selezionare la Destinazione"])
+        U4(["Visualizzare gli Edifici Evidenziati"])
+    end
+
+    Utente --> U1
+    Utente --> U2
+    Utente --> U3
+    U2 -.->|"&lt;&lt;include&gt;&gt;"| U4
+    U3 -.->|"&lt;&lt;include&gt;&gt;"| U4
+
+    classDef actor fill:#1e3a8a,stroke:#3b82f6,color:#fff,stroke-width:2px;
+    classDef usecase fill:#2563eb,stroke:#1d4ed8,color:#fff,stroke-width:2px;
+    classDef system fill:#f8fafc,stroke:#64748b,stroke-width:2px,color:#0f172a;
+
+    class Utente actor;
+    class U1,U2,U3,U4 usecase;
+    class Sistema system;
+`} />
+
+diagramma fatto con [Mermaid](https://mermaid.live/edit#pako:eNqNk1FvmzAQx7-K5b60EokgaQjjYdOW9GnaVrVTpQ3y4NkHWAUfso1SluS719jJNm0v4wXu7nf_-3PgA-UogOa0anHPG6Yt-botFXHXo3XRdfEkjbQEVSsVEGNRw-6GzGZvyQeNewNFuJFeoxi4NbvQfM5O3MbJFO-FINJCZ4hFwl3mzE1FT22BSwGHB2Bi9EwD_JngYN-dAhmAiT1-BOiJabDvpaqP51n_UN_AHMk9G4s7ZUGTno0dKEsEWCbbi09X9-OfWCvF4f7MMM6htyAus33Vi37GI3kAq8fiscE9Aa1Rkw6MYTWcJX3Zizq5v_u9qQ2qSuqu-KKFM8ZDBOKykhCHraCC6-Kuc46JBg6yt7ubUgXQ2LGF8JlIJds2v4KsWsGbyFiNz5Bf3S5ZfLv-E570_pcNpgNcVdUS4l9w9SPjcUwjWmspaG71ABHtQDufLqSHSaaktoEOSpq7Rw1ieJlxbFGXtFQn19oz9R2xu3RrHOqG5hVrjYuGXjALW8lqzX4joNy-NjgoS_OVV6D5gb7QfLlO5mm2SBbJOk5WaZpEdHTZ1TzOsjTN0sS92nKRniL604-M59naCYCQ7n_-FA6APwenV1CD_oo/)
+
+</StepCard>
+
+## 📐 Progettazione
 
 <StepCard stepNumber={stepNumber++}>
 
@@ -50,6 +109,42 @@ Al termine di questa lezione, la cartella del progetto conterrà questi file nel
   - **locali.json** Elenco degli edifici, usato per popolare il menu di selezione
 </FileTree>
 </StepCard>
+
+<StepCard stepNumber={stepNumber++}>
+
+### 🔀 Diagramma di Sequenza
+
+  <Mermaid chart={`
+  sequenceDiagram
+    actor Utente
+    participant HTML as index.html
+    participant JS as script.js
+    participant SVG as mappa.svg
+    participant JSON as locali.json
+    participant DOM as DOM del Browser
+
+    Utente->>HTML: Apre la pagina nel browser
+    HTML->>JS: Esegue DOMContentLoaded event
+    par Caricamento Asincrono
+        JS->>SVG: fetch("mappa.svg")
+        SVG-->>JS: Restituisce testo SVG
+        JS->>JSON: fetch("locali.json")
+        JSON-->>JS: Restituisce array JSON
+    end
+    JS->>DOM: Inietta SVG in #mappa-container e popola <select>
+    DOM-->>Utente: Mostra mappa responsive e menu pronti
+    
+    Utente->>DOM: Seleziona edificio (click o menu)
+    DOM->>JS: Scatena aggiornaEvidenziazione()
+    JS->>DOM: Aggiunge classi CSS (.selezionato-da / .selezionato-a)
+    DOM-->>Utente: Mostra edifici illuminati simmetricamente
+`} />
+
+diagramma fatto con [Mermaid](https://mermaid.live/edit#pako:eNqNk1FvmzAQx7-K5b60EokgaQjjYdOW9GnaVrVTpQ3y4NkHWAUfso1SluS719jJNm0v4wXu7nf_-3PgA-UogOa0anHPG6Yt-botFXHXo3XRdfEkjbQEVSsVEGNRw-6GzGZvyQeNewNFuJFeoxi4NbvQfM5O3MbJFO-FINJCZ4hFwl3mzE1FT22BSwGHB2Bi9EwD_JngYN-dAhmAiT1-BOiJabDvpaqP51n_UN_AHMk9G4s7ZUGTno0dKEsEWCbbi09X9-OfWCvF4f7MMM6htyAus33Vi37GI3kAq8fiscE9Aa1Rkw6MYTWcJX3Zizq5v_u9qQ2qSuqu-KKFM8ZDBOKykhCHraCC6-Kuc46JBg6yt7ubUgXQ2LGF8JlIJds2v4KsWsGbyFiNz5Bf3S5ZfLv-E570_pcNpgNcVdUS4l9w9SPjcUwjWmspaG71ABHtQDufLqSHSaaktoEOSpq7Rw1ieJlxbFGXtFQn19oz9R2xu3RrHOqG5hVrjYuGXjALW8lqzX4joNy-NjgoS_OVV6D5gb7QfLlO5mm2SBbJOk5WaZpEdHTZ1TzOsjTN0sS92nKRniL604-M59naCYCQ7n_-FA6APwenV1CD_oo/)
+
+Il Diagramma di Sequenza descrive la dimensione temporale e l'interazione dinamica tra i componenti del sistema: il tempo scorre verticalmente dall'alto verso il basso, mostrando l'ordine cronologico delle richieste asincrone (`fetch()`) con cui la pagina carica la grafica vettoriale (`mappa.svg`) e i dati strutturati (`locali.json`) all'avvio, fino alla gestione degli eventi utente e all'aggiornamento visivo simmetrico degli edifici nel `DOM`.
+</StepCard>
+
 
 <StepCard stepNumber={stepNumber++}>
 

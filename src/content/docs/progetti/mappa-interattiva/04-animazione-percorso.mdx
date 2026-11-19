@@ -47,9 +47,21 @@ Prima di passare all'implementazione, conviene definire un po' di regole trasver
 Queste piccole scelte migliorano molto la leggibilità del progetto, riducono i bug e aiutano la fase di debugging.
 </Aside>
 
+## 📋 Analisi
+
+<StepCard stepNumber={stepNumber++}>
+
 ### 🎯 Obiettivo della lezione
 
-In questa lezione trasformiamo la mappa da una semplice rappresentazione grafica a una vera rete di spostamenti: i locali diventano nodi del [grafo](https://it.wikipedia.org/wiki/Grafo), i percorsi pedonali diventano archi pesati e il browser calcola automaticamente il tragitto più corto tra due punti con l'[algoritmo di Dijkstra](https://it.wikipedia.org/wiki/Algoritmo_di_Dijkstra). L'output finale è una navigazione interattiva, con evidenziazione dei locali e una linea animata che segue il percorso scelto.
+- In questa lezione trasformiamo la mappa da
+ una semplice rappresentazione grafica a una vera rete di spostamenti:
+  i locali diventano nodi del
+   [grafo](https://it.wikipedia.org/wiki/Grafo),
+    i percorsi pedonali diventano archi pesati e 
+    il browser calcola automaticamente il tragitto più corto 
+    tra due punti con l'[algoritmo di Dijkstra](https://it.wikipedia.org/wiki/Algoritmo_di_Dijkstra). 
+    
+- L'output finale è una navigazione interattiva, con evidenziazione dei locali e una linea animata che segue il percorso scelto.
 
 <Aside type="note" title="Risultato atteso">
 Al termine della lezione avrai un'applicazione in cui, selezionando partenza e destinazione, il sistema:
@@ -59,7 +71,46 @@ Al termine della lezione avrai un'applicazione in cui, selezionando partenza e d
 - evidenzia gli edifici coinvolti e mostra la serpentina animata.
 </Aside>
 
-## 🧭 Progettazione
+</StepCard>
+
+<StepCard stepNumber={stepNumber++}>
+
+### 👥 Diagramma dei Casi d'Uso
+
+<Mermaid chart={`
+  flowchart TD
+    Utente(["🚶 Utente Utente"])
+
+    subgraph Sistema ["Mappa Interattiva Campus"]
+        U1(["Seleziona Partenza"])
+        U2(["Seleziona Destinazione"])
+        U3(["Calcola Percorso Minimo"])
+        U4(["Visualizza Animazione Serpentina"])
+    end
+
+    Utente --> U1
+    Utente --> U2
+    U1 -.->|"&lt;&lt;include&gt;&gt;"| U3
+    U2 -.->|"&lt;&lt;include&gt;&gt;"| U3
+    U3 -.->|"&lt;&lt;include&gt;&gt;"| U4
+
+    classDef actor fill:#1e3a8a,stroke:#3b82f6,color:#fff,stroke-width:2px;
+    classDef usecase fill:#2563eb,stroke:#1d4ed8,color:#fff,stroke-width:2px;
+    classDef system fill:#f8fafc,stroke:#64748b,stroke-width:2px,color:#0f172a;
+
+    class Utente actor;
+    class U1,U2,U3,U4 usecase;
+    class Sistema system;
+    
+`} />
+
+diagramma fatto con [Mermaid](https://mermaid.live/edit#pako:eNqNk1FvmzAQx7-K5b60EokgaQjjYdOW9GnaVrVTpQ3y4NkHWAUfso1SluS719jJNm0v4wXu7nf_-3PgA-UogOa0anHPG6Yt-botFXHXo3XRdfEkjbQEVSsVEGNRw-6GzGZvyQeNewNFuJFeoxi4NbvQfM5O3MbJFO-FINJCZ4hFwl3mzE1FT22BSwGHB2Bi9EwD_JngYN-dAhmAiT1-BOiJabDvpaqP51n_UN_AHMk9G4s7ZUGTno0dKEsEWCbbi09X9-OfWCvF4f7MMM6htyAus33Vi37GI3kAq8fiscE9Aa1Rkw6MYTWcJX3Zizq5v_u9qQ2qSuqu-KKFM8ZDBOKykhCHraCC6-Kuc46JBg6yt7ubUgXQ2LGF8JlIJds2v4KsWsGbyFiNz5Bf3S5ZfLv-E570_pcNpgNcVdUS4l9w9SPjcUwjWmspaG71ABHtQDufLqSHSaaktoEOSpq7Rw1ieJlxbFGXtFQn19oz9R2xu3RrHOqG5hVrjYuGXjALW8lqzX4joNy-NjgoS_OVV6D5gb7QfLlO5mm2SBbJOk5WaZpEdHTZ1TzOsjTN0sS92nKRniL604-M59naCYCQ7n_-FA6APwenV1CD_oo/)
+
+
+</StepCard>
+
+
+## 📐 Progettazione
 
 <StepCard stepNumber={stepNumber++}>
 
@@ -77,6 +128,34 @@ Al termine di questa lezione, la cartella del progetto conterrà questi file nel
   - **script.js** Logica principale che carica i file con `fetch()`, gestisce gli eventi e disegna il percorso nel DOM[cite: 2]
   - **style.css** Foglio di stile per il layout della pagina, l'evidenziazione degli edifici e l'animazione del percorso[cite: 2]
 </FileTree>
+</StepCard>
+
+<StepCard stepNumber={stepNumber++}>
+
+### 🔀 Diagramma di Sequenza
+
+  <Mermaid chart={`
+  sequenceDiagram
+    actor Utente
+    participant DOM as Interfaccia (HTML/SVG)
+    participant JS as script.js
+    participant JSON as grafo.json
+    participant Algoritmo as dijkstra.js
+
+    Utente->>DOM: Seleziona Partenza e Destinazione
+    DOM->>JS: scatena aggiornaEvidenziazione()
+    JS->>JSON: fetch("grafo.json")
+    JSON-->>JS: restituisce oggetto grafo
+    JS->>Algoritmo: calcolaDijkstra(grafo, inizio, fine)
+    Algoritmo-->>JS: restituisce array nodi percorso minimo
+    JS->>DOM: ottieniCoordinateNodo() & inserisce <polyline>
+    DOM-->>Utente: Mostra serpentina animata
+`} />
+
+diagramma fatto con [Mermaid](https://mermaid.live/edit#pako:eNqNk1FvmzAQx7-K5b60EokgaQjjYdOW9GnaVrVTpQ3y4NkHWAUfso1SluS719jJNm0v4wXu7nf_-3PgA-UogOa0anHPG6Yt-botFXHXo3XRdfEkjbQEVSsVEGNRw-6GzGZvyQeNewNFuJFeoxi4NbvQfM5O3MbJFO-FINJCZ4hFwl3mzE1FT22BSwGHB2Bi9EwD_JngYN-dAhmAiT1-BOiJabDvpaqP51n_UN_AHMk9G4s7ZUGTno0dKEsEWCbbi09X9-OfWCvF4f7MMM6htyAus33Vi37GI3kAq8fiscE9Aa1Rkw6MYTWcJX3Zizq5v_u9qQ2qSuqu-KKFM8ZDBOKykhCHraCC6-Kuc46JBg6yt7ubUgXQ2LGF8JlIJds2v4KsWsGbyFiNz5Bf3S5ZfLv-E570_pcNpgNcVdUS4l9w9SPjcUwjWmspaG71ABHtQDufLqSHSaaktoEOSpq7Rw1ieJlxbFGXtFQn19oz9R2xu3RrHOqG5hVrjYuGXjALW8lqzX4joNy-NjgoS_OVV6D5gb7QfLlO5mm2SBbJOk5WaZpEdHTZ1TzOsjTN0sS92nKRniL604-M59naCYCQ7n_-FA6APwenV1CD_oo/)
+
+
+Il Diagramma di Sequenza (Sequence Diagram) illustra la dimensione temporale e l'interazione dinamica tra i componenti del sistema: il tempo scorre verticalmente dall'alto verso il basso, mostrando l'ordine cronologico delle chiamate asincrone, degli scambi di messaggi e dei dati elaborati (dal caricamento iniziale dei file JSON fino al calcolo del percorso con Dijkstra e al rendering della poligonale animata).
 </StepCard>
 
 <StepCard stepNumber={stepNumber++}>

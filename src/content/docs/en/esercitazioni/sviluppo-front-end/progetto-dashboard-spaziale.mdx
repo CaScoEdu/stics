@@ -5,56 +5,102 @@ description: "Applying JavaScript asynchronous execution and the Fetch API."
 
 import {
     Aside,
-    Badge,
-    Card,
-    FileTree,
-    Icon,
-    LinkButton,
-    LinkCard,
-    Steps,
-    TabItem,
-    Tabs
+    FileTree
 } from "@astrojs/starlight/components";
-import Mermaid from "@/components/Mermaid.astro";
+import Mermaid from '@/components/Mermaid.astro';
 import Checklist from '@/components/Checklist.astro';
-import IconGroup from '@/components/IconGroup.astro';
 import StepCard from '@/components/StepCard.astro';
 
 export let stepNumber = 1;
 
 <Aside type="tip" title="Prerequisites">
 - know how to create HTML, CSS, and JavaScript files and link them together
-- understand variables, functions, and selecting DOM elements
-- know how to attach events to buttons and display content on a page
-- be able to run the project on a local server, such as Live Server
-- know how to use a browser and its developer tools to inspect a page
-- have completed the previous exercise ([link to the previous lesson](/esercitazioni/sviluppo-front-end/))
+- know variables, functions, and how to select DOM elements
+- know how to attach events to buttons and display content on the page
+- be able to run the project with a local server, such as Live Server
+- know how to use the browser and its developer tools to inspect the page
+- have completed the previous exercise ([link to the previous lesson](/exercises/front-end-development/))
 </Aside>
 
----
+## 📋 Requirements analysis
 
-<StepCard stepNumber={1}>
-### 📁 Project file structure
+<StepCard stepNumber={stepNumber++}>
 
-To complete this exercise, create a working folder on your computer and add the required files with this organization:
+### 🎯 Lesson objective
 
-<FileTree>
-- missione-spaziale/
-  - **index.html** User interface with the buttons and command console
-  - **style.css** Custom styles in terminal style
-  - **app.js** Asynchronous JavaScript logic with the Fetch API
-  - **log1.txt** Day 1 mission log text file
-  - **log2.txt** Day 42 mission log text file
-</FileTree>
+- In this lesson, we will learn to distinguish synchronous execution from asynchronous execution and understand why some operations require a non-blocking approach.
+- We will create a space mission dashboard with HTML, CSS, and JavaScript, using `async`, `await`, and the Fetch API to retrieve flight logs from the server.
+- The application will handle both successful log loading and possible network errors or missing files.
+
+<Aside type="note" title="Expected result">
+At the end of the lesson, you will have a space dashboard where:
+- the user can choose which flight log to download;
+- the content is requested from the server with `fetch()`;
+- waiting for the response and reading the text are handled with `async` and `await`;
+- the result is checked through `response.ok` and displayed in the DOM;
+- errors are intercepted with `try/catch` and reported to the user.
+</Aside>
+
 </StepCard>
 
 <StepCard stepNumber={stepNumber++}>
 
-## 🧱 The [HTML](https://en.wikipedia.org/wiki/HTML) Structure (`index.html`)
+### 👥 Use Case Diagram
+
+  <Mermaid chart={`
+  flowchart LR
+    User(["🚶 User"])
+
+    subgraph System ["Asynchronous space dashboard"]
+        U1(["Select a flight log"])
+        U2(["View the log content"])
+        U3(["View the transmission status"])
+        U4(["View an error message"])
+        U1 -.-> U2
+        U1 -.-> U3
+        U1 -.-> U4
+    end
+
+    User --> U1
+
+    classDef actor fill:#1e3a8a,stroke:#3b82f6,color:#fff,stroke-width:2px;
+    classDef usecase fill:#2563eb,stroke:#1d4ed8,color:#fff,stroke-width:2px;
+    classDef system fill:#f8fafc,stroke:#64748b,stroke-width:2px,color:#0f172a;
+
+    class User actor;
+    class U1,U2,U3,U4 usecase;
+    class System system;
+`} />
+
+The use case diagram describes the space dashboard workflow: the user selects a flight log, the system waits for the response asynchronously, and displays the content in the `DOM`, the transmission status, or a network or missing-file error.
+</StepCard>
+
+## 📐 Design
+
+<StepCard stepNumber={stepNumber++}>
+### 📁 Project file structure
+
+To complete this exercise, create a working folder on your computer and add the required files in this structure:
+
+<FileTree>
+- space-mission/
+  - **index.html** User interface with buttons and command console
+  - **style.css** Custom terminal-style stylesheet
+  - **app.js** Asynchronous JavaScript logic using the Fetch API
+  - **log1.txt** Text file for the Day 1 log
+  - **log2.txt** Text file for the Day 42 log
+</FileTree>
+</StepCard>
+
+
+## 🛠️ Implementation
+
+<StepCard stepNumber={stepNumber++}>
+
+### 🧱 The [HTML](https://en.wikipedia.org/wiki/HTML) structure (`index.html`)
 
 Let's start by creating the user interface.
-[HTML](https://en.wikipedia.org/wiki/HTML) defines the control buttons and the console panel
-where the download status and log text will appear.
+[HTML](https://en.wikipedia.org/wiki/HTML) defines the control buttons and the console panel where the download status and log text will appear.
 
 ```html
 //index.html
@@ -86,10 +132,11 @@ where the download status and log text will appear.
 </html>
 ```
 
-### HTML Explanation
-Each of the three buttons has a unique ID so JavaScript events can be attached to it in code.
-- <code>#stato</code> will display loading progress messages (e.g., "In progress...", "Done", "Error").
-- <code>#log</code> will contain the text downloaded from the text file.
+#### HTML explanation
+Each of the three buttons has a unique ID so that JavaScript can attach event handlers to them.
+- <code>#stato</code> will contain the loading progress messages
+  (for example, "In progress...", "OK", or "Error").
+- <code>#log</code> will contain the actual text downloaded from the text file.   
 
 </StepCard>
 
@@ -97,9 +144,8 @@ Each of the three buttons has a unique ID so JavaScript events can be attached t
 
 <StepCard stepNumber={stepNumber++}>
 
-## 🎨 Styling (<code>style.css</code> / [CSS](https://en.wikipedia.org/wiki/CSS))
-Let's create a separate <code>style.css</code> file to give the page
-the look of a real onboard terminal using [CSS](https://en.wikipedia.org/wiki/CSS).
+### 🎨 Graphic Style (<code>style.css</code> / [CSS](https://en.wikipedia.org/wiki/CSS))
+Create a separate <code>style.css</code> file to give the page a real onboard terminal appearance using [CSS](https://en.wikipedia.org/wiki/CSS).
 
 ```css
 //style.css
@@ -138,9 +184,9 @@ button:hover {
   color: #c9d1d9;
 }
 ```
-### CSS Explanation
-- <code>font-family: monospace</code> simulates the fonts used in command-line terminals.
-- <code>white-space: pre-wrap</code> on the <code>#log</code> container is essential: it preserves line breaks (<code>\n</code>) from the text file when displayed.
+#### CSS explanation
+- <code>font-family: monospace</code> imitates command terminal fonts.
+- <code>white-space: pre-wrap</code> on the <code>#log</code> container is essential: it ensures that line breaks (<code>\n</code>) in the text file are preserved on screen.    
 
 </StepCard>
 
@@ -148,19 +194,19 @@ button:hover {
 
 <StepCard stepNumber={stepNumber++}>
 
-## 📄 Data Files (Flight Logs)
-Create two text files in the same project folder:
+### 📄 Data Files (The Flight Logs)
+Create two text files in the same project folder:   
 
 :::tip[log1.txt]
 [DATE: 12.04.2045]
-Successful liftoff from the Earth base.
-All engines are operating at 100%. The journey to Mars has begun without incident.
+Launch from the terrestrial base completed successfully.
+All engines are operating at 100%. The journey to Mars has begun without problems.
 :::
 
 :::tip[log2.txt]
 [DATE: 24.05.2045]
 Anomaly detected in navigation sector 4.
-Sensors indicate an unidentified signal. Immediate investigation requested.
+The sensors indicate an unidentified signal. Immediate verification requested.
 :::
 
 </StepCard>
@@ -169,48 +215,51 @@ Sensors indicate an unidentified signal. Immediate investigation requested.
 
 <StepCard stepNumber={stepNumber++}>
 
-## ⚙️ The [JavaScript](https://en.wikipedia.org/wiki/JavaScript) Logic (<code>app.js</code>)
-Let's build the script logic by dividing it into conceptual sections.
+### ⚙️ The [JavaScript](https://en.wikipedia.org/wiki/JavaScript) logic (<code>app.js</code>)
+Let's build the script logic by dividing it into conceptual blocks.
 
-### Snippet A: Declaring the Asynchronous Function
+#### Snippet A: Declaring the asynchronous function
 ```javascript
-// Use the 'async' keyword to enable the use of 'await' inside the function
-async function loadLog(fileName) {
+// Use the 'async' keyword to enable 'await' inside the function
+async function caricaLog(nomeFile) {
 const elementoStato = document.getElementById('stato');
 const elementoLog = document.getElementById('log');
-// Codice di caricamento...
+// Loading code...
 }
 ```
 :::tip[Explanation]
-The `async` keyword tells the browser that this function will perform asynchronous operations and return a `Promise`.
+The `async` keyword tells the browser
+that this function will perform asynchronous operations and return a `Promise`.
 :::
 
 ---
 
-### Snippet B: The HTTP Request with `await fetch()`
+#### Snippet B: The HTTP request with `await fetch()`
 ```javascript
 // 1. Start the error-handling block
 try {
-    elementoStato.textContent = `Downloading ${fileName}...`;
+    elementoStato.textContent = `Downloading ${nomeFile}...`;
     
     // 2. Send the request and WAIT for the response headers
-    const response = await fetch(fileName);
+    const response = await fetch(nomeFile);
     
-    // 3. Check whether the file exists on the server (e.g., HTTP 200 OK)
+    // 3. Check whether the file exists on the server (for example, HTTP 200 OK)
     if (!response.ok) {
     throw new Error(`File not found (HTTP status: ${response.status})`);
     }
 }
 ```
 :::tip[Explanation]
-`await fetch()` pauses execution inside the function until the server responds, without blocking the web page.
-If the file does not exist (e.g., `404`), `response.ok` will be `false`, and we manually throw an error with `throw`.
+`await fetch()` pauses execution inside the function
+until the server responds, without blocking the web page.
+If the file does not exist (for example, `404`),
+`response.ok` will be `false`, and we manually generate an error with `throw`.
 :::
 
 ---
-### Snippet C: Converting to Text and Updating the DOM
+#### Snippet C: Converting to text and updating the DOM
 ```javascript
-// 4. WAIT for the entire file content to be read as text
+// 4. WAIT until the entire file content has been read as text
     const testo = await response.text();
     
     // 5. Update the interface with the received data
@@ -218,64 +267,73 @@ If the file does not exist (e.g., `404`), `response.ok` will be `false`, and we 
     elementoLog.textContent = testo;
     
   } catch (errore) {
-    // Handle network problems or a missing file
+    // Handle network problems or missing files
     elementoStato.textContent = 'TRANSMISSION ERROR!';
     elementoLog.textContent = errore.message;
   }
 }
 ```
 :::tip[Explanation]
-`await response.text()` is needed because the response body arrives as a stream.
-A second `await` is required to finish reading the text.
+`await response.text()` is needed because the response body
+arrives as a stream.
+A second `await` completes the text reading process.
 :::
 
 ---
 
-### Snippet D: Attaching Event Listeners to the Buttons
+#### Snippet D: Connecting Event Listeners to the Buttons
 
 ```javascript
 // Connect the function to the interface buttons
-document.getElementById('btn-log1').addEventListener('click', () => loadLog('log1.txt'));
-document.getElementById('btn-log2').addEventListener('click', () => loadLog('log2.txt'));
-document.getElementById('btn-errore').addEventListener('click', () => loadLog('log-missing.txt'));
+document.getElementById('btn-log1').addEventListener('click', () => caricaLog('log1.txt'));
+document.getElementById('btn-log2').addEventListener('click', () => caricaLog('log2.txt'));
+document.getElementById('btn-errore').addEventListener('click', () => caricaLog('log-inesistente.txt'));
 ```
 
 </StepCard>
 
-:::caution[Beware of `CORS` blocking (`Live Server`)]
+### Testing the code
+
+
+:::caution[Watch out for the `CORS` block (`Live Server`)]
 Reference: [`CORS`](https://en.wikipedia.org/wiki/Cross-origin_resource_sharing).
-If you open `index.html` by simply double-clicking it (the `file:///` protocol),
-the browser will block `fetch` for security reasons.
+If you open `index.html` by double-clicking it directly
+(`file:///` protocol), the browser will block `fetch` for security reasons.
 Remember to run the project through a local server
-(e.g., the `Live Server` extension for `Visual Studio Code`).
+(for example, the `Live Server` extension for `Visual Studio Code`).
 :::
 
-:::tip[Practice Exercise]
-Add a fourth button called `"Day 100 Log"` and create the corresponding `log100.txt` file
+## 🛠️ Evolutionary Maintenance
+
+:::tip[Consolidation exercise for students]
+Add a fourth button named `"Day 100 Log"`
+and create the corresponding `log100.txt` file
 to verify that the system works correctly.
 :::
 
-<Aside type="note" title="Key Concepts Summary" icon="puzzle">
-- [Asynchronous execution](https://en.wikipedia.org/wiki/Asynchronous_programming): lets the dashboard wait for logs to load without blocking.
-- [Promise](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise): represents the future result of a request for a log file.
-- `async` and `await`: allow `loadLog(fileName)` to wait for the response and for the log to be read.
+## 🔒 Project Conclusion
+
+<Aside type="note" title="Key Concept Summary" icon="puzzle">
+- [Asynchronous execution](https://en.wikipedia.org/wiki/Asynchronous_system): lets the dashboard wait for logs to load without blocking.
+- [Promise](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise): represents the future result of a log file request.
+- `async` and `await`: allow `caricaLog(nomeFile)` to wait for the response and log content to be read.
 - [Fetch API](https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API): retrieves `log1.txt` and `log2.txt` from the server.
-- [HTTP](https://en.wikipedia.org/wiki/HTTP): the protocol used to communicate with the local server.
-- `response.ok`: identifies an unsuccessful HTTP response, such as the test button's `404` error.
+- [HTTP](https://en.wikipedia.org/wiki/Hypertext_Transfer_Protocol): protocol used to communicate with the local server.
+- `response.ok`: detects an unsuccessful HTTP response, such as the test button's `404` error.
 - `response.text()`: reads the received log content and returns it as text.
-- [DOM](https://en.wikipedia.org/wiki/Document_Object_Model): lets you update `#stato` and `#log` with the result and content of the load.
+- [DOM](https://en.wikipedia.org/wiki/Document_Object_Model): lets us update `#stato` and `#log` with the loading result and content.
 - `try/catch`: handles network errors or unavailable files and displays the message in the dashboard console.
 </Aside>
 
 <Checklist id="progetto-dashboard-spaziale" title="✅Learning Check">
 - [ ] I can explain why `fetch()` loads a log without blocking the interface
-- [ ] I can describe the role of `async` and `await` in the `loadLog(fileName)` function
+- [ ] I can describe the role of `async` and `await` in the `caricaLog(nomeFile)` function
 - [ ] I can check the request result with `response.ok` and recognize a `404` error
-- [ ] I can read a file's contents with `response.text()` and display them in `#log`
-- [ ] I can handle errors with `try/catch` and update the status in `#stato`
-- [ ] I can run the project on a local server so `fetch()` requests work
-<Aside type="tip" title="Great job!" slot="reward">
-  You now know how to use `fetch()` with `async` and `await` to load flight logs,
+- [ ] I can read the file content with `response.text()` and display it in the `#log` element
+- [ ] I can handle errors with `try/catch` and update the status in the `#stato` element
+- [ ] I can run the project with a local server to allow `fetch()` requests
+<Aside type="tip" title="Great work!" slot="reward">
+  You can now use `fetch()` with `async` and `await` to load flight logs,
   handle errors, and update the space dashboard.
 </Aside>
 </Checklist>

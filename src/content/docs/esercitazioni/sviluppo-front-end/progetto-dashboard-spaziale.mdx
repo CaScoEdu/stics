@@ -5,23 +5,13 @@ description: "Applicazione dell'esecuzione asincrona JavaScript e fetch API."
 
 import {
     Aside,
-    Badge,
-    Card,
-    FileTree,
-    Icon,
-    LinkButton,
-    LinkCard,
-    Steps,
-    TabItem,
-    Tabs
+    FileTree
 } from "@astrojs/starlight/components";
-import Mermaid from "@/components/Mermaid.astro";
+import Mermaid from '@/components/Mermaid.astro';
 import Checklist from '@/components/Checklist.astro';
-import IconGroup from '@/components/IconGroup.astro';
 import StepCard from '@/components/StepCard.astro';
 
 export let stepNumber = 1;
-
 
 <Aside type="tip" title="Prerequisiti">
 - saper creare file HTML, CSS e JavaScript e collegarli tra loro
@@ -32,7 +22,60 @@ export let stepNumber = 1;
 - avere svolto l'esercitazione precedente ([link alla lezione precedente](/esercitazioni/sviluppo-front-end/))
 </Aside>
 
----
+## 📋 Analisi dei requisiti
+
+<StepCard stepNumber={stepNumber++}>
+
+### 🎯 Obiettivo della lezione
+
+- In questa lezione impariamo a distinguere l'esecuzione sincrona da quella asincrona e a comprendere perché alcune operazioni richiedono un approccio non bloccante.
+- Creiamo la dashboard della missione spaziale con HTML, CSS e JavaScript, usando `async`, `await` e `Fetch API` per recuperare i diari di bordo dal server.
+- L'applicazione gestisce sia il caricamento riuscito dei registri sia eventuali errori di rete o file non trovato.
+
+<Aside type="note" title="Risultato atteso">
+Al termine della lezione avrai una dashboard spaziale in cui:
+- l'utente può scegliere quale registro di bordo scaricare;
+- il contenuto viene richiesto al server con `fetch()`;
+- l'attesa della risposta e della lettura del testo è gestita con `async` e `await`;
+- il risultato viene controllato tramite `response.ok` e mostrato nel DOM;
+- gli errori vengono intercettati con `try/catch` e comunicati all'utente.
+</Aside>
+
+</StepCard>
+
+<StepCard stepNumber={stepNumber++}>
+
+### 👥 Diagramma dei Casi d'Uso
+
+  <Mermaid chart={`
+  flowchart LR
+    Utente(["🚶 Utente"])
+
+    subgraph Sistema ["Dashboard spaziale asincrona"]
+        U1(["Selezionare un registro di bordo"])
+        U2(["Visualizzare il contenuto del diario"])
+        U3(["Visualizzare lo stato della trasmissione"])
+        U4(["Visualizzare un messaggio di errore"])
+        U1 -.-> U2
+        U1 -.-> U3
+        U1 -.-> U4
+    end
+
+    Utente --> U1
+
+    classDef actor fill:#1e3a8a,stroke:#3b82f6,color:#fff,stroke-width:2px;
+    classDef usecase fill:#2563eb,stroke:#1d4ed8,color:#fff,stroke-width:2px;
+    classDef system fill:#f8fafc,stroke:#64748b,stroke-width:2px,color:#0f172a;
+
+    class Utente actor;
+    class U1,U2,U3,U4 usecase;
+    class Sistema system;
+`} />
+
+Il Diagramma dei Casi d'Uso descrive il flusso della dashboard spaziale: l'utente seleziona un registro di bordo, il sistema attende la risposta in modo asincrono e mostra il contenuto nel `DOM`, lo stato della trasmissione oppure un errore di rete o file non trovato.
+</StepCard>
+
+## 📐 Progettazione
 
 <StepCard stepNumber={stepNumber++}>
 ### 📁 Struttura dei file del progetto
@@ -50,11 +93,11 @@ Per realizzare questo esercizio, crea una cartella di lavoro sul tuo computer e 
 </StepCard>
 
 
----
+## 🛠️ Realizzazione
 
 <StepCard stepNumber={stepNumber++}>
 
-## 🧱 La Struttura [HTML](https://it.wikipedia.org/wiki/HTML) (`index.html`)
+### 🧱 La Struttura [HTML](https://it.wikipedia.org/wiki/HTML) (`index.html`)
 
 Iniziamo creando l'interfaccia utente. 
 L'[HTML](https://it.wikipedia.org/wiki/HTML) definisce i pulsanti di controllo e il riquadro 
@@ -90,7 +133,7 @@ di console dove compariranno lo stato del download e il testo del diario.
 </html>
 ```
 
-### Spiegazione dell'HTML
+#### Spiegazione dell'HTML
 I tre pulsanti hanno ciascuno un id univoco per poter agganciare
 gli eventi JavaScript da codice.
 - <code>#stato</code> accoglierà i messaggi di avanzamento del caricamento
@@ -103,7 +146,7 @@ gli eventi JavaScript da codice.
 
 <StepCard stepNumber={stepNumber++}>
 
-## 🎨 Lo Stile Grafico (<code>style.css</code> / [CSS](https://it.wikipedia.org/wiki/Cascading_Style_Sheets))
+### 🎨 Lo Stile Grafico (<code>style.css</code> / [CSS](https://it.wikipedia.org/wiki/Cascading_Style_Sheets))
 Creiamo un file separato <code>style.css</code> per dare alla pagina
  l'aspetto di un vero terminale di bordo, usando il [CSS](https://it.wikipedia.org/wiki/Cascading_Style_Sheets).
 
@@ -144,7 +187,7 @@ button:hover {
   color: #c9d1d9;
 }
 ```
-### Spiegazione del CSS
+#### Spiegazione del CSS
 - <code>font-family: monospace</code> simula i font dei terminali di comando.   
 - <code>white-space: pre-wrap</code> 
 sul contenitore <code>#log</code> è fondamentale: fa sì che i ritorni a capo
@@ -157,7 +200,7 @@ presenti nel file di testo vengano rispettati a schermo.
 
 <StepCard stepNumber={stepNumber++}>
 
-## 📄 I File di Dati (I Diari di Bordo)
+### 📄 I File di Dati (I Diari di Bordo)
 Creiamo nella stessa cartella del progetto due file di testo:   
 
 :::tip[log1.txt]
@@ -178,10 +221,10 @@ I sensori indicano un segnale non identificato. Richiesta verifica immediata.
 
 <StepCard stepNumber={stepNumber++}>
 
-## ⚙️ La Logica [JavaScript](https://it.wikipedia.org/wiki/JavaScript) (<code>app.js</code>)
+### ⚙️ La Logica [JavaScript](https://it.wikipedia.org/wiki/JavaScript) (<code>app.js</code>)
 Costruiamo la logica dello script dividendola in blocchi concettuali.
 
-### Snippet A: La dichiarazione della funzione asincrona
+#### Snippet A: La dichiarazione della funzione asincrona
 ```javascript
 // Usiamo la parola chiave 'async' per abilitare l'uso di 'await' al suo interno
 async function caricaLog(nomeFile) {
@@ -197,7 +240,7 @@ che questa funzione eseguirà operazioni asincrone e restituirà una `Promise`.
 
 ---
 
-### Snippet B: La richiesta HTTP con `await fetch()`
+#### Snippet B: La richiesta HTTP con `await fetch()`
 ```javascript
 // 1. Iniziamo il blocco di controllo degli errori
 try {
@@ -220,7 +263,7 @@ Se il file non esiste (es. `404`),
 :::
 
 ---
-### Snippet C: La conversione in testo e l'aggiornamento del DOM
+#### Snippet C: La conversione in testo e l'aggiornamento del DOM
 ```javascript
 // 4. ATTENDIAMO che l'intero contenuto del file venga letto come testo
     const testo = await response.text();
@@ -244,7 +287,7 @@ Serve un secondo `await` per completare la lettura del testo.
 
 ---
 
-### Snippet D: Collegare gli Event Listener ai Pulsanti
+#### Snippet D: Collegare gli Event Listener ai Pulsanti
 
 ```javascript
 // Colleghiamo la funzione ai pulsanti dell'interfaccia
@@ -255,6 +298,9 @@ document.getElementById('btn-errore').addEventListener('click', () => caricaLog(
 
 </StepCard>
 
+### Test del codice
+
+
 :::caution[Attenzione al blocco `CORS` (`Live Server`)]
 Riferimento: [`CORS`](https://it.wikipedia.org/wiki/Cross-origin_resource_sharing).
 Se si apre il file `index.html` facendo semplicemente doppio clic 
@@ -263,11 +309,15 @@ Ricordati di eseguire il progetto tramite un server locale
  (es. l'estensione `Live Server` di `Visual Studio Code`).
 :::
 
+## 🛠️ Manutenzione evolutiva
+
 :::tip[Esercizio di consolidamento per gli studenti]
 Aggiungi un quarto pulsante denominato `"Registro Giorno 100"` 
 e crea il rispettivo file `log100.txt` 
 per verificare il corretto funzionamento del sistema.
 :::
+
+## 🔒 Chiusura del progetto
 
 <Aside type="note" title="Sintesi Concetti Chiave" icon="puzzle">
 - [Esecuzione asincrona](https://it.wikipedia.org/wiki/Programmazione_asincrona): consente di attendere il caricamento dei diari senza bloccare la dashboard.

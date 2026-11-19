@@ -1,0 +1,203 @@
+---
+title: "🤝 Collaborazione tra Produttore e Consumatore"
+description: "Introduzione alla sincronizzazione tra produttore e consumatore con un buffer a un solo messaggio e due semafori."
+---
+
+import { Aside, Steps } from "@astrojs/starlight/components";
+import Mermaid from "@/components/Mermaid.astro";
+import StepCard from "@/components/StepCard.astro";
+import Checklist from "@/components/Checklist.astro";
+
+export let stepNumber = 1;
+
+<Aside type="tip" title="Prerequisiti">
+- concetti di base su [**processi**](https://it.wikipedia.org/wiki/Processo_(informatica)) e [**thread**](https://it.wikipedia.org/wiki/Thread_(informatica))
+- differenza tra esecuzione [**sequenziale**](https://it.wikipedia.org/wiki/Programmazione_sequenziale) e [**concorrente**](https://it.wikipedia.org/wiki/Programmazione_concorrente)
+- idea di [**dato condiviso**](https://it.wikipedia.org/wiki/Thread_(informatica)#Dati_condivisi)
+- familiarità con le operazioni `wait` e `signal` sui [**semafori**](https://it.wikipedia.org/wiki/Semaforo_(informatica))
+</Aside>
+
+<StepCard stepNumber={stepNumber++}>
+
+## 🎯 Obiettivo della lezione
+
+- Distinguiamo **competizione** e **collaborazione** nella [**programmazione concorrente**](https://it.wikipedia.org/wiki/Programmazione_concorrente).
+- Vediamo come [**produttore** e **consumatore**](https://it.wikipedia.org/wiki/Problema_produttori-consumatori) coordinino l'accesso a un [**buffer condiviso**](https://it.wikipedia.org/wiki/Buffer) da un solo messaggio.
+- Analizziamo i [semafori](https://it.wikipedia.org/wiki/Semaforo_(informatica)) `depositato` e `prelevato`.
+
+<Aside type="note" title="Risultato atteso">
+Al termine della lezione saprai:
+- spiegare perché il **produttore** deve attendere che il **buffer** sia libero;
+- spiegare perché il **consumatore** deve attendere che un **messaggio** sia disponibile;
+- indicare il **valore iniziale** e il ruolo di ciascun **semaforo**;
+- seguire il **ciclo completo** di **deposito**, **prelievo** e **segnalazione**.
+</Aside>
+</StepCard>
+
+## 📚 Contenuto della lezione
+
+<StepCard stepNumber={stepNumber++}>
+### ⚖️ Competizione e collaborazione
+
+Nella [**programmazione concorrente**](https://it.wikipedia.org/wiki/Programmazione_concorrente):
+
+- c'è **competizione** quando più [**processi**](https://it.wikipedia.org/wiki/Processo_(informatica)) o [**thread**](https://it.wikipedia.org/wiki/Thread_(informatica)) contendono una [**risorsa condivisa**](https://it.wikipedia.org/wiki/Condivisione_delle_risorse);
+- c'è **collaborazione** quando coordinano le proprie attività, per esempio scambiandosi dati tramite un [**buffer**](https://it.wikipedia.org/wiki/Buffer).
+
+[**Produttore** e **consumatore**](https://it.wikipedia.org/wiki/Problema_produttori-consumatori) collaborano: il primo prepara i **messaggi** e il secondo li utilizza.
+</StepCard>
+
+---
+
+
+<StepCard stepNumber={stepNumber++}>
+### 🏭🤝🛒 Un problema di collaborazione
+
+Immagina due **processi** che lavorano insieme:
+
+- il **Produttore** crea un **messaggio** e lo **deposita** in un **buffer condiviso**;
+- il **Consumatore** **preleva** quel messaggio e lo utilizza.
+
+Il **buffer** può contenere **un solo messaggio**. I processi sono **concorrenti**:
+- il **consumatore** potrebbe arrivare prima che il **produttore** abbia depositato qualcosa;
+- il **produttore** potrebbe voler depositare un messaggio mentre il **buffer** è ancora pieno.
+
+Servono due **coordinamenti**: il consumatore attende un nuovo dato e il produttore attende che il dato precedente venga prelevato.
+</StepCard>
+
+---
+
+<StepCard stepNumber={stepNumber++}>
+### 🚦🚦 Soluzione con **due semafori**
+
+Usiamo due [**semafori binari**](https://it.wikipedia.org/wiki/Semaforo_(informatica)#Semafori_binari), con operazioni `wait` e `signal` [**atomiche**](https://it.wikipedia.org/wiki/Operazione_atomica):
+
+| Semaforo | Significato | Valore iniziale |
+| --- | --- | --- |
+| `depositato` | vale `1` quando c'è un messaggio **pronto da prelevare** | **`0`** |
+| `prelevato` | vale `1` quando il **buffer è disponibile** per un nuovo **deposito** | **`1`** |
+
+All'inizio il **buffer è vuoto**: il **Consumatore** attende, mentre il **Produttore** può depositare.
+Quando un processo esegue `wait` su un semaforo a **zero**, si **blocca** finché l'altro non esegue il corrispondente `signal`.
+
+:::note[Attenzione ai nomi]
+`prelevato` indica che il **buffer** è libero perché il messaggio precedente è stato prelevato; il suo valore iniziale `1` rende subito possibile il primo deposito.
+:::
+</StepCard>
+
+---
+
+<StepCard stepNumber={stepNumber++}>
+### 🧩 Pseudocodice della soluzione
+
+I cicli vengono eseguiti in **parallelo**; `wait` e `signal` sono operazioni **atomiche** del **semaforo**.
+
+```text
+**buffer** = vuoto
+**depositato** = 0
+**prelevato** = 1
+
+processo Produttore:
+    ripeti per sempre:
+        messaggio = produci()
+        wait(prelevato)          // attende che il buffer sia libero
+        buffer = messaggio       // deposita il messaggio
+        signal(depositato)       // avvisa il Consumatore
+
+processo Consumatore:
+    ripeti per sempre:
+        wait(depositato)         // attende un messaggio
+        messaggio = buffer       // preleva il messaggio
+        signal(prelevato)        // rende disponibile il buffer
+        consuma(messaggio)
+```
+
+Ogni `deposito` rende disponibile un messaggio; ogni `prelievo` libera il buffer.
+</StepCard>
+
+---
+
+<StepCard stepNumber={stepNumber++}>
+### 🔄 Il ciclo di collaborazione
+
+<Mermaid chart={`
+sequenceDiagram
+    participant P as Produttore
+    participant B as Buffer (1 messaggio)
+    participant C as Consumatore
+    P->>P: produci messaggio
+    P->>P: wait(prelevato)
+    P->>B: deposita messaggio
+    P->>C: signal(depositato)
+    C->>C: wait(depositato)
+    C->>B: preleva messaggio
+    C->>P: signal(prelevato)
+    C->>C: consuma messaggio
+`} />
+    
+<Steps>
+1. Il **produttore** attende che il **buffer** sia libero, deposita un messaggio e segnala `depositato`.
+2. Il **consumatore**, in attesa su `depositato`, si sblocca e **preleva** il messaggio.
+3. Il **consumatore** segnala `prelevato`: il **produttore** può depositare il messaggio successivo.
+</Steps>
+</StepCard>
+
+---
+
+<StepCard stepNumber={stepNumber++}>
+### 💡 Perché servono due semafori?
+
+I [**semafori**](https://it.wikipedia.org/wiki/Semaforo_(informatica)) rappresentano due **condizioni diverse**:
+
+- `depositato` controlla il passaggio **Produttore → Consumatore**;
+- `prelevato` controlla il passaggio **Consumatore → Produttore**.
+
+Ogni `wait` è abbinata alla `signal` dell'altro processo. L'attesa evita sia la lettura di dati inesistenti sia la sovrascrittura di dati non prelevati.
+
+:::tip[Limite dell'esempio]
+- Questo schema assume un solo **Produttore**, un solo **Consumatore** e un **buffer** da un messaggio.
+- Per **buffer più grandi** o più **processi** servono **contatori** o ulteriori **meccanismi di sincronizzazione**, presentati nelle **esercitazioni di laboratorio**.
+:::
+</StepCard>
+
+<StepCard stepNumber={stepNumber++}>
+### 🧪 Simulatore interattivo
+
+Usa il **simulatore** per osservare come la **sincronizzazione** protegge il **buffer condiviso** tra **produttore** e **consumatore**.
+
+<div style="width: 100%; height: clamp(400px, 70vh, 700px); margin: 1.5rem 0;">
+  <iframe
+    src="/simulatore-produttore-consumatore.html"
+    title="Simulatore del problema produttore-consumatore"
+    loading="lazy"
+    style="width: 100%; height: 100%; border: 1px solid #30363d; border-radius: 8px; background: #f4f4f4;"
+  ></iframe>
+</div>
+
+:::tip[Come usare il simulatore]
+1. Avvia i due processi e osserva i **semafori** insieme allo **stato** del **buffer**.
+2. Segui il valore `0 → 1 → 0` di `depositato` e il valore opposto di `prelevato` ad ogni ciclo.
+3. Disattiva **Atomica** per osservare cosa accade quando controllo e aggiornamento del buffer sono separati.
+::: 
+
+</StepCard>
+
+## ✅ Conclusione della lezione
+
+<Aside type="note" title="Sintesi concetti chiave" icon="puzzle">
+- Il [**produttore**](https://it.wikipedia.org/wiki/Problema_produttori-consumatori) crea dati e li inserisce nel [**buffer condiviso**](https://it.wikipedia.org/wiki/Buffer).
+- Il [**consumatore**](https://it.wikipedia.org/wiki/Problema_produttori-consumatori) preleva i dati e li utilizza.
+- `depositato`, inizializzato a **`0`**, impedisce di consumare un **messaggio inesistente**.
+- `prelevato`, inizializzato a **`1`**, impedisce di **sovrascrivere** un messaggio non ancora **prelevato**.
+- `wait` e `signal` **coordinano** i processi e devono essere operazioni **atomiche**.
+</Aside>
+
+<Checklist id="produttore-consumatore-check" title="✅ Verifica dell'apprendimento">
+- [ ] So descrivere il ruolo del **produttore**, del **consumatore** e del **buffer**.
+- [ ] So spiegare perché `depositato` parte da **`0`** e `prelevato` da **`1`**.
+- [ ] So indicare dove si trovano `wait` e `signal` nei due processi.
+- [ ] So spiegare come si evita di leggere un **buffer vuoto** o **sovrascrivere** un messaggio.
+<Aside type="tip" title="Ottimo lavoro!" slot="reward">
+    Hai visto come due semafori coordinano produttore e consumatore con un buffer a un solo messaggio.
+</Aside>
+</Checklist>

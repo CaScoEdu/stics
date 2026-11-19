@@ -18,7 +18,6 @@ import StepCard from '@/components/StepCard.astro';
 
 export let stepNumber = 1;
 
-
 <Aside type="tip" title="Prerequisiti">
 - saper creare e modificare file HTML e JavaScript
 - conoscere le variabili, le funzioni e l'uso del DOM
@@ -35,10 +34,59 @@ export let stepNumber = 1;
 guarda il video introduttivo
 </LinkButton>
 
+## 📋 Analisi dei requisiti
+
 <StepCard stepNumber={stepNumber++}>
 
-## Il codice essenziale `index.html`
-In questa esercitazione introduciamo il concetto di [**esecuzione asincrona**](https://it.wikipedia.org/wiki/Programmazione_asincrona) e l'uso della [**Fetch API**](https://it.wikipedia.org/wiki/Fetch) con il codice più semplice possibile. Al clic su un pulsante, la pagina recupera il contenuto di `hello.txt` e lo mostra senza bloccare l'interfaccia. Per seguire l'esempio, crea `index.html` e `hello.txt` nella stessa cartella: vedremo il flusso essenziale di `fetch()` e `await`, senza aggiungere funzionalità non necessarie.
+### 🎯 Obiettivo della lezione
+
+- In questa lezione impariamo a distinguere l'esecuzione sincrona da quella asincrona e a comprendere perché alcune operazioni richiedono un approccio non bloccante.
+- Creiamo una pagina HTML minimale che usa `async`, `await` e `Fetch API` per recuperare un file di testo dal server e mostrare il risultato nel DOM.
+- L'output finale è un piccolo esempio che gestisce sia il successo della richiesta sia eventuali errori di rete o file non trovato.
+
+<Aside type="note" title="Risultato atteso">
+Al termine della lezione avrai un'applicazione in cui:
+- il contenuto di `hello.txt` viene richiesto al server con `fetch()`;
+- l'attesa della risposta e della lettura del testo è gestita con `async` e `await`;
+- il risultato viene controllato tramite `response.ok` e mostrato nel DOM;
+- gli errori vengono intercettati con `try/catch` e comunicati all'utente.
+</Aside>
+
+</StepCard>
+
+<StepCard stepNumber={stepNumber++}>
+
+### 👥 Diagramma dei Casi d'Uso
+
+  <Mermaid chart={`
+  flowchart LR
+    Utente(["🚶 Utente"])
+
+    subgraph Sistema ["Applicazione asincrona con Fetch API"]
+        U1(["Avviare la richiesta del file"])
+        U2(["Visualizzare il contenuto di hello.txt"])
+        U3(["Visualizzare un messaggio di errore"])
+        U1 -.-> U2
+        U1 -.-> U3
+    end
+
+    Utente --> U1
+
+    classDef actor fill:#1e3a8a,stroke:#3b82f6,color:#fff,stroke-width:2px;
+    classDef usecase fill:#2563eb,stroke:#1d4ed8,color:#fff,stroke-width:2px;
+    classDef system fill:#f8fafc,stroke:#64748b,stroke-width:2px,color:#0f172a;
+
+    class Utente actor;
+    class U1,U2,U3 usecase;
+    class Sistema system;
+`} />
+
+Il Diagramma dei Casi d'Uso descrive il flusso dell'esercitazione: l'utente avvia la richiesta di `hello.txt`, quindi il sistema attende la risposta in modo asincrono e mostra il contenuto nel `DOM` oppure comunica all'utente un errore di rete o un file non trovato.
+</StepCard>
+
+## 📐 Progettazione
+
+<StepCard stepNumber={stepNumber++}>
 
 ### 📁 Struttura dei file del progetto
 
@@ -49,6 +97,116 @@ Prima di scrivere il codice, assicurati di creare i due file nella stessa cartel
   - **index.html** Pagina principale con la struttura HTML e lo script JavaScript
   - **hello.txt** File di testo di esempio da recuperare in modo asincrono
 </FileTree>
+
+
+</StepCard>
+
+<StepCard stepNumber={stepNumber++}>
+
+### 🔀 Diagramma di Sequenza
+
+- A cosa serve: Illustra l'ordine cronologico degli eventi quando l'utente avvia una richiesta `fetch()` e il browser attende il contenuto del file.
+
+- Nota di lettura: Il tempo scorre verticalmente dall'alto verso il basso.
+
+<Mermaid chart={`
+sequenceDiagram
+actor Utente
+participant Browser as Browser
+participant JS as JavaScript (fetch)
+participant Server as Server Web
+participant DOM as Pagina HTML
+
+Utente->>DOM: Clicca il pulsante "Carica hello.txt"
+DOM->>JS: Avvia la funzione asincrona
+JS->>Browser: await fetch("hello.txt")
+Browser->>Server: Richiede hello.txt con HTTP GET
+Server-->>Browser: Restituisce il file o un errore
+Browser-->>JS: Restituisce l'oggetto Response
+
+alt File trovato
+  JS->>DOM: Legge il testo con response.text()
+  DOM-->>Utente: Mostra il contenuto in #output
+else File non trovato o errore di rete
+  JS->>DOM: Imposta il messaggio di errore
+  DOM-->>Utente: Mostra l'errore nella pagina
+end
+`} />
+
+Il **Diagramma di Sequenza** descrive il flusso della richiesta asincrona:
+- quando l'utente clicca sul pulsante, `JavaScript` usa `fetch()` 
+per richiedere `hello.txt` al server.
+- Dopo aver ricevuto la `Response`, il codice legge il testo e aggiorna il contenuto della pagina; in caso di errore, mostra all'utente un messaggio appropriato.
+</StepCard>
+
+<StepCard stepNumber={stepNumber++}>
+
+## Diagramma dei Componenti 🧩
+Vediamo quali componenti logici interagiscono tra loro durante l'esecuzione di `fetch()`: il [browser](https://it.wikipedia.org/wiki/Browser) invia una richiesta **HTTP GET**, riceve una `Response` e aggiorna il **DOM**.
+
+<Mermaid chart={`
+  flowchart TD
+    subgraph Browser ["Browser (Client)"]
+        DOM["Elemento DOM (#output)"]
+        JS["Funzione Async JS\n(caricaMessaggio)"]
+        FETCH["Fetch API Engine"]
+    end
+
+    subgraph Server ["Server Web"]
+        FILE["File di testo\n(hello.txt)"]
+    end
+
+    DOM -->|"1. Evento click"| JS
+    JS -->|"2. await fetch(hello.txt)"| FETCH
+    FETCH -->|"3. Chiamata HTTP GET"| FILE
+    FILE -->|"4. Risposta col testo"| FETCH
+    FETCH -->|"5. Restituisce Response"| JS
+    JS -->|"6. output.textContent = testo"| DOM
+`} />
+
+diagramma fatto con [Mermaid](https://mermaid.live/edit#pako:eNqNk1FvmzAQx7-K5b60EokgaQjjYdOW9GnaVrVTpQ3y4NkHWAUfso1SluS719jJNm0v4wXu7nf_-3PgA-UogOa0anHPG6Yt-botFXHXo3XRdfEkjbQEVSsVEGNRw-6GzGZvyQeNewNFuJFeoxi4NbvQfM5O3MbJFO-FINJCZ4hFwl3mzE1FT22BSwGHB2Bi9EwD_JngYN-dAhmAiT1-BOiJabDvpaqP51n_UN_AHMk9G4s7ZUGTno0dKEsEWCbbi09X9-OfWCvF4f7MMM6htyAus33Vi37GI3kAq8fiscE9Aa1Rkw6MYTWcJX3Zizq5v_u9qQ2qSuqu-KKFM8ZDBOKykhCHraCC6-Kuc46JBg6yt7ubUgXQ2LGF8JlIJds2v4KsWsGbyFiNz5Bf3S5ZfLv-E570_pcNpgNcVdUS4l9w9SPjcUwjWmspaG71ABHtQDufLqSHSaaktoEOSpq7Rw1ieJlxbFGXtFQn19oz9R2xu3RrHOqG5hVrjYuGXjALW8lqzX4joNy-NjgoS_OVV6D5gb7QfLlO5mm2SBbJOk5WaZpEdHTZ1TzOsjTN0sS92nKRniL604-M59naCYCQ7n_-FA6APwenV1CD_oo/)
+
+In pratica, quando l'utente clicca il pulsante, il browser esegue la funzione [JavaScript](https://it.wikipedia.org/wiki/JavaScript) che avvia `fetch()`. La richiesta viene inviata al [server](https://it.wikipedia.org/wiki/Server), che restituisce una `Response`; poi il codice legge il contenuto e lo inserisce nel `DOM`. Il punto chiave è che il browser non si blocca: continua a rispondere agli eventi mentre aspetta la risposta del server.
+
+</StepCard>
+
+---
+
+<StepCard stepNumber={stepNumber++}>
+
+## Diagramma di Deployment 🌐
+Vediamo dove risiedono i file durante l'esecuzione reale o all'interno di un ambiente come `CodePen`/`OneCompiler`: il codice viene eseguito nel **[browser](https://it.wikipedia.org/wiki/Browser) (client)**, mentre `hello.txt` si trova sul **[server web](https://it.wikipedia.org/wiki/Server_web)**.
+
+<Mermaid chart={`
+  flowchart LR
+    subgraph Client ["Client: Browser dell'Utente"]
+        subgraph Sandbox ["Ambiente Sandbox / iFrame"]
+            HTML["Interfaccia HTML & DOM"]
+            ENGINE["Engine JavaScript (V8)"]
+        end
+    end
+
+    subgraph ServerHost ["Server Web / Host File"]
+        TXT["File di testo: hello.txt"]
+    end
+
+    HTML -->|Esegue lo script| ENGINE
+    ENGINE -->|1. Request: Fetch HTTP GET| TXT
+    TXT -->|2. Response 200: Hello World!| ENGINE
+    ENGINE -->|3. Aggiorna output.textContent| HTML
+`} />
+diagramma fatto con [Mermaid](https://mermaid.live/edit#pako:eNqNk1FvmzAQx7-K5b60EokgaQjjYdOW9GnaVrVTpQ3y4NkHWAUfso1SluS719jJNm0v4wXu7nf_-3PgA-UogOa0anHPG6Yt-botFXHXo3XRdfEkjbQEVSsVEGNRw-6GzGZvyQeNewNFuJFeoxi4NbvQfM5O3MbJFO-FINJCZ4hFwl3mzE1FT22BSwGHB2Bi9EwD_JngYN-dAhmAiT1-BOiJabDvpaqP51n_UN_AHMk9G4s7ZUGTno0dKEsEWCbbi09X9-OfWCvF4f7MMM6htyAus33Vi37GI3kAq8fiscE9Aa1Rkw6MYTWcJX3Zizq5v_u9qQ2qSuqu-KKFM8ZDBOKykhCHraCC6-Kuc46JBg6yt7ubUgXQ2LGF8JlIJds2v4KsWsGbyFiNz5Bf3S5ZfLv-E570_pcNpgNcVdUS4l9w9SPjcUwjWmspaG71ABHtQDufLqSHSaaktoEOSpq7Rw1ieJlxbFGXtFQn19oz9R2xu3RrHOqG5hVrjYuGXjALW8lqzX4joNy-NjgoS_OVV6D5gb7QfLlO5mm2SBbJOk5WaZpEdHTZ1TzOsjTN0sS92nKRniL604-M59naCYCQ7n_-FA6APwenV1CD_oo/)
+
+
+In questo diagramma, il browser è il client: esegue [HTML](https://it.wikipedia.org/wiki/HTML) e `JavaScript`, mentre il file `hello.txt` risiede sul server web. La richiesta `fetch()` parte dal browser, il server risponde con uno status `200 OK` e il codice `JavaScript` aggiorna il contenuto della pagina nel `DOM`.
+
+</StepCard>
+
+## 🛠️ Realizzazione
+
+<StepCard stepNumber={stepNumber++}>
+
+### Codifica
 
 Qui nel seguito il contenuto dei due file:
 
@@ -107,13 +265,20 @@ Hello World!
 </TabItem>
 </Tabs>
 
-In sintesi, il codice usa `async` e `await` per rendere la richiesta non bloccante: `fetch('hello.txt')` avvia una richiesta [HTTP](https://it.wikipedia.org/wiki/Hypertext_Transfer_Protocol), `response.ok` verifica che la risposta sia riuscita e `response.text()` legge il contenuto del file come testo. Il blocco `try/catch` gestisce eventuali errori di rete o file non trovato, evitando che la pagina si blocchi e permettendo di aggiornare il [DOM](https://it.wikipedia.org/wiki/Document_Object_Model) con il risultato.
+In sintesi, il codice usa `async` e `await` per rendere la richiesta non bloccante: 
+- `fetch('hello.txt')` avvia una richiesta [HTTP](https://it.wikipedia.org/wiki/Hypertext_Transfer_Protocol), 
+- `response.ok` verifica che la risposta sia riuscita 
+- e `response.text()` legge il contenuto del file come testo.
+- Il blocco `try/catch` gestisce eventuali errori di rete o file non trovato, evitando che la pagina si blocchi e permettendo di aggiornare il [DOM](https://it.wikipedia.org/wiki/Document_Object_Model) con il risultato.
+</StepCard>
+
+<StepCard stepNumber={stepNumber++}>
+
+### Test del codice
 
 <Aside type="tip" title="Suggerimenti">
-- Leggi il file `index.html` con i commenti autoesplicativi sul funzionamento di `fetch()` con JavaScript.
-
+- Provalo nel tuo ambiente di `Visual Studio Code` con l'estensione `Live Server`.
 - Clicca il pulsante **"Carica Hello World"** per attivare lo script.
-- Provalo nel tuo ambiente di Visual Studio Code con l'estensione Live Server.
 - Puoi anche provarlo nella piattaforma CodePen qui sotto.
 </Aside>
 :::caution[Attenzione al blocco `CORS` (`Live Server`)]
@@ -129,76 +294,12 @@ data-pen-title="fetch Hello World" data-version="2" data-default-tab="html,resul
 data-slug-hash="GgrwzxR" data-user="Scocco" style="height: 300px; box-sizing: border-box; display: flex; align-items: center; justify-content: center; border: 2px solid; margin: 1em 0; padding: 1em;">
   <span>See the Pen <a href="https://codepen.io/editor/Scocco/pen/019fb763-a3d1-7076-82e7-5012c4756bff">
   fetch Hello World</a> by Carlo (<a href="https://codepen.io/Scocco">@Scocco</a>)
-  on <a href="https://codepen.io">CodePen</a>.</span>
+    on <a href="https://codepen.io">CodePen</a>.</span>
 </p>
 <script async src="https://public.codepenassets.com/embed/index.js"></script>
 
 </StepCard>
 
----
-
-<StepCard stepNumber={stepNumber++}>
-
-## Diagramma dei Componenti 🧩
-Vediamo quali componenti logici interagiscono tra loro durante l'esecuzione di `fetch()`: il [browser](https://it.wikipedia.org/wiki/Browser) invia una richiesta **HTTP GET**, riceve una `Response` e aggiorna il **DOM**.
-
-<Mermaid chart={`
-  flowchart TD
-    subgraph Browser ["Browser (Client)"]
-        DOM["Elemento DOM (#output)"]
-        JS["Funzione Async JS\n(caricaMessaggio)"]
-        FETCH["Fetch API Engine"]
-    end
-
-    subgraph Server ["Server Web"]
-        FILE["File di testo\n(hello.txt)"]
-    end
-
-    DOM -->|"1. Evento click"| JS
-    JS -->|"2. await fetch(hello.txt)"| FETCH
-    FETCH -->|"3. Chiamata HTTP GET"| FILE
-    FILE -->|"4. Risposta col testo"| FETCH
-    FETCH -->|"5. Restituisce Response"| JS
-    JS -->|"6. output.textContent = testo"| DOM
-`} />
-
-diagramma fatto con [Mermaid](https://mermaid.live/edit#pako:eNqNk1FvmzAQx7-K5b60EokgaQjjYdOW9GnaVrVTpQ3y4NkHWAUfso1SluS719jJNm0v4wXu7nf_-3PgA-UogOa0anHPG6Yt-botFXHXo3XRdfEkjbQEVSsVEGNRw-6GzGZvyQeNewNFuJFeoxi4NbvQfM5O3MbJFO-FINJCZ4hFwl3mzE1FT22BSwGHB2Bi9EwD_JngYN-dAhmAiT1-BOiJabDvpaqP51n_UN_AHMk9G4s7ZUGTno0dKEsEWCbbi09X9-OfWCvF4f7MMM6htyAus33Vi37GI3kAq8fiscE9Aa1Rkw6MYTWcJX3Zizq5v_u9qQ2qSuqu-KKFM8ZDBOKykhCHraCC6-Kuc46JBg6yt7ubUgXQ2LGF8JlIJds2v4KsWsGbyFiNz5Bf3S5ZfLv-E570_pcNpgNcVdUS4l9w9SPjcUwjWmspaG71ABHtQDufLqSHSaaktoEOSpq7Rw1ieJlxbFGXtFQn19oz9R2xu3RrHOqG5hVrjYuGXjALW8lqzX4joNy-NjgoS_OVV6D5gb7QfLlO5mm2SBbJOk5WaZpEdHTZ1TzOsjTN0sS92nKRniL604-M59naCYCQ7n_-FA6APwenV1CD_oo/)
-
-In pratica, quando l'utente clicca il pulsante, il browser esegue la funzione [JavaScript](https://it.wikipedia.org/wiki/JavaScript) che avvia `fetch()`. La richiesta viene inviata al [server](https://it.wikipedia.org/wiki/Server), che restituisce una `Response`; poi il codice legge il contenuto e lo inserisce nel DOM. Il punto chiave è che il browser non si blocca: continua a rispondere agli eventi mentre aspetta la risposta del server.
-
-</StepCard>
-
----
-
-<StepCard stepNumber={stepNumber++}>
-
-## Diagramma di Deployment 🌐
-Vediamo dove risiedono i file durante l'esecuzione reale o all'interno di un ambiente come `CodePen`/`OneCompiler`: il codice viene eseguito nel **[browser](https://it.wikipedia.org/wiki/Browser) (client)**, mentre `hello.txt` si trova sul **[server web](https://it.wikipedia.org/wiki/Server_web)**.
-
-<Mermaid chart={`
-  flowchart LR
-    subgraph Client ["Client: Browser dell'Utente"]
-        subgraph Sandbox ["Ambiente Sandbox / iFrame"]
-            HTML["Interfaccia HTML & DOM"]
-            ENGINE["Engine JavaScript (V8)"]
-        end
-    end
-
-    subgraph ServerHost ["Server Web / Host File"]
-        TXT["File di testo: hello.txt"]
-    end
-
-    HTML -->|Esegue lo script| ENGINE
-    ENGINE -->|1. Request: Fetch HTTP GET| TXT
-    TXT -->|2. Response 200: Hello World!| ENGINE
-    ENGINE -->|3. Aggiorna output.textContent| HTML
-`} />
-diagramma fatto con [Mermaid](https://mermaid.live/edit#pako:eNqNk1FvmzAQx7-K5b60EokgaQjjYdOW9GnaVrVTpQ3y4NkHWAUfso1SluS719jJNm0v4wXu7nf_-3PgA-UogOa0anHPG6Yt-botFXHXo3XRdfEkjbQEVSsVEGNRw-6GzGZvyQeNewNFuJFeoxi4NbvQfM5O3MbJFO-FINJCZ4hFwl3mzE1FT22BSwGHB2Bi9EwD_JngYN-dAhmAiT1-BOiJabDvpaqP51n_UN_AHMk9G4s7ZUGTno0dKEsEWCbbi09X9-OfWCvF4f7MMM6htyAus33Vi37GI3kAq8fiscE9Aa1Rkw6MYTWcJX3Zizq5v_u9qQ2qSuqu-KKFM8ZDBOKykhCHraCC6-Kuc46JBg6yt7ubUgXQ2LGF8JlIJds2v4KsWsGbyFiNz5Bf3S5ZfLv-E570_pcNpgNcVdUS4l9w9SPjcUwjWmspaG71ABHtQDufLqSHSaaktoEOSpq7Rw1ieJlxbFGXtFQn19oz9R2xu3RrHOqG5hVrjYuGXjALW8lqzX4joNy-NjgoS_OVV6D5gb7QfLlO5mm2SBbJOk5WaZpEdHTZ1TzOsjTN0sS92nKRniL604-M59naCYCQ7n_-FA6APwenV1CD_oo/)
-
-
-In questo diagramma, il browser è il client: esegue [HTML](https://it.wikipedia.org/wiki/HTML) e JavaScript, mentre il file `hello.txt` risiede sul server web. La richiesta `fetch()` parte dal browser, il server risponde con uno status `200 OK` e il codice JavaScript aggiorna il contenuto della pagina nel DOM.
-
-</StepCard>
 
 <Aside type="note" title="Sintesi Concetti Chiave" icon="puzzle">
 - [Esecuzione asincrona](https://it.wikipedia.org/wiki/Programmazione_asincrona): permette di attendere operazioni come una richiesta di rete senza bloccare l'interfaccia.
