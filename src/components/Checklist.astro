@@ -3,64 +3,73 @@ interface Props {
   id?: string;
   title?: string;
 }
-const { id = 'default-checklist', title = 'Checklist' } = Astro.props;
+
+const { id, title = "Checklist" } = Astro.props;
+
+const normalizedPath = Astro.url.pathname
+  .replace(/^\/+|\/+$/g, "")
+  .replace(/^(it|en)(?:\/|$)/i, "");
+
+const slug =
+  normalizedPath
+    .replace(/[^a-zA-Z0-9-_]+/g, "-")
+    .toLowerCase() || "home";
+
+const resolvedId = id ?? `${slug}-checklist`;
 ---
 
-<div class="starlight-checklist" data-checklist-id={id}>
+<div class="starlight-checklist" id={resolvedId} data-checklist-id={resolvedId}>
   <div class="checklist-header">
-    <h3 class="checklist-title">{title}</h3>
-    <a href={`#${id}`} class="checklist-anchor" aria-label="Link diretto a questa sezione">
+    <h3 class="checklist-title">✅ {title}</h3>
+    <a
+      href={`#${resolvedId}`}
+      class="checklist-anchor"
+      aria-label="Link diretto a questa sezione"
+    >
       🔗
     </a>
   </div>
+
   <div class="checklist-body">
     <slot />
   </div>
-  
-  <!-- Contenitore dell'aside premio, nascosto di default -->
-  <div class="checklist-reward" style="display: none;">
+
+  <div class="checklist-reward">
     <slot name="reward" />
   </div>
 </div>
 
 <script>
-  document.querySelectorAll('.starlight-checklist').forEach((wrapper) => {
-    const listId = wrapper.getAttribute('data-checklist-id');
+  document.querySelectorAll(".starlight-checklist").forEach((wrapper) => {
+    const listId = wrapper.getAttribute("data-checklist-id");
     const storageKey = `starlight-checklist-${listId}`;
-    const savedState = JSON.parse(localStorage.getItem(storageKey) || '{}');
-    const checkboxes = wrapper.querySelectorAll('input[type="checkbox"]');
-    const rewardBox = wrapper.querySelector('.checklist-reward') as HTMLElement;
+    const savedState = JSON.parse(localStorage.getItem(storageKey) || "{}");
+    const checkboxes = Array.from(
+      wrapper.querySelectorAll('input[type="checkbox"]'),
+    ) as HTMLInputElement[];
 
-    function updateRewardVisibility() {
-      if (!rewardBox) return;
-      const allChecked = Array.from(checkboxes).every(box => (box as HTMLInputElement).checked);
-      
-      if (allChecked) {
-        rewardBox.style.display = 'block';
-        rewardBox.style.opacity = '1';
-      } else {
-        rewardBox.style.display = 'none';
-        rewardBox.style.opacity = '0';
-      }
+    function syncState() {
+      const allChecked =
+        checkboxes.length > 0 && checkboxes.every((box) => box.checked);
+      wrapper.classList.toggle("is-completed", allChecked);
     }
 
     checkboxes.forEach((box, index) => {
-      const input = box as HTMLInputElement;
-      input.disabled = false;
-      input.style.cursor = 'pointer';
+      box.disabled = false;
+      box.style.cursor = "pointer";
 
-      if (savedState[index] !== undefined) {
-        input.checked = savedState[index];
+      if (typeof savedState[index] === "boolean") {
+        box.checked = savedState[index];
       }
 
-      input.addEventListener('change', () => {
-        savedState[index] = input.checked;
+      box.addEventListener("change", () => {
+        savedState[index] = box.checked;
         localStorage.setItem(storageKey, JSON.stringify(savedState));
-        updateRewardVisibility();
+        syncState();
       });
     });
 
-    updateRewardVisibility();
+    syncState();
   });
 </script>
 
@@ -130,12 +139,23 @@ const { id = 'default-checklist', title = 'Checklist' } = Astro.props;
   }
 
   .checklist-reward {
+    display: none;
     margin-top: 1.5rem;
-    animation: fadeIn 0.4s ease-in-out;
+  }
+
+  .starlight-checklist.is-completed .checklist-reward {
+    display: block;
+    animation: fadeIn 0.35s ease-in-out;
   }
 
   @keyframes fadeIn {
-    from { opacity: 0; transform: translateY(-5px); }
-    to { opacity: 1; transform: translateY(0); }
+    from {
+      opacity: 0;
+      transform: translateY(-4px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
   }
 </style>

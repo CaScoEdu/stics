@@ -1,0 +1,179 @@
+---
+title: "🤝 Producer–Consumer Collaboration"
+description: "An introduction to producer–consumer synchronization with a one-message buffer and two semaphores."
+---
+
+import {
+    Steps
+} from "@astrojs/starlight/components";
+import AsideCaution from '@/components/AsideCaution.astro';
+import AsideNote from '@/components/AsideNote.astro';
+import AsideTip from '@/components/AsideTip.astro';
+import Checklist from '@/components/Checklist.astro';
+import ExpectedResults from "@/components/ExpectedResults.astro"
+import KeyConcepts from "@/components/KeyConcepts.astro"
+import Mermaid from "@/components/Mermaid.astro";
+import Prerequisites from "@/components/Prerequisites.astro"
+import Reward from "@/components/Reward.astro"
+import VideoLinkButton from "@/components/VideoLinkButton.astro"
+
+An introduction to producer–consumer synchronization with a one-message buffer and two semaphores.
+
+<ExpectedResults title="Expected outcomes">
+- Distinguish competition from collaboration between processes.
+- Recognize the roles of the producer, consumer, and shared buffer.
+- Understand how `message_ready` and `buffer_free` coordinate message deposits and retrievals.
+- Follow the complete cycle of waiting, depositing, signaling, and consuming.
+</ExpectedResults>
+
+<Prerequisites title="Prerequisites">
+- Basic concepts of processes and threads
+- The distinction between sequential and concurrent execution
+- Familiarity with shared data and semaphore `wait` and `signal` operations
+</Prerequisites>
+
+<VideoLinkButton url="https://youtu.be/AkXnYcluRyM" text="Watch the introductory video"/>
+
+## ⚖️ Competition and collaboration
+
+In [**concurrent programming**](https://en.wikipedia.org/wiki/Concurrent_computing):
+
+- **competition** occurs when multiple [**processes**](https://en.wikipedia.org/wiki/Process_(computing)) or [**threads**](https://en.wikipedia.org/wiki/Thread_(computing)) contend for a [**shared resource**](https://en.wikipedia.org/wiki/Shared_resource);
+- **collaboration** occurs when they coordinate their activities, for example by exchanging data through a [**buffer**](https://en.wikipedia.org/wiki/Data_buffer).
+
+[**Producer and consumer**](https://en.wikipedia.org/wiki/Producer%E2%80%93consumer_problem) collaborate: the producer prepares **messages**, and the consumer uses them.
+
+## 🏭🤝🛒 A collaboration problem
+
+Imagine two **processes** working together:
+
+- the **producer** creates a **message** and **deposits** it in a **shared buffer**;
+- the **consumer** **retrieves** that message and uses it.
+
+The **buffer** can hold **only one message**. The processes run **concurrently**:
+- the **consumer** might arrive before the **producer** has deposited anything;
+- the **producer** might want to deposit a message while the **buffer** is still full.
+
+Two forms of **coordination** are needed: the consumer waits for new data, and the producer waits for the previous data to be retrieved.
+
+## 🚦🚦 Solution with **two semaphores**
+
+We use two [**binary semaphores**](https://en.wikipedia.org/wiki/Semaphore_(programming)#Binary_semaphores), with [**atomic**](https://en.wikipedia.org/wiki/Linearizability) `wait` and `signal` operations:
+
+| Semaphore | Meaning | Initial value |
+| --- | --- | --- |
+| `message_ready` | is `1` when a message is **ready to be retrieved** | **`0`** |
+| `buffer_free` | is `1` when the **buffer is available** for a new **deposit** | **`1`** |
+
+Initially, the **buffer is empty**: the **consumer** waits, while the **producer** can deposit a message.
+When a process executes `wait` on a semaphore whose value is **zero**, it **blocks** until the other process executes the corresponding `signal`.
+
+<AsideCaution title="About the names">
+`buffer_free` indicates that the **buffer** is free because the previous message has been retrieved; its initial value of `1` allows the first deposit immediately.
+</AsideCaution>
+
+## 🧩 Solution pseudocode
+
+The loops run **in parallel**; `wait` and `signal` are **atomic** semaphore operations.
+
+```python
+buffer = None
+message_ready = Semaphore(0)
+buffer_free = Semaphore(1)
+
+def producer():
+  while True:
+    message = produce()
+    buffer_free.wait()        # wait until the buffer is free
+    buffer = message          # deposit the message
+    message_ready.signal()    # notify the consumer
+
+def consumer():
+  while True:
+    message_ready.wait()      # wait for a message
+    message = buffer          # retrieve the message
+    buffer_free.signal()      # make the buffer available
+    consume(message)
+```
+
+Each `deposit` makes a message available; each `retrieval` frees the buffer.
+
+## 🔄 The collaboration cycle
+
+<Mermaid chart={`
+sequenceDiagram
+    participant P as Producer
+    participant B as Buffer (1 message)
+    participant C as Consumer
+    P->>P: produce message
+    P->>P: wait(buffer_free)
+    P->>B: deposit message
+    P->>C: signal(message_ready)
+    C->>C: wait(message_ready)
+    C->>B: retrieve message
+    C->>P: signal(buffer_free)
+    C->>C: consume message
+`} />
+    
+<Steps>
+1. The **producer** waits for the **buffer** to be free, deposits a message, and signals `message_ready`.
+2. The **consumer**, waiting on `message_ready`, unblocks and **retrieves** the message.
+3. The **consumer** signals `buffer_free`, allowing the **producer** to deposit the next message.
+</Steps>
+
+## 💡 Why are two semaphores needed?
+
+The [**semaphores**](https://en.wikipedia.org/wiki/Semaphore_(programming)) represent two **different conditions**:
+
+- `message_ready` controls the **producer → consumer** handoff;
+- `buffer_free` controls the **consumer → producer** handoff.
+
+Each `wait` is paired with a `signal` from the other process. Waiting prevents both reading nonexistent data and overwriting data that has not yet been retrieved.
+
+<AsideNote title="Limitations of this example">
+- This pattern assumes one **producer**, one **consumer**, and a **one-message buffer**.
+- **Larger buffers** or multiple **processes** require **counters** or additional **synchronization mechanisms**, covered in the **lab exercises**.
+</AsideNote>
+
+## 🧪 Interactive simulator
+
+Use the **simulator** to see how **synchronization** protects the **shared buffer** between the **producer** and **consumer**.
+
+<div style="width: 100%; height: clamp(400px, 70vh, 700px); margin: 1.5rem 0;">
+  <iframe
+    src="/simulatore-produttore-consumatore.html"
+    title="Producer–consumer problem simulator"
+    loading="lazy"
+    style="width: 100%; height: 100%; border: 1px solid #30363d; border-radius: 8px; background: #f4f4f4;"
+  ></iframe>
+</div>
+
+<AsideTip title="How to use the simulator">
+1. Start both processes and observe the **semaphores** and the **buffer state**.
+2. Track `message_ready` changing from `0 → 1 → 0` and the opposite values of `buffer_free` in each cycle.
+3. Disable **Atomic** to see what happens when checking and updating the buffer are separate.
+</AsideTip>
+
+## 🏁 Summary
+
+<KeyConcepts title="Key concepts">
+- [Producer and consumer](https://en.wikipedia.org/wiki/Producer%E2%80%93consumer_problem): processes that collaborate by exchanging messages.
+- [Shared buffer](https://en.wikipedia.org/wiki/Data_buffer): a memory area where the producer deposits a message and the consumer retrieves it.
+- [Semaphore](https://en.wikipedia.org/wiki/Semaphore_(programming)): a synchronization mechanism based on atomic `wait` and `signal` operations.
+- [Synchronization](https://en.wikipedia.org/wiki/Synchronization_(computer_science)): coordination of concurrent process operations.
+- `message_ready`: is `0` when no message is available to consume and `1` when a deposit has completed.
+- `buffer_free`: is `1` when the buffer is free for a new deposit and `0` while it contains a message that has not yet been retrieved.
+- [Mutual exclusion](https://en.wikipedia.org/wiki/Mutual_exclusion): prevents the producer from overwriting a message and the consumer from reading an empty buffer.
+</KeyConcepts>
+
+<Checklist title="Knowledge check">
+- [ ] I can explain the difference between [competition](https://en.wikipedia.org/wiki/Concurrency_(computer_science)) and collaboration between processes
+- [ ] I can describe the roles of the producer, consumer, and buffer
+- [ ] I can explain why `message_ready` starts at `0` and prevents premature consumption
+- [ ] I can explain why `buffer_free` starts at `1` and prevents overwriting
+- [ ] I can identify where `wait` and `signal` occur in both processes
+- [ ] I can describe the complete deposit and retrieval cycle
+<Reward title="Great job!" slot="reward">
+You understand how two semaphores coordinate a producer and consumer using a one-message buffer.
+</Reward>
+</Checklist>

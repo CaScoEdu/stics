@@ -3,34 +3,47 @@ title: Controllo delle Versioni con GitHub
 description: Impara a utilizzare Git e GitHub direttamente da Visual Studio Code, creando una pagina web e gestendo versioni multilingua tramite i branch.
 ---
 
-import { Aside, Badge, Card, Icon, LinkButton, Steps } from "@astrojs/starlight/components";
-import CustomPageHeader from '@/components/CustomPageHeader.astro';
-import IconGroup from '@/components/IconGroup.astro';
+import {
+    Aside,
+    Card,
+    LinkButton,
+    Steps
+} from "@astrojs/starlight/components";
+import IntroCard from "@/components/IntroCard.astro";
+import PracticalGuideCard from '@/components/PracticalGuideCard.astro';
+import Mermaid from "@/components/Mermaid.astro";
 import StepCard from '@/components/StepCard.astro';
+import SummaryCard from '@/components/SummaryCard.astro';
 import Checklist from '@/components/Checklist.astro';
-import Mermaid from '@/components/Mermaid.astro';  // Assicurati di puntare al corretto percorso del componente Mermaid
 
 export let stepNumber = 1;
 
-<Aside type="tip" title="Prerequisiti">
+<IntroCard resultsTitle="Risultati attesi" prerequirementsTitle="prerequisiti" >
+## 🚀 Introduzione
+<p slot="results">
+- Spiegare la differenza tra [Git](https://it.wikipedia.org/wiki/Git) e [GitHub](https://it.wikipedia.org/wiki/GitHub) e descrivere il ruolo di repository, commit e rami.
+- Installare e configurare Git, quindi inizializzare e pubblicare un repository locale usando VS Code.
+- Eseguire il flusso di lavoro con staging e commit, distinguendo le modifiche aggiunte da quelle ancora da salvare.
+- Creare due [rami](https://it.wikipedia.org/wiki/Ramo_(informatica)) per versioni parallele di una pagina web e passare dall'uno all'altro.
+- Verificare localmente e su GitHub che i branch contengano versioni diverse dello stesso progetto.
+</p>
+<p slot="prerequirements">
 - saper usare le funzioni di base di VS Code
 - saper creare e modificare file e cartelle
-- avere accesso a Internet per creare e usare un account GitHub
-</Aside>
+- avere accesso a Internet e un account GitHub
+- conoscere i fondamenti del linguaggio HTML
+</p>
+</IntroCard>
 
----
+<PracticalGuideCard url="https://youtu.be/rk78qW9ce2M" text="Guarda il video introduttivo">
+## 🛠️ Guida pratica
 
-<LinkButton
-    href="https://youtu.be/rk78qW9ce2M"
-    variant="primary"
-    icon="youtube"
-    iconPlacement="end"
->
-guarda il video introduttivo
-</LinkButton>
+In questa lezione imparerai a utilizzare **Git e GitHub con Visual Studio Code** per creare una pagina web, gestire i commit e sviluppare versioni multilingua tramite i branch.
+
+</PracticalGuideCard>
 
 <StepCard stepNumber={stepNumber++}>
-## 👤 Creazione dell'Account GitHub
+### 👤 Creazione dell'Account GitHub
 Registrazione del profilo sviluppatore:
 
 <Steps>
@@ -43,14 +56,14 @@ Registrazione del profilo sviluppatore:
 ---
 
 <StepCard stepNumber={stepNumber++}>
-## ⚙️ Installazione e Configurazione di Git
+### ⚙️ Installazione e Configurazione di Git
 Prerequisito essenziale per la gestione locale dei file.
 
-### 💾 Installazione
+#### 💾 Installazione
 Scarica e installa Git dal sito ufficiale [git-scm.com](https://git-scm.com) 
 (puoi confermare le opzioni predefinite durante la procedura guidata).
 
-### 🪪 Configurazione Nome ed Email
+#### 🪪 Configurazione Nome ed Email
 Apri il terminale (o il terminale integrato di VS Code) ed esegui i comandi seguenti, 
 sostituendo i dati con le tue informazioni reali registrate su GitHub:
 
@@ -63,7 +76,7 @@ git config --global user.email "email@example.com"
 ---
 
 <StepCard stepNumber={stepNumber++}>
-## 🧑‍💻 Creazione del Progetto Locale su VS Code
+### 🧑‍💻 Creazione del Progetto Locale su VS Code
 Strutturazione del file iniziale del sito:
 
 <Steps>
@@ -91,7 +104,7 @@ Strutturazione del file iniziale del sito:
 ---
 
 <StepCard stepNumber={stepNumber++}>
-## 🚀 Inizializzazione e Pubblicazione su GitHub
+### 🚀 Inizializzazione e Pubblicazione su GitHub
 Staging, commit e pubblicazione sul cloud. 
 VS Code permette di gestire il flusso di lavoro di Git
 in modo completamente grafico e intuitivo:
@@ -119,12 +132,12 @@ e seleziona l'opzione **Publish to GitHub public repository**.
 ---
 
 <StepCard stepNumber={stepNumber++}>
-## 🌿 Lavorare con i Branch: Italiano vs Inglese
+### 🌿 Lavorare con i Branch: Italiano vs Inglese
 ---
 Flusso completo: **`Modifica → Staging → Commit`** su branch differenti.
 I rami (_branch_) consentono di sviluppare funzionalità parallele senza intaccare il ramo principale (`main`).
 <Steps>
-1. ### Branch per la `versione-italiana`
+1. #### Branch per la `versione-italiana`
 
     - Clicca in basso a sinistra sulla barra di stato di VS Code dove vedi scritto `main`.
     - Seleziona **Crea nuovo branch...** (Create new branch...), digita `versione-italiana` e premi **Invio**.
@@ -139,7 +152,7 @@ I rami (_branch_) consentono di sviluppare funzionalità parallele senza intacca
     - **Staging:** Nella scheda _Controllo Codice Sorgente_, clicca sul **`+`** accanto a `index.html` per aggiungere la modifica allo staging.
     - **Commit & Publish:** Scrivi il messaggio `Traduzione in italiano`, fai clic su **Commit** e infine su **Pubblica Branch**.
 
-2. ### Branch per la `versione-inglese`
+2. #### Branch per la `versione-inglese`
 
     - Torna sul ramo principale: clicca in basso a sinistra su `versione-italiana` e seleziona nuovamente `main` dall'elenco. Noterai che il file `index.html` torna alla versione iniziale!
     - Crea un nuovo branch chiamato `versione-inglese` seguendo la stessa procedura.
@@ -156,11 +169,11 @@ I rami (_branch_) consentono di sviluppare funzionalità parallele senza intacca
 ---
  
 <StepCard stepNumber={stepNumber++}>
-## 🔍 Verificare che i branch siano effettivamente diversi
+### 🔍 Verificare che i branch siano effettivamente diversi
 
 Per verificare la vera "magia" di Git e confermare che le due versioni coesistono nello stesso progetto senza sovrascriversi, segui queste verifiche:
 
-### 💻 In locale su VS Code:
+#### 💻 In locale su VS Code:
 
 <Steps>
 1. Clicca sul nome del branch in basso a sinistra sulla barra di stato di VS
@@ -172,7 +185,7 @@ seleziona `versione-inglese`: vedrai il file trasformarsi istantaneamente
 mostrando _"Hello World"_ e il nuovo paragrafo.
 </Steps>
 
-### ☁️ Online su GitHub:
+#### ☁️ Online su GitHub:
 <Steps>
 1. Apri la pagina del tuo repository su [github.com](https://github.com). 
 2. In alto a sinistra sopra l'elenco dei file, fai clic sul menu a tendina con la
@@ -182,6 +195,35 @@ voce `main` (o _Branches_).
 `index.html` cambia istantaneamente a seconda del ramo selezionato!
 </Steps>
 </StepCard>
+
+<SummaryCard
+    keyConceptsTitle="Concetti chiave"
+    checklistTitle="✅ Verifica dell'apprendimento"
+    rewardTitle="Ottimo lavoro!">
+## 🏁 Riepilogo
+<p slot="keyConcepts">
+- [Git](https://it.wikipedia.org/wiki/Git): sistema distribuito di controllo delle versioni che registra la cronologia delle modifiche.
+- [GitHub](https://it.wikipedia.org/wiki/GitHub): piattaforma online per archiviare, condividere e pubblicare repository Git.
+- [Repository](https://it.wikipedia.org/wiki/Repository): contenitore locale o remoto di file e della loro cronologia.
+- [Staging area](https://it.wikipedia.org/wiki/Controllo_versione): area intermedia in cui selezionare le modifiche da includere nel prossimo commit.
+- [Commit](https://it.wikipedia.org/wiki/Commit): salvataggio permanente di una revisione, accompagnato da un messaggio descrittivo.
+- [Branch](https://it.wikipedia.org/wiki/Ramo_(informatica)): ramo di sviluppo indipendente utilizzato per lavorare su versioni parallele.
+- [Publish branch](https://it.wikipedia.org/wiki/Controllo_versione): azione con cui un ramo locale viene inviato e reso disponibile su GitHub.
+</p>
+<p slot="checklist">
+- [ ] So spiegare la differenza tra [Git](https://it.wikipedia.org/wiki/Git) e [GitHub](https://it.wikipedia.org/wiki/GitHub)
+- [ ] So distinguere le modifiche presenti nella sezione Changes da quelle in Staged Changes
+- [ ] So inizializzare un repository e creare un commit in VS Code
+- [ ] So pubblicare un repository locale come repository GitHub
+- [ ] So creare i branch versione-italiana e versione-inglese
+- [ ] So passare da un branch all'altro e verificare le differenze nel file index.html
+</p>
+<p slot="rewardText">
+Hai configurato un progetto Git, gestito staging e commit e verificato lo sviluppo
+    parallelo di due versioni su VS Code e GitHub.
+</p>
+
+</SummaryCard>
 
 <Aside type="note" title="Sintesi Concetti Chiave" icon="puzzle">
 - [Git](https://it.wikipedia.org/wiki/Git) è un sistema di controllo versione distribuito.

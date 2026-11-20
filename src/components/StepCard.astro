@@ -3,7 +3,7 @@ const { stepNumber } = Astro.props;
 ---
 
 <div class="step-card">
-  <span class="step-badge">{stepNumber}</span>
+  {stepNumber != null && <span class="step-badge">{stepNumber}</span>}
   <slot />
 </div>
 

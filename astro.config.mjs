@@ -16,7 +16,7 @@ export default defineConfig({
         dark: './src/assets/dark-logo.svg',
         replacesTitle: true,
       },
-      favicon: '/images/stics.svg',
+      favicon: './public/images/favicon.svg',
       customCss: [
         './src/styles/custom.css', // Percorso del tuo file CSS globale
       ],
@@ -104,9 +104,9 @@ export default defineConfig({
       ],
       // Registra il componente personalizzato per il footer
       components: {
-        PageTitle: './src/components/CustomTitle.astro',
         Footer: './src/components/CustomFooter.astro'
       },
+      credits:true,
 
     }),
   ],

@@ -1,0 +1,16 @@
+---
+import StepCard from './StepCard.astro';
+import VideoLinkButton from './VideoLinkButton.astro';
+
+interface Props {
+	url: string;
+	text: string;
+}
+
+const { url, text } = Astro.props;
+---
+
+<StepCard>
+	<slot />
+	{url && <VideoLinkButton url={url} text={text} />}
+</StepCard>

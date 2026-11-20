@@ -1,0 +1,21 @@
+---
+import StepCard from "@/components/StepCard.astro";
+import { Aside } from "@astrojs/starlight/components";
+
+interface Props {
+  resultsTitle: string;
+  prerequirementsTitle: string;
+}
+
+const { resultsTitle, prerequirementsTitle } = Astro.props;
+---
+
+<StepCard prerequirementsTitle={prerequirementsTitle}>
+  <slot />
+  <Aside type="note" title={resultsTitle} icon="rocket">
+    <slot name="results" />
+  </Aside>
+  <Aside type="tip" title={prerequirementsTitle} icon="puzzle">
+    <slot name="prerequirements" />
+  </Aside>
+</StepCard>

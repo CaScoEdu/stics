@@ -1,0 +1,14 @@
+---
+import { LinkButton } from "@astrojs/starlight/components";
+
+interface Props {
+  url: string;
+  text: string;
+}
+
+const { url, text } = Astro.props;
+---
+
+<LinkButton href={url} variant="primary" icon="youtube" iconPlacement="start">
+  {text}
+</LinkButton>

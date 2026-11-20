@@ -1,0 +1,196 @@
+---
+title: "🔄 Introduzione alla Sincronizzazione tra Processi"
+description: "Introduzione ai concetti fondamentali della programmazione concorrente: competizione vs collaborazione, sezione critica, mutua esclusione, stallo e starvation."
+---
+
+import {
+    Aside,
+    LinkButton,
+    Steps
+} from "@astrojs/starlight/components";
+import Checklist from '@/components/Checklist.astro';
+import ExpectedResults from "@/components/ExpectedResults.astro"
+import KeyConcepts from "@/components/KeyConcepts.astro"
+import Mermaid from "@/components/Mermaid.astro";
+import Prerequisites from "@/components/Prerequisites.astro"
+import Reward from "@/components/Reward.astro"
+import VideoLinkButton from "@/components/VideoLinkButton.astro"
+
+
+Introduzione ai concetti fondamentali della **programmazione concorrente**: **competizione** vs **collaborazione**, **sezione critica**, **mutua esclusione**, **stallo (deadlock)** e **starvation**.
+
+## 🚀 Introduzione
+
+<ExpectedResults title="Risultati attesi">
+- Distinguere l'interazione [competitiva](https://it.wikipedia.org/wiki/Concorrenza_(informatica)) da quella collaborativa tra processi e spiegare perché processi concorrenti possono richiedere coordinamento.
+- Riconoscere una [risorsa condivisa](https://it.wikipedia.org/wiki/Concorrenza_(informatica)) e individuare la relativa [sezione critica](https://it.wikipedia.org/wiki/Sezione_critica).
+- Comprendere il ruolo della [mutua esclusione](https://it.wikipedia.org/wiki/Mutua_esclusione) nel prevenire le [race condition](https://it.wikipedia.org/wiki/Race_condition) e descrivere il protocollo richiesta–utilizzo–rilascio.
+- Distinguere i rischi di [deadlock](https://it.wikipedia.org/wiki/Deadlock) e [starvation](https://it.wikipedia.org/wiki/Starvation_(informatica)
+</ExpectedResults>
+
+<Prerequisites title="Prerequisiti">
+- concetti di base sui processi
+- distinzione tra esecuzione sequenziale e concorrente
+- nozioni elementari di variabili, memoria e risorse condivise
+</Prerequisites>
+
+<VideoLinkButton url="https://youtu.be/F11DVxSC_DQ" text="Guarda il video introduttivo"/>
+
+## ⚔️ Competizione e 🤝 Collaborazione
+Quando più [**processi**](https://it.wikipedia.org/wiki/Processo_(informatica)) vengono eseguiti in un sistema di elaborazione, essi possono interagire tra loro in due modi principali:
+
+* **⚔️ Competizione**: Due o più processi hanno la necessità di
+    utilizzare in modo esclusivo alcune **risorse limitate** che servono a entrambi,
+    trovandosi a competere per ottenerle. Ad esempio, due processi che tentano di
+    scrivere contemporaneamente sullo stesso file.
+* **🤝 Collaborazione**: I processi non competono, ma devono **coordinarsi**
+    e **scambiarsi informazioni** per svolgere un compito comune (es. un processo
+    *produttore* che inserisce dati in un [**buffer**](https://it.wikipedia.org/wiki/Buffer) e un processo *consumatore* che li preleva).
+
+In questa lezione ci occuperemo della **competizione**. La **collaborazione** sarà approfondità in una lezione successiva sul Produttore-Consumatore."
+
+<Aside type="caution" title="Il rischio del disordine">
+In entrambi i casi, l'**assenza di coordinamento** può generare **errori gravi**,
+**comportamenti imprevedibili** o stati di **grave corruzione dei dati**.
+</Aside>
+
+## ⚔️ Competizione: [Risorsa condivisa](https://it.wikipedia.org/wiki/Concorrenza_(informatica)), [Sezione critica](https://it.wikipedia.org/wiki/Sezione_critica) e [Mutua esclusione](https://it.wikipedia.org/wiki/Mutua_esclusione)
+Quando i processi **competono** per l'accesso a elementi comuni (come **variabili
+globali**, **file** o **strutture dati**), si definisce **risorsa condivisa** qualsiasi
+elemento hardware o software riusabile conteso dai processi.
+
+Per evitare **conflitti**, si definisce **sezione critica** quella porzione di
+codice all'interno di un processo in cui si accede alla risorsa condivisa per
+**leggerla o modificarla**.
+
+### 🧭 Schema di Accesso alla Risorsa Condivisa
+Il diagramma seguente mostra come due processi distinti (`Processo P1` e
+`Processo P2`) eseguano il proprio codice e debbano passare attraverso la
+rispettiva sezione critica per poter interagire con la risorsa condivisa
+`R`:
+
+<Mermaid chart={`
+flowchart TD
+    subgraph P1 ["Processo P1"]
+        CP1_start["Codice P1"] --> SCP1["Sezione Critica P1"]
+        SCP1 --> CP1_end["Codice P1"]
+    end
+
+    subgraph P2 ["Processo P2"]
+        CP2_start["Codice P2"] --> SCP2["Sezione Critica P2"]
+        SCP2 --> CP2_end["Codice P2"]
+    end
+
+    SCP1 ==>|Accesso esclusivo| R["Risorsa R"]
+    SCP2 ==>|Accesso esclusivo| R["Risorsa R"]
+`} />
+
+
+### 🔒 La necessità della Mutua Esclusione
+Per preservare la **coerenza dei dati** ed evitare le cosiddette [**race condition**](https://it.wikipedia.org/wiki/Race_condition) (situazioni in cui l'ordine di esecuzione altera imprevedibilmente il risultato), il sistema deve garantire la [**mutua esclusione**](https://it.wikipedia.org/wiki/Mutua_esclusione):
+* In ogni istante, al massimo **un solo processo** può trovarsi nella propria
+    sezione critica e utilizzare la risorsa condivisa.
+
+## Il Protocollo di Accesso (Richiedi - Utilizza - Rilascia)
+Per garantire la **mutua esclusione** e fare in modo che ogni processo ottenga
+l'accesso in **tempi finiti**, l'accesso a una risorsa deve seguire rigorosamente
+un **protocollo standard** strutturato in tre fasi:
+
+<Steps>
+1. **Richiesta della risorsa**: Il processo chiede l'accesso esclusivo alla
+    risorsa (se è occupata, dovrà attendere).
+2. **Utilizzo della risorsa**: Il processo entra nella sezione critica ed
+    esegue le operazioni necessarie sulla risorsa.
+3. **Rilascio della risorsa**: Il processo libera la risorsa, permettendo così
+    agli altri processi in attesa di poterla acquisire.
+</Steps>
+
+## Esempio Pratico: La [Pila](https://it.wikipedia.org/wiki/Pila_(informatica)) (Stack)
+
+Un esempio classico di **struttura dati condivisa** soggetta a competizione è la
+**pila (`stack`)**, gestita tramite un **vettore** e un **puntatore di testa**
+(`top`).
+
+Operazioni come l'**inserimento** (`Push`) e il **prelievo** (`Pop`) modificano
+contemporaneamente le stesse **variabili condivise** (`stack[]` e `top`). Se queste operazioni vengono eseguite in modo concorrente senza
+un'adeguata **sincronizzazione**, si rischia di **sovrascrivere i dati** o di leggere
+**valori non definiti** (*[race condition](https://it.wikipedia.org/wiki/Race_condition)*).
+
+:::tip[Laboratorio interattivo]
+Possiamo utilizzare questo simulatore per osservare direttamente il
+comportamento della pila **con o senza mutua esclusione**.
+:::
+
+<div class="iframe-container" style="margin: 2rem 0; text-align: center;">
+    <iframe
+        src="/simulatore-pila.html"
+        width="100%"
+        style="height: 600px !important; border: 1px solid #30363d; border-radius: 8px; background: #f4f4f4; overflow: hidden; display: block;"
+    ></iframe>
+</div>
+
+## ⚠️ I Rischi della Sincronizzazione: [Deadlock](https://it.wikipedia.org/wiki/Deadlock) e [Starvation](https://it.wikipedia.org/wiki/Starvation_(informatica))
+
+La gestione della **sincronizzazione** e dell'**attesa delle risorse** può esporre il
+sistema a due importanti problematiche critiche:
+
+### 🔄 Deadlock (Stallo)
+Il [**deadlock**](https://it.wikipedia.org/wiki/Deadlock) si verifica quando due o più processi si **bloccano permanentemente** in attesa di una risorsa che è attualmente trattenuta da un altro processo del gruppo.
+* **Esempio tipico**: Il processo `P1` **possiede** la risorsa `A` e chiede la `B`;
+    il processo `P2` possiede la risorsa `B` e chiede la `A`. Nessuno dei due può
+    proseguire.
+* È una condizione bloccante da cui il sistema non può uscire autonomamente se
+    non tramite interventi esterni (come il riavvio o l'interruzione forzata dei
+    processi).
+
+<Mermaid chart={`
+flowchart LR
+
+    subgraph Risorse
+        A["Risorsa A"]
+        B["Risorsa B"]
+    end
+
+    subgraph Processi
+        P1["Processo P1"]
+        P2["Processo P2"]
+    end
+
+    %% Assegnazioni attuali
+    A ==>|"Assegnata a"| P1
+    B ==>|"Assegnata a"| P2
+
+    %% Richieste in sospeso
+    P1 -.->|"Richiede / In attesa"| B
+    P2 -.->|"Richiede / In attesa"| A
+`} />
+### 🥶 Starvation (Inedia)
+La [**starvation**](https://it.wikipedia.org/wiki/Starvation_(informatica)) si verifica quando un processo **non riesce mai ad accedere** a una risorsa perché questa risulta continuamente assegnata ad altri processi (ad esempio, a causa di **politiche di priorità sbilanciate**).
+* A differenza del deadlock, **non è una condizione definitiva**: il processo
+    non è bloccato in modo permanente, ma deve semplicemente attendere
+    indefinitamente finché la politica di assegnazione non gli concede
+    accesso.
+
+## 🏁 Riepilogo
+
+<KeyConcepts title="Concetti chiave">
+- [**Concorrenza**](https://it.wikipedia.org/wiki/Concorrenza_(informatica)): esecuzione di più processi in **intervalli di tempo sovrapposti**.
+- [**Risorsa condivisa**](https://it.wikipedia.org/wiki/Concorrenza_(informatica)): risorsa utilizzabile da più processi.
+- [**Sezione critica**](https://it.wikipedia.org/wiki/Sezione_critica): parte di codice che accede a una risorsa condivisa.
+- [**Mutua esclusione**](https://it.wikipedia.org/wiki/Mutua_esclusione): consente a un solo processo alla volta di accedere alla risorsa condivisa.
+- [**Race condition**](https://it.wikipedia.org/wiki/Race_condition): situazione in cui il risultato dipende dall'ordine delle operazioni concorrenti.
+- [**Deadlock**](https://it.wikipedia.org/wiki/Deadlock): blocco reciproco di processi in attesa di risorse detenute dagli altri.
+- [**Starvation**](https://it.wikipedia.org/wiki/Starvation_(informatica)): attesa indefinita di un processo a cui non viene assegnata una risorsa.
+</KeyConcepts>
+
+<Checklist  title="Verifica dell'Apprendimento">
+- [ ] So spiegare la differenza tra [concorrenza](https://it.wikipedia.org/wiki/Concorrenza_(informatica)) e collaborazione
+- [ ] So riconoscere una risorsa condivisa e individuare la [sezione critica](https://it.wikipedia.org/wiki/Sezione_critica)
+- [ ] So spiegare a cosa serve la [mutua esclusione](https://it.wikipedia.org/wiki/Mutua_esclusione) e come previene le [race condition](https://it.wikipedia.org/wiki/Race_condition)
+- [ ] Ricordo le tre fasi del protocollo: richiesta, utilizzo e rilascio della risorsa
+- [ ] So distinguere il [deadlock](https://it.wikipedia.org/wiki/Deadlock) dalla [starvation](https://it.wikipedia.org/wiki/Starvation_(informatica)) e descrivere un esempio di ciascuno
+<Reward title="Ottimo lavoro!" slot="reward">
+Hai capito i fondamenti della sincronizzazione tra processi: risorse condivise,
+sezione critica, mutua esclusione e i principali rischi di deadlock e starvation.
+</Reward>
+</Checklist>
