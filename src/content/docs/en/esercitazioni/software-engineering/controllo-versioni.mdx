@@ -2,36 +2,33 @@
 title: Version Control with GitHub
 description: Learn to use Git and GitHub directly from Visual Studio Code by creating a web page and managing multilingual versions with branches.
 ---
+import { Steps } from "@astrojs/starlight/components";
+import { Quiz, QuizIntro, QuizResults } from 'starlight-quiz/components';
+import ExpectedResults from "@/components/ExpectedResults.astro"
+import KeyConcepts from "@/components/KeyConcepts.astro"
+import Prerequisites from "@/components/Prerequisites.astro"
 
-import { Aside, Badge, Card, Icon, LinkButton, Steps } from "@astrojs/starlight/components";
-import CustomPageHeader from '@/components/CustomPageHeader.astro';
-import IconGroup from '@/components/IconGroup.astro';
-import StepCard from '@/components/StepCard.astro';
-import Checklist from '@/components/Checklist.astro';
+Learn to use Git and GitHub directly from Visual Studio Code by creating a web page and managing multilingual versions with branches.
 
-import Mermaid from '@/components/Mermaid.astro';  // Make sure this points to the correct path for the Mermaid component
+## Introduction
 
-export let stepNumber = 1;
+<ExpectedResults title="Expected Outcomes">
+- Explain the difference between [Git](https://en.wikipedia.org/wiki/Git) and [GitHub](https://en.wikipedia.org/wiki/GitHub), and describe the roles of repositories, commits, and branches.
+- Install and configure Git, then initialize and publish a local repository using VS Code.
+- Follow the staging and commit workflow, distinguishing staged changes from changes that have not yet been saved.
+- Create two [branches](https://en.wikipedia.org/wiki/Branching_(version_control)) for parallel versions of a web page and switch between them.
+- Verify locally and on GitHub that the branches contain different versions of the same project.
+</ExpectedResults>
 
-<Aside type="tip" title="Prerequisites">
-- know how to use the basic features of VS Code
-- know how to create and edit files and folders
-- have Internet access to create and use a GitHub account
-</Aside>
+<Prerequisites title="Prerequisites">
+- Know how to use the basic features of VS Code
+- Know how to create and edit files and folders
+- Have Internet access and a GitHub account
+- Know the fundamentals of HTML
+</Prerequisites>
 
----
+## Creating a GitHub Account
 
-<LinkButton
-    href="https://youtu.be/rk78qW9ce2M"
-    variant="primary"
-    icon="youtube"
-    iconPlacement="end"
->
-watch the introduction video
-</LinkButton>
-
-<StepCard stepNumber={stepNumber++}>
-## 👤 Create a GitHub Account
 Register your developer profile:
 
 <Steps>
@@ -39,41 +36,33 @@ Register your developer profile:
 2. Enter your email address, create a secure password, and choose a username.
 3. Complete the verification and enter the confirmation code you received by email.
 </Steps>
-</StepCard>
 
----
-
-<StepCard stepNumber={stepNumber++}>
-## ⚙️ Install and Configure Git
+## Installing and Configuring Git
 An essential prerequisite for managing files locally.
 
-### 💾 Installation
+### Installation
 Download and install Git from the official website [git-scm.com](https://git-scm.com)
 (you can accept the default options in the setup wizard).
 
-### 🪪 Configure Your Name and Email
-Open a terminal (or the integrated VS Code terminal) and run the following commands,
+### Configuring Your Name and Email
+Open the terminal (or the VS Code integrated terminal) and run the following commands,
 replacing the values with the information associated with your GitHub account:
 
 ```bash
 git config --global user.name "il mio username"
 git config --global user.email "email@example.com"
 ```
-</StepCard>
 
----
-
-<StepCard stepNumber={stepNumber++}>
-## 🧑‍💻 Create a Local Project in VS Code
-Set up the initial file for your website:
+## Creating a Local Project in VS Code
+Set up the initial file for the website:
 
 <Steps>
 1. Open VS Code and create a new folder on your computer called `my-first-repo`.
 2. Open the folder in VS Code by selecting **File > Open Folder...**.
-3. Create a new file called `index.html` and add this starter code:
+3. Create a new file called `index.html` and enter this starter code:
 
     ```html
-    // index.html
+    <!-- index.html -->
     <!DOCTYPE html>
     <html lang="it">
     <head>
@@ -87,45 +76,31 @@ Set up the initial file for your website:
     </html>
     ```
 </Steps>
-</StepCard>
 
----
-
-<StepCard stepNumber={stepNumber++}>
-## 🚀 Initialize and Publish to GitHub
-Stage, commit, and publish your project to the cloud.
+## Initializing and Publishing to GitHub
+Stage, commit, and publish to the cloud.
 VS Code lets you manage the Git workflow
 using a fully graphical and intuitive interface:
 
 <Steps>
-1. Click the **Source Control** icon in the left-hand
-sidebar (or use the shortcut `Ctrl+Shift+G` on Windows/Linux or
-`Cmd+Shift+G` on Mac).
-2. Click **Initialize Repository**.
-3. **Stage your changes:** Hover over `index.html` in the *Changes* list and click
-the **`+`** button (**Stage Changes**). The file will move to the
-*Staged Changes* section.
-4. Enter a commit message in the text field at the top (e.g., `First commit: Hello World`)
-and click **Commit**.
-5. Click **Publish Branch**.
-6. If prompted, authorize VS Code to access your GitHub account
-and select **Publish to GitHub public repository**.
+1. Click the **Source Control** icon in the left-hand sidebar (or use the shortcut `Ctrl+Shift+G` on Windows/Linux or `Cmd+Shift+G` on Mac).
+2. Click the **Initialize Repository** button.
+3. **Stage your changes:** Hover over `index.html` in the *Changes* list and click the **`+`** button (Stage Changes). The file will move to the *Staged Changes* section.
+4. Enter a commit message in the text field at the top (for example, `First commit: Hello World`) and click **Commit**.
+5. Click the **Publish Branch** button.
+6. If prompted, authorize VS Code to access your GitHub account and select **Publish to GitHub public repository**.
 </Steps>
-</StepCard>
 
----
+## Working with Branches: Italian vs. English
 
-<StepCard stepNumber={stepNumber++}>
-## 🌿 Work with Branches: Italian vs. English
----
-Complete workflow: **`Edit → Stage → Commit`** on separate branches.
-Branches let you develop in parallel without affecting the main branch (`main`).
+Complete workflow: **`Edit → Stage → Commit`** on different branches.
+Branches let you develop parallel features without affecting the main branch (`main`).
+
 <Steps>
 1. ### Branch for the `italian-version`
-
-    - Click `main` in the bottom-left corner of the VS Code status bar.
+    - Click `main` in the VS Code status bar at the bottom left.
     - Select **Create new branch...**, enter `italian-version`, and press **Enter**.
-    - In `index.html`, change the heading text inside the `<h1>` tag:
+    - In `index.html`, change the main text inside the `<h1>` tag:
 
     ```diff lang="html"
 
@@ -133,61 +108,108 @@ Branches let you develop in parallel without affecting the main branch (`main`).
     +<h1>Ciao Mondo</h1>
     ```
 
-    - **Stage:** In the _Source Control_ view, click the **`+`** next to `index.html` to stage the change.
-    - **Commit & Publish:** Enter the message `Italian translation`, click **Commit**, then click **Publish Branch**.
+    - **Staging:** In the _Source Control_ view, click the **`+`** next to `index.html` to stage the change.
+    - **Commit & Publish:** Enter the message `Italian translation`, click **Commit**, and then click **Publish Branch**.
 
 2. ### Branch for the `english-version`
-
-    - Return to the main branch: click `italian-version` in the bottom-left corner and select `main` from the list. Notice that `index.html` returns to its original version!
-    - Create a new branch called `english-version` using the same procedure.
+    - Return to the main branch: click `italian-version` in the bottom-left corner and select `main` from the list. Notice that `index.html` returns to its initial version!
+    - Create a new branch called `english-version` by following the same steps.
     - Add a detail in English to `index.html`:
     ```diff lang="html"
     <h1>Hello World</h1>
     +<p>Welcome to my first versioned website!</p>
     ```
-    - **Stage:** Click the **`+`** next to `index.html` to stage the changes.
-    - **Commit & Publish:** Enter the message `Update English version`, click **Commit**, then **Publish Branch**.
+    - **Staging:** Click the **`+`** button next to `index.html` to stage the changes.
+    - **Commit & Publish:** Enter the message `English version update`, click **Commit**, and then click **Publish Branch**.
 </Steps>
-</StepCard>
 
----
- 
-<StepCard stepNumber={stepNumber++}>
-## 🔍 Verify That the Branches Are Different
-To see the real "magic" of Git and confirm that both versions coexist in the same project without overwriting each other, follow these steps:
+## Verifying That the Branches Are Different
 
-### 💻 Locally in VS Code:
+To see the real "magic" of Git and confirm that both versions coexist in the same project without overwriting each other, perform these checks:
+
+### Locally in VS Code:
+
 <Steps>
 1. Click the branch name in the bottom-left corner of the VS Code status bar.
 2. Select `italian-version`: look at `index.html` in the editor and you will see the text _"Ciao Mondo"_.
 3. Click again and select `english-version`: the file will instantly change to show _"Hello World"_ and the new paragraph.
 </Steps>
 
-### ☁️ On GitHub:
+### On GitHub:
 <Steps>
-1. Open your repository on [github.com](https://github.com).
-2. Above the file list in the top-left, click the dropdown showing `main` (or _Branches_).
-3. Select `italian-version` or `english-version` to browse the branches: the code in `index.html` will change instantly depending on the selected branch!
+1. Open your repository page on [github.com](https://github.com).
+2. Above the file list in the upper-left corner, click the dropdown labeled `main` (or _Branches_).
+3. Select `italian-version` or `english-version` to browse the branches: you will see the code in `index.html` change instantly depending on the selected branch!
 </Steps>
-</StepCard>
 
-<Aside type="note" title="Key Concepts Summary" icon="puzzle">
-- [Git](https://en.wikipedia.org/wiki/Git) is a distributed version control system.
-- [GitHub](https://en.wikipedia.org/wiki/GitHub) is an online platform for sharing and collaborating on Git repositories.
-- [Repository](https://en.wikipedia.org/wiki/Repository_(version_control)) is the container for the project and its history.
-- [Branch (software development)](https://en.wikipedia.org/wiki/Branch_(version_control)) indicates a parallel development line from the main branch.
-- [Version control](https://en.wikipedia.org/wiki/Version_control) is the practice of tracking and managing changes over time.
-- [Commit](https://en.wikipedia.org/wiki/Commit_(version_control)) represents a saved revision of the project.
-</Aside>
+## Summary
 
-<Checklist id="controllo-versioni-check" title="✅ Learning Check">
-- [ ] I can explain how Git and GitHub help with version control
-- [ ] I can distinguish between staging and committing
-- [ ] I can create and publish a branch from VS Code
-- [ ] I can switch between branches and verify the differences between versions
-- [ ] I can publish a repository and its branches to GitHub
-<Aside type="tip" title="Great job!" slot="reward">
-    You have now set up your local VS Code environment and learned
-    how to manage parallel development with GitHub branches.
-</Aside>
-</Checklist>
+<KeyConcepts title="Key Concepts">
+- [Git](https://en.wikipedia.org/wiki/Git): a distributed version control system that records the history of changes.
+- [GitHub](https://en.wikipedia.org/wiki/GitHub): an online platform for hosting, sharing, and publishing Git repositories.
+- [Repository](https://en.wikipedia.org/wiki/Repository): a local or remote container for files and their history.
+- [Staging area](https://en.wikipedia.org/wiki/Version_control): an intermediate area where you select changes to include in the next commit.
+- [Commit](https://en.wikipedia.org/wiki/Commit_(version_control)): a permanent snapshot of a revision, accompanied by a descriptive message.
+- [Branch](https://en.wikipedia.org/wiki/Branching_(version_control)): an independent line of development used to work on parallel versions.
+- [Publish branch](https://en.wikipedia.org/wiki/Version_control): an action that sends a local branch to GitHub and makes it available there.
+</KeyConcepts>
+
+## Knowledge Check
+
+<QuizIntro 
+resetLabel="Reset all answers"
+textLabel="Your answers to the quizzes on this page are saved in your browser's local storage and remain stored between visits."
+/>
+
+<Quiz id="quiz-git-github">
+What is the difference between Git and GitHub?
+
+- [ ] Git is an online service, while GitHub is the program installed on your computer.
+- [x] Git is a version control system; GitHub is an online platform that hosts Git repositories.
+    > Correct: Git manages the project's history, while GitHub lets you host and share repositories online.
+- [ ] They are two different names for the same tool.
+</Quiz>
+
+<Quiz id="quiz-staging-area">
+What is staging used for before creating a commit?
+
+- [ ] To automatically publish all changes to GitHub.
+- [x] To select the changes to include in the next commit.
+    > Correct: staging lets you choose which changes to save in the next revision.
+- [ ] To create a new branch without saving changes.
+</Quiz>
+
+<Quiz id="quiz-commit">
+What does a commit record?
+
+- [ ] A public copy of the project on GitHub.
+- [x] A revision of the selected changes, accompanied by a descriptive message.
+    > Correct: a commit saves the staged changes in the repository's history.
+- [ ] Automatically switching from the current branch to `main`.
+</Quiz>
+
+<Quiz id="quiz-branch">
+Why create a branch for an alternative version of the page?
+
+- [ ] To necessarily overwrite the contents of the `main` branch.
+- [x] To work on a separate line of development without immediately changing other branches.
+    > Correct: each branch can contain a distinct version of the project, and you can switch between them.
+- [ ] To turn a local repository into a GitHub account.
+</Quiz>
+
+<Quiz id="quiz-publish-branch">
+What happens when you publish a branch?
+
+- [ ] The local branch is deleted after a commit is created.
+- [x] The local branch is sent to the remote repository on GitHub.
+    > Correct: publishing makes the branch available in the remote repository as well.
+- [ ] All repository branches are merged automatically.
+</Quiz>
+
+<QuizResults 
+titleLabel="Your score"
+progressLabel="Quiz progress"
+answeredLabel="questions answered"
+correctLabel="correct answers"
+resetLabel="Reset all answers"
+ />

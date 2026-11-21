@@ -1,23 +1,25 @@
 ---
-title: "🤝 Collaborazione tra Produttore e Consumatore"
+title: "Collaborazione tra Produttore e Consumatore"
 description: "Introduzione alla sincronizzazione tra produttore e consumatore con un buffer a un solo messaggio e due semafori."
+sidebar:
+    order: 10
 ---
 
 import {
     Steps
 } from "@astrojs/starlight/components";
+import { Quiz, QuizIntro, QuizResults } from 'starlight-quiz/components';
 import AsideCaution from '@/components/AsideCaution.astro';
 import AsideNote from '@/components/AsideNote.astro';
 import AsideTip from '@/components/AsideTip.astro';
-import Checklist from '@/components/Checklist.astro';
 import ExpectedResults from "@/components/ExpectedResults.astro"
 import KeyConcepts from "@/components/KeyConcepts.astro"
 import Mermaid from "@/components/Mermaid.astro";
 import Prerequisites from "@/components/Prerequisites.astro"
-import Reward from "@/components/Reward.astro"
-import VideoLinkButton from "@/components/VideoLinkButton.astro"
 
 Introduzione alla sincronizzazione tra produttore e consumatore con un buffer a un solo messaggio e due semafori.
+
+## Introduzione
 
 <ExpectedResults title="Risultati attesi">
 - Distinguere un'interazione competitiva da una collaborazione tra processi.
@@ -32,9 +34,7 @@ Introduzione alla sincronizzazione tra produttore e consumatore con un buffer a 
 - familiarità con dati condivisi e operazioni `wait` e `signal` sui semafori
 </Prerequisites>
 
-<VideoLinkButton url="https://youtu.be/AkXnYcluRyM" text="Guarda il video introduttivo"/>
-
-## ⚖️ Competizione e collaborazione
+## Competizione e collaborazione
 
 Nella [**programmazione concorrente**](https://it.wikipedia.org/wiki/Programmazione_concorrente):
 
@@ -43,7 +43,7 @@ Nella [**programmazione concorrente**](https://it.wikipedia.org/wiki/Programmazi
 
 [**Produttore** e **consumatore**](https://it.wikipedia.org/wiki/Problema_produttori-consumatori) collaborano: il primo prepara i **messaggi** e il secondo li utilizza.
 
-## 🏭🤝🛒 Un problema di collaborazione
+## Un problema di collaborazione
 
 Immagina due **processi** che lavorano insieme:
 
@@ -56,7 +56,7 @@ Il **buffer** può contenere **un solo messaggio**. I processi sono **concorrent
 
 Servono due **coordinamenti**: il consumatore attende un nuovo dato e il produttore attende che il dato precedente venga prelevato.
 
-## 🚦🚦 Soluzione con **due semafori**
+## Soluzione con due semafori
 
 Usiamo due [**semafori binari**](https://it.wikipedia.org/wiki/Semaforo_(informatica)#Semafori_binari), con operazioni `wait` e `signal` [**atomiche**](https://it.wikipedia.org/wiki/Operazione_atomica):
 
@@ -72,7 +72,7 @@ Quando un processo esegue `wait` su un semaforo a **zero**, si **blocca** finch�
 `prelevato` indica che il **buffer** è libero perché il messaggio precedente è stato prelevato; il suo valore iniziale `1` rende subito possibile il primo deposito.
 </AsideCaution>
 
-## 🧩 Pseudocodice della soluzione
+## Pseudocodice della soluzione
 
 I cicli vengono eseguiti in **parallelo**; `wait` e `signal` sono operazioni **atomiche** del **semaforo**.
 
@@ -98,7 +98,7 @@ def consumatore():
 
 Ogni `deposito` rende disponibile un messaggio; ogni `prelievo` libera il buffer.
 
-## 🔄 Il ciclo di collaborazione
+## Il ciclo di collaborazione
 
 <Mermaid chart={`
 sequenceDiagram
@@ -121,7 +121,7 @@ sequenceDiagram
 3. Il **consumatore** segnala `prelevato`: il **produttore** può depositare il messaggio successivo.
 </Steps>
 
-## 💡 Perché servono due semafori?
+### Perché servono due semafori?
 
 I [**semafori**](https://it.wikipedia.org/wiki/Semaforo_(informatica)) rappresentano due **condizioni diverse**:
 
@@ -135,7 +135,7 @@ Ogni `wait` è abbinata alla `signal` dell'altro processo. L'attesa evita sia la
 - Per **buffer più grandi** o più **processi** servono **contatori** o ulteriori **meccanismi di sincronizzazione**, presentati nelle **esercitazioni di laboratorio**.
 </AsideNote>
 
-## 🧪 Simulatore interattivo
+## Simulatore interattivo
 
 Usa il **simulatore** per osservare come la **sincronizzazione** protegge il **buffer condiviso** tra **produttore** e **consumatore**.
 
@@ -154,7 +154,7 @@ Usa il **simulatore** per osservare come la **sincronizzazione** protegge il **b
 3. Disattiva **Atomica** per osservare cosa accade quando controllo e aggiornamento del buffer sono separati.
 </AsideTip>
 
-## 🏁 Riepilogo
+## Riepilogo
 
 <KeyConcepts title="Concetti chiave">
 - [Produttore e consumatore](https://it.wikipedia.org/wiki/Problema_produttori-consumatori): processi che collaborano tramite lo scambio di messaggi.
@@ -166,14 +166,63 @@ Usa il **simulatore** per osservare come la **sincronizzazione** protegge il **b
 - [Mutua esclusione](https://it.wikipedia.org/wiki/Mutua_esclusione): impedisce al produttore di sovrascrivere un messaggio e al consumatore di leggere un buffer vuoto.
 </KeyConcepts>
 
-<Checklist title="Verifica dell'Apprendimento">
-- [ ] So spiegare la differenza tra [competizione](https://it.wikipedia.org/wiki/Concorrenza_(informatica)) e collaborazione tra processi
-- [ ] So descrivere il ruolo del produttore, del consumatore e del buffer
-- [ ] So riconoscere perché depositato parte da `0` e impedisce un consumo prematuro
-- [ ] So riconoscere perché prelevato parte da `1` e impedisce una sovrascrittura
-- [ ] So indicare dove si trovano `wait` e `signal` nei due processi
-- [ ] So descrivere il ciclo completo di deposito e prelievo
-<Reward title="Ottimo lavoro!" slot="reward">
-Hai compreso come due semafori coordinano produttore e consumatore con un buffer a un solo messaggio.
-</Reward>
-</Checklist>
+## Verifica dell'Apprendimento
+
+<QuizIntro 
+resetLabel="Reimposta tutte le risposte"
+textLabel="Le risposte ai quiz di questa pagina vengono salvate nella memoria locale (local storage) del tuo browser e rimangono memorizzate tra una visita e l'altra"
+/>
+
+<Quiz id="quiz-valori-iniziali-semafori">
+Quali sono i valori iniziali dei semafori in questa soluzione?
+
+- [ ] `depositato = 1` e `prelevato = 0`.
+- [x] `depositato = 0` e `prelevato = 1`.
+    > Esatto: all'inizio non ci sono messaggi da prelevare, mentre il buffer vuoto è disponibile per il primo deposito.
+- [ ] Entrambi i semafori valgono `1`.
+</Quiz>
+
+<Quiz id="quiz-attesa-consumatore">
+Che cosa accade quando il consumatore esegue `depositato.wait()` mentre `depositato` vale `0`?
+
+- [x] Il consumatore si blocca finché il produttore non segnala che un messaggio è stato depositato.
+    > Esatto: `depositato` coordina il passaggio del messaggio dal produttore al consumatore.
+- [ ] Il consumatore legge il buffer vuoto e prosegue.
+- [ ] Il produttore viene bloccato fino a quando il consumatore consuma il messaggio.
+</Quiz>
+
+<Quiz id="quiz-ordine-operazioni">
+Qual è l'ordine corretto delle operazioni del produttore per depositare un messaggio?
+
+- [ ] Segnala `depositato`, attende `prelevato`, poi scrive nel buffer.
+- [x] Attende `prelevato`, scrive nel buffer, poi segnala `depositato`.
+    > Esatto: il produttore aspetta che il buffer sia libero, deposita il messaggio e infine avvisa il consumatore.
+- [ ] Scrive nel buffer, segnala `prelevato`, poi attende `depositato`.
+</Quiz>
+
+<Quiz id="quiz-semaforo-prelevato">
+Perché il produttore esegue `prelevato.wait()` prima di depositare?
+
+- [ ] Per verificare che il consumatore abbia iniziato a elaborare il messaggio.
+- [x] Per attendere che il buffer sia libero, evitando di sovrascrivere un messaggio non ancora prelevato.
+    > Esatto: il consumatore segnala `prelevato` dopo aver letto il messaggio dal buffer.
+- [ ] Per impedire al consumatore di leggere il messaggio.
+</Quiz>
+
+<Quiz id="quiz-ruolo-semafori">
+Quale affermazione descrive correttamente i due semafori?
+
+- [x] `depositato` segnala al consumatore che c'è un messaggio; `prelevato` segnala al produttore che il buffer è libero.
+    > Esatto: i semafori coordinano due passaggi distinti tra produttore e consumatore.
+- [ ] Entrambi indicano soltanto se il buffer è vuoto.
+- [ ] `depositato` conta i produttori e `prelevato` conta i consumatori.
+</Quiz>
+
+<QuizResults 
+titleLabel="Il tuo punteggio"
+progressLabel="Avanzamento Quiz"
+answeredLabel="risposte alle domande"
+correctLabel="risposte corrette"
+resetLabel="Reimposta tutte le risposte"
+ />
+

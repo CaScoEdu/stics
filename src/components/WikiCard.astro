@@ -1,0 +1,49 @@
+---
+import { Card } from "@astrojs/starlight/components";
+
+interface Props {
+  title: string;
+  imageSrc: string;
+  imageAlt: string;
+  imageCredit?: string;
+  biographyUrl: string;
+  biographyLabel: string;
+}
+
+const {
+  title,
+  imageSrc,
+  imageAlt,
+  imageCredit,
+  biographyUrl,
+  biographyLabel,
+} = Astro.props;
+---
+
+<Card title={title} icon="information">
+  <div style="display: flex; gap: 20px; align-items: center; flex-wrap: wrap;">
+    <div style="flex: 0 0 150px; text-align: center;">
+      <img
+        src={imageSrc}
+        alt={imageAlt}
+        style="width: 100%; border-radius: 6px; border: 1px solid #30363d;"
+      />
+      {imageCredit && (
+        <small style="color: #8b949e; display: block; margin-top: 5px;">
+          {imageCredit}
+        </small>
+      )}
+    </div>
+    <div style="flex: 1; min-width: 250px;">
+      <div style="margin-top: 0;">
+        <slot />
+      </div>
+      <p style="margin-bottom: 0;">
+        🔗{" "}
+        <a href={biographyUrl} target="_blank" rel="noopener noreferrer">
+          {biographyLabel}
+        </a>
+      </p>
+    </div>
+  </div>
+</Card>

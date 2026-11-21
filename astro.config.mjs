@@ -1,6 +1,8 @@
 // @ts-check
 import { defineConfig } from 'astro/config';
 import starlight from '@astrojs/starlight';
+import starlightQuiz from 'starlight-quiz';
+
 
 const NETLIFY_PREVIEW_SITE = 'https://stics.netlify.app/';
 const site = NETLIFY_PREVIEW_SITE;
@@ -11,6 +13,13 @@ export default defineConfig({
   integrations: [
     starlight({
       title: 'stics',
+      plugins: [starlightQuiz(
+        {
+          quizDefaults: {
+            confetti: false, // no confetti anywhere
+          },
+        }
+      )],
       logo: {
         light: './src/assets/light-logo.svg',
         dark: './src/assets/dark-logo.svg',
@@ -41,6 +50,23 @@ export default defineConfig({
       sidebar: [
         {
           slug: 'iniziamo'
+        },
+        {
+          label: 'Appunti',
+          collapsed: true,
+          translations: {
+            'en': 'Notes',
+          },
+          items: [
+            {
+              label: 'Programmazione Concorrente',
+              collapsed: true,
+              translations: {
+                en: 'Concurrent Programming',
+              },
+              items: [{ autogenerate: { directory: 'appunti/programmazione-concorrente' } }],
+            }
+          ]
         },
         {
           label: 'Esercitazioni',
@@ -83,30 +109,13 @@ export default defineConfig({
               items: [{ autogenerate: { directory: 'progetti/mappa-interattiva' } }],
             }
           ]
-        },
-        {
-          label: 'Appunti',
-          collapsed: true,
-          translations: {
-            'en': 'Notes',
-          },
-          items: [
-            {
-              label: 'Programmazione Concorrente',
-              collapsed: true,
-              translations: {
-                en: 'Concurrent Programming',
-              },
-              items: [{ autogenerate: { directory: 'appunti/programmazione-concorrente' } }],
-            }
-          ]
-        },
+        },        
       ],
       // Registra il componente personalizzato per il footer
       components: {
         Footer: './src/components/CustomFooter.astro'
       },
-      credits:true,
+      credits: true,
 
     }),
   ],

@@ -1,8 +1,12 @@
 ---
 import Default from "@astrojs/starlight/components/Footer.astro";
+import StarlightQuizFooter from 'starlight-quiz/overrides/Footer.astro';
 ---
 
-<Default><slot /></Default>
+<StarlightQuizFooter>
+  <slot />
+</StarlightQuizFooter>
+<!-- Il resto del tuo CustomFooter -->
 
 <div class="custom-copyright">
   <p>
