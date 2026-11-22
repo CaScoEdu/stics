@@ -13,6 +13,10 @@ export default defineConfig({
   integrations: [
     starlight({
       title: 'stics',
+      favicon: './public/images/favicon.svg',
+      customCss: [
+        './src/styles/custom.css', // Percorso del tuo file CSS globale
+      ],
       plugins: [starlightQuiz(
         {
           quizDefaults: {
@@ -25,10 +29,6 @@ export default defineConfig({
         dark: './src/assets/dark-logo.svg',
         replacesTitle: true,
       },
-      favicon: './public/images/favicon.svg',
-      customCss: [
-        './src/styles/custom.css', // Percorso del tuo file CSS globale
-      ],
       defaultLocale: 'root',
       locales: {
         // Italian docs in `src/content/docs/`
