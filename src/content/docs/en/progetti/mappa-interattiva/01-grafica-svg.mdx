@@ -1,90 +1,69 @@
 ---
 title: "01. Creating an SVG Map"
-description: "First step of the Campus Map project: creating the vector graphics structure in SVG within the HTML page and separating the visual styles into the style.css file."
+description: "First step of the Campus Map project: creating the SVG vector graphic structure in the HTML page and separating visual styles into the style.css file."
 ---
-
 import {
-    Aside,
     FileTree,
-    LinkButton,
     Steps,
 } from "@astrojs/starlight/components";
 import Mermaid from "@/components/Mermaid.astro";
-import StepCard from '@/components/StepCard.astro';
-import Checklist from '@/components/Checklist.astro';
+import AsideNote from '@/components/AsideNote.astro';
+import AsideTip from '@/components/AsideTip.astro';
+import AsideToDo from '@/components/AsideToDo.astro';
+import { Quiz, QuizIntro, QuizResults } from 'starlight-quiz/components';
+import ExpectedResults from "@/components/ExpectedResults.astro"
+import KeyConcepts from "@/components/KeyConcepts.astro"
+import Prerequisites from "@/components/Prerequisites.astro"
 
-export let stepNumber = 1;
+In this lesson, we lay the foundations for our map portal: we create the SVG vector graphic structure within the HTML page and separate visual styles into an external stylesheet (`style.css`).
 
-<Aside type="tip" title="📚 Prerequisites for this lesson">
-- Know the fundamentals of [HTML](https://it.wikipedia.org/wiki/HTML), [CSS](https://it.wikipedia.org/wiki/CSS), and [JavaScript](https://it.wikipedia.org/wiki/JavaScript)
-- Be able to create, read, and modify [SVG](https://it.wikipedia.org/wiki/Scalable_Vector_Graphics) elements
-- Know variables, functions, and how to use the [DOM](https://it.wikipedia.org/wiki/Document_Object_Model)
-- Be able to open the page in a browser and use developer tools
-- Have internet access for external resources or online services
-</Aside>
+The final result is a vector map organized into logical layers (ground, paths, and buildings) and styled with a clean, responsive design.
 
-<LinkButton
-    href="https://youtu.be/dESwU9GzFBc"
-    variant="primary"
-    icon="youtube"
-    iconPlacement="end"
->
-Watch the introductory video
-</LinkButton>
+## Introduction
 
-## 📋 Requirements Analysis
-
-<StepCard stepNumber={stepNumber++}>
-
-### 🎯 Lesson Objective
-
-- In this lesson, we lay the foundation for our mapping portal: we create the vector graphics structure in SVG within the HTML page and separate the visual styles into an external stylesheet (`style.css`).
-- The final output is a vector map organized into logical layers (terrain, paths, and buildings) and styled cleanly and responsively.
-
-<Aside type="note" title="Expected Result">
-By the end of the lesson, you will have an application in which:
+<ExpectedResults title="Expected outcomes">
 - the map structure is created in SVG vector format;
-- the graphic elements are divided into logical layers using group tags (`<g>`);
-- the visual styles for the page and map are isolated in an external CSS file;
-- the code is properly tracked through a dedicated Git and GitHub branch.
-</Aside>
+- graphic elements are divided into logical layers using group tags (`<g>`);
+- the visual styles for the page and map are kept in an external CSS file;
+- the code is tracked in a dedicated Git branch and on GitHub.
+</ExpectedResults>
 
-</StepCard>
+<Prerequisites title="Prerequisites">
+- know the fundamentals of [HTML](https://it.wikipedia.org/wiki/HTML), [CSS](https://it.wikipedia.org/wiki/CSS), and [JavaScript](https://it.wikipedia.org/wiki/JavaScript)
+- be able to create, read, and modify [SVG](https://it.wikipedia.org/wiki/Scalable_Vector_Graphics) elements
+- understand variables, functions, and how to use the [DOM](https://it.wikipedia.org/wiki/Document_Object_Model)
+- be able to open the page in a browser and use developer tools
+- have Internet access for any external resources or online services
+</Prerequisites>
 
-<StepCard stepNumber={stepNumber++}>
+## Use Case Diagram
 
-### 👥 Use Case Diagram
+The Use Case Diagram describes the user's essential interaction in the first phase of the project: the user opens the portal and views the campus's static vector map, whose graphic and style resources are rendered responsively by the browser.
 
-  <Mermaid chart={`
-  flowchart LR
-    User(["🚶 User"])
+<Mermaid chart={`
+flowchart LR
+Utente(["🚶 User"])
 
-    subgraph System ["Interactive Campus Map (Lesson 1)"]
-        U1(["View the Campus Vector Map"])
-    end
+subgraph Sistema ["Interactive Campus Map (Lesson 1)"]
+  U1(["View the Campus Vector Map"])
+end
 
-    User --> U1
+Utente --> U1
 
-    classDef actor fill:#1e3a8a,stroke:#3b82f6,color:#fff,stroke-width:2px;
-    classDef usecase fill:#2563eb,stroke:#1d4ed8,color:#fff,stroke-width:2px;
-    classDef system fill:#f8fafc,stroke:#64748b,stroke-width:2px,color:#0f172a;
+classDef actor fill:#1e3a8a,stroke:#3b82f6,color:#fff,stroke-width:2px;
+classDef usecase fill:#2563eb,stroke:#1d4ed8,color:#fff,stroke-width:2px;
+classDef system fill:#f8fafc,stroke:#64748b,stroke-width:2px,color:#0f172a;
 
-    class User actor;
-    class U1 usecase;
-    class System system;
+class Utente actor;
+class U1 usecase;
+class Sistema system;
 `} />
 
 Diagram created with [Mermaid](https://mermaid.live/edit#pako:eNqNk1FvmzAQx7-K5b60EokgaQjjYdOW9GnaVrVTpQ3y4NkHWAUfso1SluS719jJNm0v4wXu7nf_-3PgA-UogOa0anHPG6Yt-botFXHXo3XRdfEkjbQEVSsVEGNRw-6GzGZvyQeNewNFuJFeoxi4NbvQfM5O3MbJFO-FINJCZ4hFwl3mzE1FT22BSwGHB2Bi9EwD_JngYN-dAhmAiT1-BOiJabDvpaqP51n_UN_AHMk9G4s7ZUGTno0dKEsEWCbbi09X9-OfWCvF4f7MMM6htyAus33Vi37GI3kAq8fiscE9Aa1Rkw6MYTWcJX3Zizq5v_u9qQ2qSuqu-KKFM8ZDBOKykhCHraCC6-Kuc46JBg6yt7ubUgXQ2LGF8JlIJds2v4KsWsGbyFiNz5Bf3S5ZfLv-E570_pcNpgNcVdUS4l9w9SPjcUwjWmspaG71ABHtQDufLqSHSaaktoEOSpq7Rw1ieJlxbFGXtFQn19oz9R2xu3RrHOqG5hVrjYuGXjALW8lqzX4joNy-NjgoS_OVV6D5gb7QfLlO5mm2SBbJOk5WaZpEdHTZ1TzOsjTN0sS92nKRniL604-M59naCYCQ7n_-FA6APwenV1CD_oo/)
 
-The use case diagram describes the user's essential interaction during the project's first phase: the user accesses the portal and views the static vector map of the campus, whose graphical and stylistic resources are rendered responsively by the browser.
-</StepCard>
+## The Campus Map in SVG
 
-## 📐 Design
-
-<StepCard stepNumber={stepNumber++}>
-### The Campus Map in SVG
-
-🗺️ The figure below shows the map we will create in SVG format.
+The following figure shows the map we will create in SVG format.
 
 <svg
   viewBox="0 0 800 600"
@@ -124,28 +103,24 @@ The use case diagram describes the user's essential interaction during the proje
   </g>
 </svg>
 
-<Aside>
-  💡 [SVG](https://it.wikipedia.org/wiki/Scalable_Vector_Graphics) is fully vector-based and automatically adapts to the reader's screen dimensions.
-</Aside>
+<AsideNote title="The SVG format">
+  [SVG](https://it.wikipedia.org/wiki/Scalable_Vector_Graphics) is entirely vector-based and automatically adapts to the reader's screen size.
+</AsideNote>
 
-</StepCard>
+## Layer organization (stacking order)
 
-<StepCard stepNumber={stepNumber++}>
+In [SVG](https://it.wikipedia.org/wiki/Scalable_Vector_Graphics), the order in which the code is written determines the visual stacking order of elements on the screen:
 
-### 🗂️ Layer Organization (Stacking Order)
+- The first element written appears in the background.
+- Subsequent elements are drawn on top of it.
 
-In [SVG](https://it.wikipedia.org/wiki/Scalable_Vector_Graphics), the order in which code appears determines the visual stacking order of elements on screen:
-
-- 🟩 The first element written is in the background.
-- ⬆️ Subsequent elements are drawn on top of it.
-
-🧱 We group the map elements into three main logical layers using the `<g>` tag ([group](https://it.wikipedia.org/wiki/Scalable_Vector_Graphics#Groups_and_transforms)):
+We group the map elements into three main logical layers using the `<g>` tag ([group](https://it.wikipedia.org/wiki/Scalable_Vector_Graphics#Groups_and_transforms)):
 
 ```html
 <svg
   viewBox="0 0 800 600"
     xmlns="http://www.w3.org/2000/svg">
-  <!-- Layer 1: Terrain (background) -->
+  <!-- Layer 1: Ground (background) -->
   <g id="layer-terreno">...</g>
 
   <!-- Layer 2: Pedestrian paths -->
@@ -155,13 +130,9 @@ In [SVG](https://it.wikipedia.org/wiki/Scalable_Vector_Graphics), the order in w
   <g id="layer-edifici">...</g>
 </svg>
 ```
-</StepCard>
+## Project file structure
 
-<StepCard stepNumber={stepNumber++}>
-
-### 📁 Project File Structure
-
-At the end of this lesson, the project folder will contain two main files in the root directory:
+At the end of this lesson, the project folder will contain two main files in its root directory:
 
 <FileTree>
 - campus-map/
@@ -169,93 +140,81 @@ At the end of this lesson, the project folder will contain two main files in the
   - **style.css** Stylesheet for the page layout and building labels
 </FileTree>
 
-</StepCard>
+## Sequence Diagram
 
-<StepCard stepNumber={stepNumber++}>
+- Purpose: Illustrates the chronological order of events as the browser loads the page and initializes static resources.
 
-### 🔀 Sequence Diagram
-
-- Purpose: Illustrates the chronological order of events when the browser loads the page and initializes the static resources.
-
-- Reading note: Time flows vertically from top to bottom.
+- How to read it: Time flows vertically from top to bottom.
 
 <Mermaid chart={`
 sequenceDiagram
 actor User
 participant HTML as index.html
 participant CSS as style.css
-participant SVG as Embedded SVG Map
+participant SVG as SVG Map (Embedded)
 participant Browser as Web Browser
 
-User->>Browser: Request to open the site
-Browser->>HTML: Load the index.html file
-HTML->>CSS: Request the external stylesheet (link rel="stylesheet")
-CSS-->>Browser: Return the style rules (.label, body, svg)
-HTML->>SVG: Interpret the structural layers (<g> and <rect>)
-Browser-->>User: Render the page and display the vector map
-`} />
-
-diagramma fatto con [Mermaid](https://mermaid.live/edit#pako:eNqNk1FvmzAQx7-K5b60EokgaQjjYdOW9GnaVrVTpQ3y4NkHWAUfso1SluS719jJNm0v4wXu7nf_-3PgA-UogOa0anHPG6Yt-botFXHXo3XRdfEkjbQEVSsVEGNRw-6GzGZvyQeNewNFuJFeoxi4NbvQfM5O3MbJFO-FINJCZ4hFwl3mzE1FT22BSwGHB2Bi9EwD_JngYN-dAhmAiT1-BOiJabDvpaqP51n_UN_AHMk9G4s7ZUGTno0dKEsEWCbbi09X9-OfWCvF4f7MMM6htyAus33Vi37GI3kAq8fiscE9Aa1Rkw6MYTWcJX3Zizq5v_u9qQ2qSuqu-KKFM8ZDBOKykhCHraCC6-Kuc46JBg6yt7ubUgXQ2LGF8JlIJds2v4KsWsGbyFiNz5Bf3S5ZfLv-E570_pcNpgNcVdUS4l9w9SPjcUwjWmspaG71ABHtQDufLqSHSaaktoEOSpq7Rw1ieJlxbFGXtFQn19oz9R2xu3RrHOqG5hVrjYuGXjALW8lqzX4joNy-NjgoS_OVV6D5gb7QfLlO5mm2SBbJOk5WaZpEdHTZ1TzOsjTN0sS92nKRniL604-M59naCYCQ7n_-FA6APwenV1CD_oo/)
-
-The **Sequence Diagram** describes the initial loading flow of **Lesson 1**: when the page opens, the **browser** processes the `HTML` structure, retrieves the external `style.css` stylesheet, and interprets the `SVG` markup structured into layers (`terrain`, `paths`, `buildings`), finally composing the graphical view for the user.
-</StepCard>
-
-
-<StepCard stepNumber={stepNumber++}>
-
-### 🧩 Component Diagram
-
-  <Mermaid chart={`
-  graph TD
-    subgraph Client [Client Environment]
-        Browser[Web Browser]
-    end
-
-    subgraph ProjectFiles [Project Files]
-        HTML[index.html] -->|Links stylesheet| CSS[style.css]
-        HTML -->|Embeds and structures| SVG[Map SVG Structure]
-
-        subgraph SVG_Structure [SVG Composition]
-            SVG --> Terrain[Terrain Layer]
-            SVG --> Paths[Paths Layer]
-            SVG --> Buildings[Buildings & Labels Layer]
-        end
-    end
-
-    Browser -->|Loads and renders| HTML
-
-    %% Visual styles for the diagram
-    classDef browser fill:#1e3a8a,stroke:#3b82f6,color:#fff,stroke-width:2px;
-    classDef html fill:#2563eb,stroke:#1d4ed8,color:#fff,stroke-width:2px;
-    classDef cssSvg fill:#059669,stroke:#047857,color:#fff,stroke-width:2px;
-    classDef layer fill:#0d9488,stroke:#0f766e,color:#fff,stroke-width:1px;
-
-    class Browser browser;
-    class HTML html;
-    class CSS,SVG cssSvg;
-    class Terrain,Paths,Buildings layer;
+User->>Browser: Requests to open the site
+Browser->>HTML: Loads the index.html file
+HTML->>CSS: Requests the external stylesheet (link rel="stylesheet")
+CSS-->>Browser: Returns the style rules (.label, body, svg)
+HTML->>SVG: Interprets the structural layers (<g> and <rect>)
+Browser-->>User: Renders the page and displays the vector map
 `} />
 
 Diagram created with [Mermaid](https://mermaid.live/edit#pako:eNqNk1FvmzAQx7-K5b60EokgaQjjYdOW9GnaVrVTpQ3y4NkHWAUfso1SluS719jJNm0v4wXu7nf_-3PgA-UogOa0anHPG6Yt-botFXHXo3XRdfEkjbQEVSsVEGNRw-6GzGZvyQeNewNFuJFeoxi4NbvQfM5O3MbJFO-FINJCZ4hFwl3mzE1FT22BSwGHB2Bi9EwD_JngYN-dAhmAiT1-BOiJabDvpaqP51n_UN_AHMk9G4s7ZUGTno0dKEsEWCbbi09X9-OfWCvF4f7MMM6htyAus33Vi37GI3kAq8fiscE9Aa1Rkw6MYTWcJX3Zizq5v_u9qQ2qSuqu-KKFM8ZDBOKykhCHraCC6-Kuc46JBg6yt7ubUgXQ2LGF8JlIJds2v4KsWsGbyFiNz5Bf3S5ZfLv-E570_pcNpgNcVdUS4l9w9SPjcUwjWmspaG71ABHtQDufLqSHSaaktoEOSpq7Rw1ieJlxbFGXtFQn19oz9R2xu3RrHOqG5hVrjYuGXjALW8lqzX4joNy-NjgoS_OVV6D5gb7QfLlO5mm2SBbJOk5WaZpEdHTZ1TzOsjTN0sS92nKRniL604-M59naCYCQ7n_-FA6APwenV1CD_oo/)
 
-A **component diagram** is a UML structural diagram used to model a system's physical and static view. Its main purpose is to show the organization and dependencies among software modules, code files, libraries, and resources, highlighting how the project's elements aggregate and interact with one another and with the runtime environment, such as the **browser**.
+<AsideTip title="Diagram explanation">
+The **Sequence Diagram** describes the initial loading flow for **Lesson 1**: when the page opens, the **browser** processes the `HTML` structure, retrieves the external `style.css` stylesheet, and interprets the `SVG` markup organized into layers (`ground`, `paths`, `buildings`), finally rendering the graphic for the user.
+</AsideTip>
 
-#### 🔍 Diagram Explanation
+## Component Diagram
+
+<Mermaid chart={`
+graph TD
+subgraph Client [Client Environment]
+  Browser[Web Browser]
+end
+
+subgraph ProjectFiles [Project Files]
+  HTML[index.html] -->|Links stylesheet| CSS[style.css]
+  HTML -->|Embeds and structures| SVG[Map SVG Structure]
+
+    subgraph SVG_Structure [SVG Composition]
+      SVG --> Terreno[Ground Layer]
+      SVG --> Percorsi[Paths Layer]
+      SVG --> Edifici[Buildings & Labels Layer]
+    end
+end
+
+Browser -->|Loads and renders| HTML
+
+%% Visual styles for the diagram
+classDef browser fill:#1e3a8a,stroke:#3b82f6,color:#fff,stroke-width:2px;
+classDef html fill:#2563eb,stroke:#1d4ed8,color:#fff,stroke-width:2px;
+classDef cssSvg fill:#059669,stroke:#047857,color:#fff,stroke-width:2px;
+classDef layer fill:#0d9488,stroke:#0f766e,color:#fff,stroke-width:1px;
+
+class Browser browser;
+class HTML html;
+class CSS,SVG cssSvg;
+class Terreno,Percorsi,Edifici layer;
+`} />
+
+Diagram created with [Mermaid](https://mermaid.live/edit#pako:eNqNk1FvmzAQx7-K5b60EokgaQjjYdOW9GnaVrVTpQ3y4NkHWAUfso1SluS719jJNm0v4wXu7nf_-3PgA-UogOa0anHPG6Yt-botFXHXo3XRdfEkjbQEVSsVEGNRw-6GzGZvyQeNewNFuJFeoxi4NbvQfM5O3MbJFO-FINJCZ4hFwl3mzE1FT22BSwGHB2Bi9EwD_JngYN-dAhmAiT1-BOiJabDvpaqP51n_UN_AHMk9G4s7ZUGTno0dKEsEWCbbi09X9-OfWCvF4f7MMM6htyAus33Vi37GI3kAq8fiscE9Aa1Rkw6MYTWcJX3Zizq5v_u9qQ2qSuqu-KKFM8ZDBOKykhCHraCC6-Kuc46JBg6yt7ubUgXQ2LGF8JlIJds2v4KsWsGbyFiNz5Bf3S5ZfLv-E570_pcNpgNcVdUS4l9w9SPjcUwjWmspaG71ABHtQDufLqSHSaaktoEOSpq7Rw1ieJlxbFGXtFQn19oz9R2xu3RrHOqG5hVrjYuGXjALW8lqzX4joNy-NjgoS_OVV6D5gb7QfLlO5mm2SBbJOk5WaZpEdHTZ1TzOsjTN0sS92nKRniL604-M59naCYCQ7n_-FA6APwenV1CD_oo/)
+
+ A **component diagram** is a UML structural diagram used to model the physical, static view of a system. Its main purpose is to show the organization and dependencies among software modules, code files, libraries, and resources, highlighting how different project elements are assembled and interact with one another and with the runtime environment, such as the **browser**.
+
+<AsideTip title="Diagram explanation">
 This diagram represents the clean, modular architecture developed in the first lesson of the Campus Map project:
+- **Runtime environment**: the **web browser** acts as the **client**, loading and interpreting the project's main entry point.
+- **File structure and separation of responsibilities**: the `index.html` page acts as the **central coordinator**, delegating graphics and visual appearance to the external `style.css` file while embedding the map's vector code directly.
+- **SVG organization**: the `SVG` vector structure is divided into logical layers such as `layer-terreno`, `layer-percorsi`, and `layer-edifici` to manage the map's visual composition.
+</AsideTip>
 
-- **Runtime environment**: the **web browser** acts as the **client** and is responsible for loading and interpreting the project's main entry point.
-- **File structure and separation of responsibilities**: the `index.html` page acts as the **central coordinator**, delegating graphics and visual appearance to the external `style.css` file while directly embedding the map's vector code.
-- **SVG organization**: the `SVG` vector structure is divided into logical layers such as `layer-terreno`, `layer-percorsi`, and `layer-edifici` to manage the map's graphical composition correctly.
+## `index.html` file code
 
-</StepCard>
-
-## 🛠️ Implementation
-
-<StepCard stepNumber={stepNumber++}>
-
-### 🧑‍💻 Code for the `index.html` File
-
-📄 Create the `index.html` file in [HTML](https://it.wikipedia.org/wiki/HTML), link the external [CSS](https://it.wikipedia.org/wiki/CSS) stylesheet in the head, and insert the [SVG](https://it.wikipedia.org/wiki/Scalable_Vector_Graphics) map inside the body:
+Create the `index.html` file in [HTML](https://it.wikipedia.org/wiki/HTML), linking the external [CSS](https://it.wikipedia.org/wiki/CSS) stylesheet in the header and adding the [SVG](https://it.wikipedia.org/wiki/Scalable_Vector_Graphics) map inside the body:
 
 ```html title="index.html"
 <!DOCTYPE html>
@@ -276,7 +235,7 @@ This diagram represents the clean, modular architecture developed in the first l
       width="800"
       height="600"
             xmlns="http://www.w3.org/2000/svg"    >
-      <!-- LAYER 1: TERRAIN (Green lawn) -->
+      <!-- LAYER 1: GROUND (Green lawn) -->
       <g id="layer-terreno">
         <rect x="0" y="0" width="800" height="600" fill="#7ec850" />
       </g>
@@ -314,7 +273,7 @@ This diagram represents the clean, modular architecture developed in the first l
           <text x="310" y="220" class="label">Cafeteria</text>
         </g>
 
-        <!-- Gymnasium -->
+        <!-- Gym -->
         <g id="edificio-palestra">
           <rect
             x="630"
@@ -331,20 +290,16 @@ This diagram represents the clean, modular architecture developed in the first l
   </body>
 </html>
 ```
-### Main SVG Elements
-
-- [SVG](https://it.wikipedia.org/wiki/Scalable_Vector_Graphics) defines the graphics area; [`viewBox`](https://it.wikipedia.org/wiki/Scalable_Vector_Graphics) establishes the coordinate system.
+<AsideNote title="Key SVG elements">
+- [SVG](https://it.wikipedia.org/wiki/Scalable_Vector_Graphics) defines the graphic area; [`viewBox`](https://it.wikipedia.org/wiki/Scalable_Vector_Graphics) sets the coordinate system.
 - [`<g>`](https://it.wikipedia.org/wiki/Scalable_Vector_Graphics) groups related elements; [`id`](https://it.wikipedia.org/wiki/Attributo_(HTML)) assigns them an identifier.
-- [`<rect>`](https://it.wikipedia.org/wiki/Scalable_Vector_Graphics) draws rectangles: `x` and `y` indicate position, `width` and `height` indicate dimensions, `fill` sets the color, and `rx` rounds the corners.
-- [`<text>`](https://it.wikipedia.org/wiki/Scalable_Vector_Graphics) displays a label; `x` and `y` indicate its position, while styles define its appearance and alignment.
+- [`<rect>`](https://it.wikipedia.org/wiki/Scalable_Vector_Graphics) draws rectangles: `x` and `y` specify position, `width` and `height` specify dimensions, `fill` sets the color, and `rx` rounds the corners.
+- [`<text>`](https://it.wikipedia.org/wiki/Scalable_Vector_Graphics) displays a label; `x` and `y` specify its position, while styles define its appearance and alignment.
+</AsideNote>
 
+## Creating the `style.css` stylesheet
 
-</StepCard>
-
-<StepCard stepNumber={stepNumber++}>
-### 🎨 Creating the `style.css` Stylesheet
-
-To maintain an organized web architecture, we separate the graphic layout from the style rules. Create a file named `style.css` in the same project folder and paste the following code. The [CSS](https://it.wikipedia.org/wiki/CSS) stylesheet allows us to separate presentation from the HTML/SVG structure.
+To keep the web architecture organized, we separate the page layout from the style rules. Create a file named `style.css` in the same project folder and paste in the following code. The [CSS](https://it.wikipedia.org/wiki/CSS) stylesheet lets us separate presentation from the HTML/SVG structure.
 
 ```css title="style.css"
 /* general page styles */
@@ -376,7 +331,7 @@ svg {
   height: auto;
 }
 
-/* building text label styles */
+/* styles for building text labels */
 .label {
   font-size: 14px;
   font-weight: bold;
@@ -386,58 +341,111 @@ svg {
   pointer-events: none;
 }
 ```
-
-</StepCard>
-
----
-
-<StepCard stepNumber={stepNumber++}>
-
-### 🧪 Exercises
+## Further development
+<AsideToDo title="Give it a try!" >
 <Steps>
-1. 🏫 **New building:** Add a rectangle for the **Library** to the building layer at the center of the campus.
-2. 🎨 **CSS customization:** Open `style.css` and change the building fill colors or add a custom rounded border.
+1. **New building:** Add a rectangle for the **Library** to the buildings layer, in the center of the campus.
+2. **CSS customization:** Open `style.css` and change the buildings' fill colors or add a custom rounded border.
 </Steps>
+</AsideToDo>
 
-</StepCard>
+## Saving the first branch to [Git](https://it.wikipedia.org/wiki/Git) / [GitHub](https://it.wikipedia.org/wiki/GitHub)
 
-<StepCard stepNumber={stepNumber++}>
-
-### 💾 Saving the First Branch on [Git](https://it.wikipedia.org/wiki/Git) / [GitHub](https://it.wikipedia.org/wiki/GitHub)
-
-Open the VS Code **Source Control** panel (`Ctrl + Shift + G`) 🔧:
+Open the **Source Control** panel in VS Code (`Ctrl + Shift + G`) 🔧:
 
 <Steps>
-1. 🌿 Create a new branch named `lesson-1`.
-2. ✅ Commit the files with the message: `"Completed Lesson 1: SVG Map and style.css"`.
-3. 🚀 Use **Publish Branch / Sync** to synchronize the lesson with your GitHub repository.
+1. Create a new branch named `lesson-1`.
+2. Commit the files with the message: `"Completed Lesson 1: SVG Map and style.css"`.
+3. Use **Publish Branch / Sync** to sync the lesson to your GitHub repository.
 </Steps>
 
-</StepCard>
+## Summary
 
-<Aside type="note" title="Key Concepts Summary" icon="puzzle">
+<KeyConcepts title="Key concepts">
+- [SVG](https://it.wikipedia.org/wiki/Scalable_Vector_Graphics): vector format used to build the campus map.
+- [`viewBox`](https://it.wikipedia.org/wiki/Scalable_Vector_Graphics): defines the map's coordinate area and proportions.
+- [`<g>`](https://it.wikipedia.org/wiki/Scalable_Vector_Graphics): groups SVG elements into layers, such as ground, paths, and buildings.
+- [`<rect>`](https://it.wikipedia.org/wiki/Scalable_Vector_Graphics): draws map surfaces and building shapes; attributes such as `x`, `y`, `width`, and `height` define their position and dimensions.
+- [`<text>`](https://it.wikipedia.org/wiki/Scalable_Vector_Graphics): adds building labels; [CSS](https://it.wikipedia.org/wiki/CSS) classes let you apply a consistent appearance.
+- [`id`](https://it.wikipedia.org/wiki/Attributo_(HTML)): identifies layers and individual buildings, making them easier to find and edit.
+- [`style.css`](https://it.wikipedia.org/wiki/CSS): contains the page and map styles, separate from the HTML/SVG structure.
+</KeyConcepts>
 
-- [SVG](https://it.wikipedia.org/wiki/Scalable_Vector_Graphics): a vector format used to build the campus map.
-- [`viewBox`](https://it.wikipedia.org/wiki/Scalable_Vector_Graphics): defines the coordinate area and proportions of the map.
-- [`<g>`](https://it.wikipedia.org/wiki/Scalable_Vector_Graphics): groups SVG elements into layers such as terrain, paths, and buildings.
-- [`<rect>`](https://it.wikipedia.org/wiki/Scalable_Vector_Graphics): draws map surfaces and building bodies; attributes such as `x`, `y`, `width`, and `height` define position and dimensions.
-- [`<text>`](https://it.wikipedia.org/wiki/Scalable_Vector_Graphics): adds building labels; [CSS](https://it.wikipedia.org/wiki/CSS) classes help standardize their appearance.
-- [`id`](https://it.wikipedia.org/wiki/Attributo_(HTML)): identifies layers and individual buildings, making them easier to find and modify.
-- [`style.css`](https://it.wikipedia.org/wiki/CSS): contains the page and map styles separately from the HTML/SVG structure.
+## Knowledge check
 
-</Aside>
+<QuizIntro 
+resetLabel="Reset all answers"
+textLabel="Your answers to this page's quizzes are saved in your browser's local storage and remain there between visits."
+/>
 
-<Checklist id="progetto-mappa-campus-svg" title="✅ Knowledge Check">
+<Quiz id="quiz-esecuzione-asincrona">
+What is the purpose of the `<svg>` element in the campus map?
 
-- [ ] I can explain what SVG is used for and how `viewBox` defines the map area
-- [ ] I can identify SVG layers and describe the role of `<g>` groups
-- [ ] I can create and position a building using `<rect>` and its coordinates
-- [ ] I can add a label with `<text>` and assign identifiers to elements
-- [ ] I can link `style.css` and customize the map's appearance
-- [ ] I can add a new building to the correct layer and save the changes with Git
+- [ ] Link the stylesheet to the HTML page.
+- [x] Define the map's vector graphics.
+  > Correct: the map is built with SVG elements such as groups, rectangles, and labels.
+- [ ] Manage saving the project to GitHub.
+</Quiz>
 
-<Aside type="tip" title="Excellent work!" slot="reward">
-  You can now organize a campus map in SVG, add buildings and labels, and customize its appearance with CSS.
-</Aside>
+<Quiz id="quiz-viewbox">
+What does the `viewBox` attribute of the SVG element define?
 
-</Checklist>
+- [x] The coordinate area of the SVG graphic.
+  > Correct: `viewBox="0 0 800 600"` defines the map's coordinate system and proportions.
+- [ ] The path to the external CSS file.
+- [ ] The browser's background color.
+</Quiz>
+
+<Quiz id="quiz-layer">
+What is the purpose of the `<g>` tag in the map structure?
+
+- [ ] Automatically draw the map border.
+- [ ] Define the coordinates of the `viewBox`.
+- [x] Group related elements into logical layers.
+  > Correct: groups such as `layer-terreno`, `layer-percorsi`, and `layer-edifici` organize the SVG elements.
+</Quiz>
+
+<Quiz id="quiz-rect">
+Which attributes define the position and dimensions of a `<rect>` element?
+
+- [x] `x`, `y`, `width`, and `height`.
+  > Correct: `x` and `y` indicate the position, while `width` and `height` indicate the width and height.
+- [ ] `id`, `class`, `href`, and `src`.
+- [ ] `font-size`, `font-weight`, `fill`, and `text-anchor`.
+</Quiz>
+
+<Quiz id="quiz-css">
+Why are the page styles placed in `style.css`?
+
+- [ ] To completely replace the HTML and SVG structure.
+- [x] To separate presentation from the structure of the page.
+  > Correct: linking the CSS file allows layout and visual appearance to be managed separately.
+- [ ] To store building data in vector format.
+</Quiz>
+
+<Quiz id="quiz-etichette">
+Which CSS class is applied to the building labels?
+
+- [ ] `#edificio`
+- [ ] `layer-edifici`
+- [x] `.label`
+  > Correct: the `.label` class in the CSS file defines the appearance and alignment of the SVG labels.
+</Quiz>
+
+<Quiz id="quiz-file-css">
+How is `style.css` linked to the `index.html` page?
+
+- [ ] By placing the CSS in the `viewBox` attribute.
+- [x] By using `<link rel="stylesheet" href="style.css" />` in the HTML header.
+  > Correct: the `<link>` element loads the external stylesheet specified by `href`.
+- [ ] By grouping the CSS in the SVG `<g>` tag.
+</Quiz>
+
+<QuizResults 
+titleLabel="Your score"
+progressLabel="Quiz progress"
+answeredLabel="questions answered"
+correctLabel="correct answers"
+resetLabel="Reset all answers"
+ />
+
