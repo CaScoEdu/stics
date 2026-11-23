@@ -1,0 +1,386 @@
+---
+title: "05. Grafi, Dijkstra e Animazione del Percorso - parte 2/2"
+description: "Progetto Mappa Interattiva Campus - Lezione 4: modellazione della rete con grafo pesato, implementazione di Dijkstra in dijkstra.js e tracciamento animato della poligonale."
+---
+
+import {
+    Aside,
+    Steps
+} from "@astrojs/starlight/components";
+import AsideCaution from '@/components/AsideCaution.astro';
+import AsideNote from '@/components/AsideNote.astro';
+import AsideTip from '@/components/AsideTip.astro';
+import { Quiz, QuizIntro, QuizResults } from 'starlight-quiz/components';
+import KeyConcepts from "@/components/KeyConcepts.astro"
+
+Nella lezione precedente abbiamo creato il grafo dei percorso. 
+In questa lezione:
+- con l'algoritmo di Dijkstra otteniamo il percorso migliore tra un locale di partenza e uno di destinazione
+- visualizziamo sulla mappa interattiva il percorso con una serpertina
+
+## Creazione del Branch di Lavoro `lezione-5`
+Prima di integrare la struttura del grafo e l'algoritmo di Dijkstra per il calcolo dei percorsi minimi, creiamo un branch dedicato per isolare le modifiche di questa lezione:
+
+<Steps>
+1. Apri il pannello Source Control in VS Code (`Ctrl + Shift + G`). 
+2. Clicca sul nome del branch corrente in basso a sinistra (o in alto nel pannello) e seleziona `Crea un nuovo branch...` (`Create new branch...`). 
+3. Digita il nome del nuovo branch: `lezione-5` e premi Invio.
+</Steps>
+
+<AsideNote title="Prendi nota">
+Ora stai lavorando su una copia indipendente dalla Lezione 4, pronta per aggiungere `grafo.json`, `dijkstra.js` e la logica di navigazione tra gli edifici!
+</AsideNote>
+
+## L'Algoritmo di Dijkstra (`dijkstra.js`)
+<Aside type="tip" title="Come funziona Dijkstra?">
+- L'algoritmo parte da un nodo di origine e imposta la distanza iniziale verso di esso a `0`, e verso tutti gli altri nodi a `Infinito (∞)`. 
+- Esplora progressivamente i nodi vicini non ancora visitati, aggiornando il cammino più breve registrato fino a raggiungere il nodo di destinazione.
+</Aside>
+Separiamo la logica algoritmica creandola all'interno di un file dedicato, `dijkstra.js`:
+
+```javascript title="dijkstra.js"
+ /**
+ * Algoritmo di Dijkstra per trovare il percorso minimo su un grafo pesato
+ */
+function calcolaDijkstra(grafo, inizio, fine) {
+  if (!grafo || !Object.hasOwn(grafo, inizio) || !Object.hasOwn(grafo, fine)) {
+    return [];
+  }
+
+  const distanze = {};
+  const precedenti = {};
+  const nodiNonVisitati = new Set();
+
+  // Inizializzazione delle distanze
+  Object.keys(grafo).forEach(nodo => {
+    distanze[nodo] = Infinity;
+    precedenti[nodo] = null;
+    nodiNonVisitati.add(nodo);
+  });
+  distanze[inizio] = 0;
+
+  while (nodiNonVisitati.size > 0) {
+    // Trova il nodo non visitato con la distanza minore
+    let nodoCorrente = null;
+    nodiNonVisitati.forEach(nodo => {
+      if (nodoCorrente === null || distanze[nodo] < distanze[nodoCorrente]) {
+        nodoCorrente = nodo;
+      }
+    });
+
+    if (distanze[nodoCorrente] === Infinity || nodoCorrente === fine) break;
+
+    nodiNonVisitati.delete(nodoCorrente);
+
+    // Aggiorna le distanze dei vicini
+    const vicini = grafo[nodoCorrente] || {};
+    for (let vicino in vicini) {
+      if (nodiNonVisitati.has(vicino)) {
+        let nuovaDistanza = distanze[nodoCorrente] + vicini[vicino];
+        if (nuovaDistanza < distanze[vicino]) {
+          distanze[vicino] = nuovaDistanza;
+          precedenti[vicino] = nodoCorrente;
+        }
+      }
+    }
+  }
+
+  // Ricostruzione del percorso a ritroso
+  const percorso = [];
+  let at = fine;
+  while (at !== null && at !== undefined) {
+    percorso.unshift(at);
+    at = precedenti[at];
+  }
+
+  return percorso[0] === inizio ? percorso : [];
+}
+```
+
+## Aggiornamento di `script.js`
+
+Panoramica delle funzioni di logica e tracciamento
+-   `aggiornaEvidenziazione()` (aggiornata):
+
+    È il vero e proprio "motore centrale" dell'interazione. 
+    Si attiva ogni volta che l'utente seleziona una 
+    partenza o una destinazione:
+    - ripulisce la mappa da vecchi segni,
+    - applica le classi visive ai menu e agli edifici,
+    - carica in modo asincrono il file `grafo.json` tramite `fetch()`, 
+    - invoca l'algoritmo di **Dijkstra** per calcolare il percorso minimo e infine comanda il disegno della linea.
+
+- `selezionaDaMappa(idEdificio)`:
+
+    Permette all'utente di interagire direttamente cliccando sugli edifici della mappa SVG anziché usare i menu a tendina. Gestisce la selezione in modo "intelligente": il primo clic imposta la Partenza, il secondo la Destinazione, e i successivi ripartono da capo azzerando la scelta precedente.
+
+- `ottieniCoordinateNodo(idNodo)`:
+
+    Una funzione di supporto geometrico fondamentale. 
+    Interroga il DOM della mappa SVG per trovare l'elemento 
+    corrispondente a un determinato ID 
+    (che si tratti di un cerchio elementi con tag `<circle>` 
+    o di un rettangolo `<rect>`), 
+    ne legge gli attributi posizionali e
+    ne calcola il centro esatto, 
+    restituendo le coordinate x,y pronte per essere tracciate.
+
+- `disegnaPercorsoAnimato(nodi)`:
+
+    Prende l'array di ID dei nodi calcolato da Dijkstra, converte ciascuno in coordinate reali usando la funzione precedente e crea dinamicamente un elemento grafico SVG restituendo un tag `<polyline>`. Lo inserisce con precisione nel DOM (esattamente sotto il layer degli edifici) per mostrare visivamente la strada da percorrere sulla mappa.
+
+- `rimuoviSelezioniPrecedenti()`:
+
+    La funzione di pulizia (reset). Prima di calcolare e mostrare un nuovo percorso, si occupa di rimuovere le classi CSS di evidenziazione dai vecchi edifici selezionati e di eliminare dal DOM l'eventuale polilinea disegnata in precedenza, evitando sovrapposizioni grafiche.
+
+<AsideTip title="Ottimizzazione dei Layer SVG">
+Inseriremo il percorso dinamico tra il layer delle strade e quello degli edifici usando insertBefore, così la linea passerà sotto i locali senza coprire le etichette di testo!
+</AsideTip>
+
+- Sostituisci la funzione `aggiornaEvidenziazione()` 
+- Aggiungi le nuove funzioni 
+    - `ottieniCoordinateNodo(idNodo)`
+    - `disegnaPercorsoAnimato(nodi)`
+    - `rimuoviSelezioniPrecedenti()`
+    
+```diff lang="javascript" title="script.js"
+
+-function aggiornaEvidenziazione() {
+-  
+-  /* codice vecchia funzione */
+-
+- }
++// Aggiornamento della funzione di evidenziazione
++async function aggiornaEvidenziazione() {
++  rimuoviSelezioniPrecedenti();
++  
++  const idPartenza = document.getElementById("select-da").value;
++  const idDestinazione = document.getElementById("select-a").value;
++
++  if (idPartenza) document.getElementById(idPartenza)?.classList.add("attivo-partenza");
++  if (idDestinazione) document.getElementById(idDestinazione)?.classList.add("attivo-destinazione");
++
++  // Calcolo e tracciamento del percorso con Dijkstra
++  if (idPartenza && idDestinazione) {
++    try {
++      const risposta = await fetch("grafo.json");
++      const grafo = await risposta.json();
++
++      const percorsoNodi = calcolaDijkstra(grafo, idPartenza, idDestinazione);
++      
++      if (percorsoNodi.length > 0) {
++        disegnaPercorsoAnimato(percorsoNodi);
++      }
++    } catch (errore) {
++      console.error("Errore nel calcolo del percorso:", errore);
++    }
++  }
++}
++
++// Funzione che legge le coordinate direttamente dagli elementi dell'SVG
++function ottieniCoordinateNodo(idNodo) {
++  const elemento = document.getElementById(idNodo);
++  if (!elemento) return null;
++
++  if (elemento.tagName.toLowerCase() === "circle") {
++    return `${elemento.getAttribute("cx")},${elemento.getAttribute("cy")}`;
++  }
++
++  const rect = elemento.querySelector("rect") || elemento;
++  const x = parseFloat(rect.getAttribute("x")) + parseFloat(rect.getAttribute("width")) / 2;
++  const y = parseFloat(rect.getAttribute("y")) + parseFloat(rect.getAttribute("height")) / 2;
++  
++  return `${x},${y}`;
++}
++
++// Disegno della poligonale inserita tra le strade e gli edifici
++function disegnaPercorsoAnimato(nodi) {
++  const svgRoot = document.querySelector("#mappa-container svg");
++  if (!svgRoot) return;
++
++  const puntiStringa = nodi
++    .map(id => ottieniCoordinateNodo(id))
++    .filter(Boolean)
++    .join(" ");
++
++  if (puntiStringa) {
++    const gDinamico = document.createElementNS("http://www.w3.org/2000/svg", "g");
++    gDinamico.id = "layer-percorso-dinamico";
++
++    const polyline = document.createElementNS("http://www.w3.org/2000/svg", "polyline");
++    polyline.setAttribute("points", puntiStringa);
++    polyline.setAttribute("class", "percorso-animato");
++
++    gDinamico.appendChild(polyline);
++
++    // Inseriamo il percorso dinamico esattamente prima del layer edifici
++    const layerEdifici = svgRoot.querySelector("#layer-edifici");
++    if (layerEdifici) {
++      svgRoot.insertBefore(gDinamico, layerEdifici);
++    } else {
++      svgRoot.appendChild(gDinamico);
++    }
++  }
++}
++
++function rimuoviSelezioniPrecedenti() {
++  document.querySelectorAll(".attivo-destinazione, .attivo-partenza").forEach(el => {
++    el.classList.remove("attivo-destinazione", "attivo-partenza");
++  });
++  document.querySelector("#layer-percorso-dinamico")?.remove();
++}
+
+/* funzione selezionaDaMappa inalterata: */
+
+function selezionaDaMappa(idEdificio) {
+    /* ... */
+}
+
+```
+
+## Stile Serpentina in `style.css`
+
+Aggiungi in fondo al file queste nuove regole CSS:
+
+```diff lang="css" title="style.css"
++/* Stile per la linea del percorso dinamico (Serpentina in movimento) */
++.percorso-animato {
++  fill: none;
++  stroke: #0284c7;
++  stroke-width: 6;
++  stroke-linecap: round;
++  stroke-linejoin: round;
++  stroke-dasharray: 12, 12;
++  animation: serpentina 1s linear infinite;
++  filter: drop-shadow(0px 0px 6px rgba(2, 132, 199, 0.6));
++}
++
++@keyframes serpentina {
++  from {
++    stroke-dashoffset: 24;
++  }
++  to {
++    stroke-dashoffset: 0;
++  }
++}
+
+```
+<AsideNote title="🐍 l'effetto serpentina">
+
+L'effetto "serpentina" (o effetto scia in movimento) si ottiene sfruttando una tecnica intelligente basata sulla manipolazione dei tratti di una linea SVG tramite CSS.
+
+Ecco come funziona in sintesi:
+
+1. `stroke-dasharray: 12, 12;`: Questa proprietà trasforma una linea continua in un tratteggio regolare, alternando segmenti pieni di 12 pixel e spazi vuoti di 12 pixel (per una lunghezza totale del pattern pari a 24 pixel).
+
+2. `stroke-dashoffset`: Questa proprietà determina il punto di partenza da cui inizia il tratteggio lungo la linea.
+
+3. L'animazione `@keyframes`: facendo scorrere ciclicamente il valore di `stroke-dashoffset` da `24` fino a `0` in modo lineare e continuo (`infinite`), i trattini si spostano in avanti lungo tutto il percorso.
+
+All'occhio umano, questo scorrimento continuo dei trattini crea la tipica illusione ottica di un flusso in movimento (stile "marcia delle formiche" o percorso animato del navigatore).
+</AsideNote>
+
+## Collaudo
+Esegui il progetto e verifica che le selezioni dei locali avvengano correttamente, mostrando 
+la serpentina del percorso tra partenza e destinazione.
+<AsideCaution title="Prevenzione errori CORS">
+Avvia sempre il progetto con **Live Server** in VS Code (e non aprendo direttamente il file con un doppio clic o come file locale `file://`) per evitare il blocco **CORS** imposto dai browser sulle chiamate asincrone <code>fetch()</code>.
+</AsideCaution>
+
+## Commit e Sincronizzazione Finale (Git / GitHub)
+
+<Steps>
+1. **Verifica i file**: Apri il pannello **Source Control** di VS Code e controlla che tutti i file modificati e creati (`dijkstra.js`, `grafo.json`, `mappa.svg`, `locali.json`, `style.css`, `script.js` e `index.html`) siano presenti nell'area di staging.
+2. **Crea il commit**: Scrivi il messaggio di commit: `"Completata Lezione 5: Grafi, Dijkstra e animazione del percorso parte 2/2"` e conferma.
+3. **Sincronizza**: Effettua il **Publish Branch** o **Sync Changes** per inviare tutto su GitHub.
+</Steps>
+
+## Riepilogo
+
+<KeyConcepts>
+- [`grafo.json`](https://it.wikipedia.org/wiki/Grafo): rappresenta la rete del campus con nodi e archi pesati; i pesi indicano distanze o costi di percorrenza.
+- [Algoritmo di Dijkstra](https://it.wikipedia.org/wiki/Algoritmo_di_Dijkstra): trova il percorso minimo tra partenza e destinazione in un grafo con pesi non negativi.
+- [`dijkstra.js`](https://developer.mozilla.org/it/docs/Web/JavaScript/Guide/Modules): contiene l'algoritmo per calcolare il percorso minimo, separandolo dalla logica dell'interfaccia.
+- [`fetch()`](https://developer.mozilla.org/it/docs/Web/API/Fetch_API/Using_Fetch) e [`async` / `await`](https://developer.mozilla.org/it/docs/Web/JavaScript/Reference/Statements/async_function): caricano `grafo.json` in modo asincrono prima del calcolo del percorso.
+- [Coordinate SVG](https://developer.mozilla.org/it/docs/Web/SVG/Attribute): gli attributi `cx`, `cy`, `x` e `y` consentono di ricavare le posizioni dei nodi sulla mappa.
+- [`<polyline>`](https://developer.mozilla.org/en-US/docs/Web/SVG/Element/polyline) e [animazioni CSS](https://developer.mozilla.org/it/docs/Web/CSS/CSS_animations/Using_CSS_animations): disegnano e animano la serpentina del percorso.
+- [`classList`](https://developer.mozilla.org/it/docs/Web/API/Element/classList): applica o rimuove le classi di evidenziazione per partenza e destinazione.
+</KeyConcepts>
+
+## Verifica dell'Apprendimento
+
+<QuizIntro 
+resetLabel="Reimposta tutte le risposte"
+textLabel="Le risposte ai quiz di questa pagina vengono salvate nella memoria locale (local storage) del tuo browser e rimangono memorizzate tra una visita e l'altra"
+/>
+
+<Quiz id="quiz-grafo-pesato">
+Come viene rappresentato il grafo in `grafo.json`?
+
+- [ ] Come un elenco di colori associati agli edifici.
+- [x] Come una tabella di adiacenza in cui ogni nodo elenca i vicini e il peso dell'arco.
+  > Esatto: ogni nodo contiene i collegamenti raggiungibili e il relativo costo di percorrenza.
+- [ ] Come una sequenza di elementi HTML `<option>`.
+</Quiz>
+
+<Quiz id="quiz-grafo-bidirezionale">
+Cosa significa che il grafo della lezione è non orientato?
+
+- [ ] Che i nodi non possono avere pesi associati.
+- [x] Che un collegamento tra due nodi è percorribile in entrambi i sensi.
+  > Esatto: i collegamenti sono riportati in modo speculare nei nodi coinvolti.
+- [ ] Che Dijkstra visita i nodi in ordine alfabetico.
+</Quiz>
+
+<Quiz id="quiz-dijkstra-percorso">
+Cosa restituisce `calcolaDijkstra(grafo, inizio, fine)` quando trova un percorso?
+
+- [ ] Il peso del solo primo arco.
+- [x] Un array ordinato di ID dei nodi che collega partenza e destinazione.
+  > Esatto: lo script usa l'array restituito per ricavare le coordinate e disegnare il tragitto.
+- [ ] Una stringa con il markup completo della mappa SVG.
+</Quiz>
+
+<Quiz id="quiz-pesi-dijkstra">
+Quale ruolo hanno i pesi degli archi nel calcolo di Dijkstra?
+
+- [ ] Indicano il colore da usare per disegnare ciascun nodo.
+- [x] Rappresentano il costo dei collegamenti e permettono di confrontare i percorsi.
+  > Esatto: i pesi possono rappresentare distanze o costi di percorrenza; Dijkstra cerca il percorso minimo.
+- [ ] Determinano l'ordine in cui vengono caricati i file CSS.
+</Quiz>
+
+<Quiz id="quiz-coordinate-nodi">
+Come ricava `ottieniCoordinateNodo(idNodo)` le coordinate di un nodo SVG di tipo `<circle>`?
+
+- [ ] Legge gli attributi `x` e `y` del contenitore HTML.
+- [x] Legge gli attributi `cx` e `cy` dell'elemento.
+  > Esatto: `cx` e `cy` identificano il centro del cerchio e forniscono il punto da tracciare.
+- [ ] Usa il peso dell'arco corrispondente in `grafo.json`.
+</Quiz>
+
+<Quiz id="quiz-polyline-percorso">
+Quale elemento SVG viene creato per disegnare il percorso calcolato?
+
+- [ ] Un elemento `<rect>` per ogni arco.
+- [x] Una `<polyline>` con i punti corrispondenti alle coordinate dei nodi.
+  > Esatto: i punti della poligonale seguono l'ordine dei nodi restituito da Dijkstra.
+- [ ] Un elemento `<option>` inserito nel menu di destinazione.
+</Quiz>
+
+<Quiz id="quiz-animazione-serpentina">
+Quale effetto produce la combinazione di `stroke-dasharray` e `stroke-dashoffset` nel CSS del percorso?
+
+- [ ] Cambia la posizione degli edifici nella mappa.
+- [x] Fa scorrere i trattini lungo la poligonale, creando l'animazione del percorso.
+  > Esatto: l'animazione modifica lo scostamento del tratteggio nel tempo.
+- [ ] Calcola la distanza minima tra i nodi del grafo.
+</Quiz>
+
+<QuizResults 
+titleLabel="Il tuo punteggio"
+progressLabel="Avanzamento Quiz"
+answeredLabel="risposte alle domande"
+correctLabel="risposte corrette"
+resetLabel="Reimposta tutte le risposte"
+ />

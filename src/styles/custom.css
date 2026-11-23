@@ -1,2 +1,35 @@
 /* src/styles/custom.css */
 
+/* Dark mode: testi più chiari e leggibili */
+:root {
+  --sl-color-text: #f1f5f9;
+  --sl-color-gray-2: #e2e8f0; /* voci della sidebar e link secondari */
+  --sl-color-gray-3: #cbd5e1; /* didascalie, sottotitoli, metadati */
+}
+
+/* Light mode: testi più scuri e leggibili (mantenendo il tuo sfondo #f8fafc) */
+:root[data-theme='light'] {
+  --sl-color-bg: #f8fafc;
+  --sl-color-text: #0f172a;
+  --sl-color-gray-2: #1e293b; /* voci della sidebar e link secondari */
+  --sl-color-gray-3: #334155; /* didascalie, sottotitoli, metadati */
+}
+
+:root[data-theme='light'] .ec-line.ins {
+  background: rgba(34, 197, 94, 0.14);
+}
+
+html[data-toc-hidden='true'] .right-sidebar-container {
+  display: none !important;
+}
+
+@media (min-width: 72rem) {
+  html[data-toc-hidden='true'] {
+    --sl-content-width: 100%;
+  }
+
+  html[data-toc-hidden='true'] .main-pane {
+    width: 100%;
+    max-width: 100%;
+  }
+}

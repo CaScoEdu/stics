@@ -1,0 +1,449 @@
+---
+title: "04. Grafi, Dijkstra e Animazione del Percorso - parte 1/2"
+description: "Progetto Mappa Interattiva Campus - Lezione 4: modellazione della rete con grafo pesato, implementazione di Dijkstra in dijkstra.js e tracciamento animato della poligonale."
+---
+
+import {
+    Aside,
+    FileTree,
+    Steps
+} from "@astrojs/starlight/components";
+import Mermaid from "@/components/Mermaid.astro";
+import TocAsideHint from '@/components/TocAsideHint.astro';
+import AsideCaution from '@/components/AsideCaution.astro';
+import AsideNote from '@/components/AsideNote.astro';
+import AsideTip from '@/components/AsideTip.astro';
+import AsideToDo from '@/components/AsideToDo.astro';
+import ExpectedResults from "@/components/ExpectedResults.astro"
+import Prerequisites from "@/components/Prerequisites.astro"
+
+In questa lezione trasformiamo la mappa da
+ una semplice rappresentazione grafica a una vera rete di spostamenti:
+- i locali diventano nodi del
+   [grafo](https://it.wikipedia.org/wiki/Grafo),
+- i percorsi pedonali diventano archi pesati e 
+- il browser calcola automaticamente il tragitto più corto 
+    tra due punti con l'[algoritmo di Dijkstra](https://it.wikipedia.org/wiki/Algoritmo_di_Dijkstra). 
+    
+ <AsideTip title="Output finale">
+L'output finale è una navigazione interattiva, con evidenziazione dei locali e una linea animata che segue il percorso scelto.
+</AsideTip>
+
+## Introduzione
+
+<ExpectedResults>
+- legge il grafo dal file JSON,
+- applica Dijkstra per trovare il percorso minimo,
+- disegna la poligonale sulla mappa,
+- evidenzia gli edifici coinvolti e mostra la serpentina animata.
+</ExpectedResults>
+
+<Prerequisites>
+- aver completato la lezione precedente e avere a disposizione i file `index.html`, `style.css` e `mappa.svg` della mappa
+- conoscere le basi di [HTML](https://it.wikipedia.org/wiki/HTML), [CSS](https://it.wikipedia.org/wiki/CSS) e [JavaScript](https://it.wikipedia.org/wiki/JavaScript), con particolare attenzione a funzioni, oggetti, array e gestione degli eventi
+- conoscere il [DOM](https://it.wikipedia.org/wiki/Document_Object_Model) e saper selezionare elementi HTML e SVG tramite `id`
+- sapere leggere e manipolare dati in formato [JSON](https://it.wikipedia.org/wiki/JSON) e avere familiarità con `fetch()`, `async`/`await` e le Promise
+- aver già lavorato con [SVG](https://it.wikipedia.org/wiki/Scalable_Vector_Graphics) e capire come utilizzare punti, linee e percorsi per rappresentare una rete di spostamenti
+- conoscere il concetto di [grafo pesato](https://it.wikipedia.org/wiki/Grafo) e di percorso minimo, in particolare l'idea di nodi, archi e pesi
+- saper avviare il progetto con un server locale e usare gli strumenti di sviluppo del browser per verificare il comportamento dell'animazione
+</Prerequisites>
+
+## Diagramma dei Casi d'Uso
+
+<Mermaid chart={`
+  flowchart TD
+    Utente(["🚶 Utente Utente"])
+
+    subgraph Sistema ["Mappa Interattiva Campus"]
+        U1(["Seleziona Partenza"])
+        U2(["Seleziona Destinazione"])
+        U3(["Calcola Percorso Minimo"])
+        U4(["Visualizza Animazione Serpentina"])
+    end
+
+    Utente --> U1
+    Utente --> U2
+    U1 -.->|"&lt;&lt;include&gt;&gt;"| U3
+    U2 -.->|"&lt;&lt;include&gt;&gt;"| U3
+    U3 -.->|"&lt;&lt;include&gt;&gt;"| U4
+
+    classDef actor fill:#1e3a8a,stroke:#3b82f6,color:#fff,stroke-width:2px;
+    classDef usecase fill:#2563eb,stroke:#1d4ed8,color:#fff,stroke-width:2px;
+    classDef system fill:#f8fafc,stroke:#64748b,stroke-width:2px,color:#0f172a;
+
+    class Utente actor;
+    class U1,U2,U3,U4 usecase;
+    class Sistema system;
+    
+`} />
+
+<AsideTip title="Spiegazione">
+Il **Diagramma dei Casi d'Uso** rappresenta il flusso principale della navigazione: l'utente seleziona il punto di partenza e la destinazione; il sistema calcola il percorso minimo e ne visualizza l'animazione sulla mappa. Il calcolo del percorso è incluso in entrambe le selezioni, mentre l'animazione viene mostrata dopo il calcolo.
+</AsideTip>
+
+### Struttura dei file del progetto
+
+Al termine di questa lezione, la cartella del progetto conterrà questi file nella directory radice:
+
+<FileTree>
+- progetto mappa interattiva campus/
+  - **dijkstra.js** Modulo JavaScript con l'algoritmo di Dijkstra per il calcolo del percorso minimo[cite: 2]
+  - **grafo.json** Struttura dati del grafo con i nodi e gli archi pesati dei percorsi[cite: 2]
+  - **index.html** Pagina HTML principale che ospita la mappa e i controlli di selezione[cite: 2]
+  - **locali.json** Elenco degli edifici, usato per popolare dinamicamente i menu di selezione[cite: 2]
+  - **mappa.svg** Grafica vettoriale della mappa, caricata nella pagina[cite: 2]
+  - **script.js** Logica principale che carica i file con `fetch()`, gestisce gli eventi e disegna il percorso nel DOM[cite: 2]
+  - **style.css** Foglio di stile per il layout della pagina, l'evidenziazione degli edifici e l'animazione del percorso[cite: 2]
+</FileTree>
+
+## Diagramma di Sequenza
+
+<TocAsideHint />
+
+<Mermaid chart={`
+  sequenceDiagram
+    actor Utente
+    participant DOM as Interfaccia (HTML/SVG)
+    participant JS as script.js
+    participant JSON as grafo.json
+    participant Algoritmo as dijkstra.js
+
+    Utente->>DOM: Seleziona Partenza e Destinazione
+    DOM->>JS: scatena aggiornaEvidenziazione()
+    JS->>JSON: fetch("grafo.json")
+    JSON-->>JS: restituisce oggetto grafo
+    JS->>Algoritmo: calcolaDijkstra(grafo, inizio, fine)
+    Algoritmo-->>JS: restituisce array nodi percorso minimo
+    JS->>DOM: ottieniCoordinateNodo() & inserisce <polyline>
+    DOM-->>Utente: Mostra serpentina animata
+`} />
+
+<AsideTip title="Spiegazione">
+Il Diagramma di Sequenza (Sequence Diagram) illustra la dimensione temporale e l'interazione dinamica tra i componenti del sistema.
+
+Il tempo scorre verticalmente dall'alto verso il basso, mostrando l'ordine cronologico delle chiamate asincrone, degli scambi di messaggi e dei dati elaborati (dal caricamento iniziale dei file JSON fino al calcolo del percorso con Dijkstra e al rendering della poligonale animata).
+</AsideTip>
+
+## Diagramma dei componenti
+
+<TocAsideHint />
+
+<Mermaid chart={`
+  flowchart TD
+    Browser[Browser Web]
+    HTML[index.html]
+    CSS[style.css]
+    JS[script.js]
+    DIJKSTRA[dijkstra.js]
+    SVG[mappa.svg]
+    LOCALI[locali.json]
+    GRAFO[grafo.json]
+    Mappa[SVG della mappa nel DOM]
+    Menu[Menu Partenza e Destinazione]
+
+    Browser -->|carica la pagina| HTML
+    HTML -->|collega lo stile| CSS
+    HTML -->|avvia il codice| JS
+    JS -->|importa modulo| DIJKSTRA
+    JS -->|"fetch()"| SVG
+    JS -->|"fetch()"| LOCALI
+    JS -->|"fetch()"| GRAFO
+    SVG -->|inserisce il markup| Mappa
+    LOCALI -->|popola le option| Menu
+    Menu -->|selezione partenza/arrivo| JS
+    GRAFO -->|fornisce nodi e archi| DIJKSTRA
+    DIJKSTRA -->|restituisce percorso minimo| JS
+    JS -->|disegna percorso ed evidenzia| Mappa
+
+    classDef browser fill:#1e3a8a,stroke:#3b82f6,color:#fff,stroke-width:2px;
+    classDef html fill:#2563eb,stroke:#1d4ed8,color:#fff,stroke-width:2px;
+    classDef data fill:#059669,stroke:#047857,color:#fff,stroke-width:2px;
+    classDef app fill:#7c3aed,stroke:#5b21b6,color:#fff,stroke-width:2px;
+
+    class Browser browser;
+    class HTML,CSS html;
+    class JS,DIJKSTRA app;
+    class SVG,LOCALI,GRAFO data;
+    class Mappa,Menu html;
+`} />
+
+<AsideTip title="Spiegazione">
+- Il browser carica la pagina `index.html` (che applica `style.css`) 
+e avvia `script.js`.
+- Lo script importa il modulo `dijkstra.js` e usa `fetch()` 
+per recuperare `mappa.svg`, `locali.json` e `grafo.json`. 
+- La mappa viene inserita nel DOM, mentre l'elenco dei locali 
+popola i menu di partenza e destinazione; 
+- Quando l’utente effettua una selezione, lo script passa i nodi del grafo all'algoritmo di Dijkstra per calcolare il percorso minimo, aggiornando l’evidenziazione degli edifici e disegnando il tragitto sulla mappa.
+</AsideTip >
+
+
+## Creazione del Branch di Lavoro `lezione-4`
+Prima di integrare la struttura del grafo e l'algoritmo di Dijkstra per il calcolo dei percorsi minimi, creiamo un branch dedicato per isolare le modifiche di questa lezione:
+
+<Steps>
+1. Apri il pannello Source Control in VS Code (`Ctrl + Shift + G`). 
+2. Clicca sul nome del branch corrente in basso a sinistra (o in alto nel pannello) e seleziona `Crea un nuovo branch...` (`Create new branch...`). 
+3. Digita il nome del nuovo branch: `lezione-4` e premi Invio.
+</Steps>
+
+<AsideNote title="Prendi nota">
+Ora stai lavorando su una copia indipendente dalla Lezione 3, pronta per aggiungere `grafo.json`, `dijkstra.js` e la logica di navigazione tra gli edifici!
+</AsideNote>
+
+## Aggiunta Layer degli Snodi Stradali nella `mappa.svg`
+
+Per fare in modo che i percorsi seguano le strade 
+ed evitino di tagliare i prati "a volo d'uccello", dobbiamo 
+definire dei punti (snodi) sui percorsi pedonali, in corrispondenza di:
+
+- ### incroci tra i percorsi:
+
+<div style={{ display: 'flex', justifyContent: 'center', margin: '1.5rem 0' }}>
+  <svg viewBox="0 0 600 280" width="100%" style={{ maxWidth: '600px', borderRadius: '10px', border: '2px solid #334155', background: '#7ec850' }} xmlns="http://www.w3.org/2000/svg">
+    {/* Sfondo Prato */}
+    <rect width="600" height="280" fill="#7ec850" />
+
+    {/* Percorso pedonale orizzontale */}
+    <rect x="0" y="115" width="600" height="50" fill="#d1d5db" />
+
+    {/* Percorso pedonale verticale */}
+    <rect x="275" y="0" width="50" height="280" fill="#d1d5db" />
+
+    {/* Assi centrali tratteggiati dei due percorsi */}
+    <line x1="16" y1="140" x2="584" y2="140" stroke="#64748b" strokeWidth="2" strokeDasharray="6,6" />
+    <line x1="300" y1="16" x2="300" y2="264" stroke="#64748b" strokeWidth="2" strokeDasharray="6,6" />
+
+    {/* Etichette dei due percorsi */}
+    <text x="16" y="128" fontFamily="Verdana, sans-serif" fontSize="11" fontWeight="bold" fill="#475569" style={{ textAnchor: 'start' }}>Percorso A</text>
+    <text x="334" y="24" fontFamily="Verdana, sans-serif" fontSize="11" fontWeight="bold" fill="#1e293b" style={{ textAnchor: 'start' }}>Percorso B</text>
+
+    {/* Simbolo angolo retto 90° */}
+    <polyline points="300,124 316,124 316,140" fill="none" stroke="#1e293b" strokeWidth="2" />
+    <text x="334" y="131" fontFamily="Verdana, sans-serif" fontSize="11" fontWeight="bold" fill="#1e293b" style={{ textAnchor: 'start' }}>90°</text>
+
+    {/* Nodo di Incrocio al punto di intersezione (300, 140) */}
+    <circle cx="300" cy="140" r="8" fill="#dc2626" stroke="#ffffff" strokeWidth="2.5" />
+
+    {/* Badge etichetta snodo centrato */}
+    <rect x="128" y="176" width="144" height="24" rx="4" fill="#1e293b" opacity="0.95" />
+    <text x="200" y="192" fontFamily="Verdana, sans-serif" fontSize="11" fontWeight="bold" fill="#ffffff" style={{ textAnchor: 'middle' }}>Snodo di Incrocio</text>
+
+    {/* Linea guida sottile dal badge al nodo */}
+    <line x1="272" y1="184" x2="293" y2="147" stroke="#1e293b" strokeWidth="1.5" strokeDasharray="3,3" />
+  </svg>
+</div>
+
+- ### diramazioni ortogonali sui percorsi verso i locali: 
+
+<div style={{ display: 'flex', justifyContent: 'center', margin: '1.5rem 0' }}>
+  <svg viewBox="0 0 600 320" width="100%" style={{ maxWidth: '600px', borderRadius: '10px', border: '2px solid #334155', background: '#7ec850' }} xmlns="http://www.w3.org/2000/svg">
+    {/* Sfondo Prato */}
+    <rect width="600" height="320" fill="#7ec850" />
+
+    {/* Percorso pedonale principale (strada orizzontale) */}
+    <rect x="0" y="135" width="600" height="50" fill="#d1d5db" />
+    <text x="16" y="147" fontFamily="Verdana, sans-serif" fontSize="11" fontWeight="bold" fill="#475569" style={{ textAnchor: 'start' }}>Percorso principale</text>
+
+    {/* Edificio 1 (in alto a sinistra: x=100..260, centro x=180) */}
+    <rect x="100" y="18" width="160" height="80" rx="6" fill="#1e3a8a" />
+    <text x="180" y="38" fontFamily="Verdana, sans-serif" fontSize="13" fontWeight="bold" fill="#ffffff" style={{ textAnchor: 'middle' }}>Edificio A</text>
+
+    {/* Edificio 2 (in basso a destra: x=340..500, centro x=420) */}
+    <rect x="340" y="222" width="160" height="80" rx="6" fill="#ea580c" />
+    <text x="420" y="286" fontFamily="Verdana, sans-serif" fontSize="13" fontWeight="bold" fill="#ffffff" style={{ textAnchor: 'middle' }}>Edificio B</text>
+
+    {/* Asse centrale della strada */}
+    <line x1="16" y1="160" x2="584" y2="160" stroke="#64748b" strokeWidth="2" strokeDasharray="6,6" />
+
+    {/* Diramazione ortogonale 1 */}
+    <line x1="180" y1="160" x2="180" y2="58" stroke="#facc15" strokeWidth="4" />
+    <polyline points="180,144 196,144 196,160" fill="none" stroke="#1e293b" strokeWidth="2" />
+    <text x="202" y="152" fontFamily="Verdana, sans-serif" fontSize="11" fontWeight="bold" fill="#1e293b" style={{ textAnchor: 'start' }}>90°</text>
+
+    {/* Diramazione ortogonale 2 */}
+    <line x1="420" y1="160" x2="420" y2="262" stroke="#facc15" strokeWidth="4" />
+    <polyline points="420,176 436,176 436,160" fill="none" stroke="#1e293b" strokeWidth="2" />
+    <text x="442" y="175" fontFamily="Verdana, sans-serif" fontSize="11" fontWeight="bold" fill="#1e293b" style={{ textAnchor: 'start' }}>90°</text>
+
+    {/* Snodo 1 + Etichetta perfettamente centrata nel badge */}
+    <circle cx="180" cy="160" r="7" fill="#dc2626" stroke="#ffffff" strokeWidth="2" />
+    <rect x="112" y="194" width="136" height="24" rx="4" fill="#1e293b" opacity="0.95" />
+    <text x="180" y="210" fontFamily="Verdana, sans-serif" fontSize="11" fontWeight="bold" fill="#ffffff" style={{ textAnchor: 'middle' }}>Snodo Stradale 1</text>
+
+    {/* Snodo 2 + Etichetta perfettamente centrata nel badge */}
+    <circle cx="420" cy="160" r="7" fill="#dc2626" stroke="#ffffff" strokeWidth="2" />
+    <rect x="352" y="102" width="136" height="24" rx="4" fill="#1e293b" opacity="0.95" />
+    <text x="420" y="118" fontFamily="Verdana, sans-serif" fontSize="11" fontWeight="bold" fill="#ffffff" style={{ textAnchor: 'middle' }}>Snodo Stradale 2</text>
+
+    {/* Nodi destinazione al centro degli edifici */}
+    <circle cx="180" cy="58" r="6" fill="#facc15" stroke="#1e293b" strokeWidth="2" />
+    <text x="180" y="80" fontFamily="Verdana, sans-serif" fontSize="11" fill="#e2e8f0" style={{ textAnchor: 'middle' }}>Centro</text>
+
+    <circle cx="420" cy="262" r="6" fill="#facc15" stroke="#1e293b" strokeWidth="2" />
+    <text x="420" y="244" fontFamily="Verdana, sans-serif" fontSize="11" fill="#ffedd5" style={{ textAnchor: 'middle' }}>Centro</text>
+  </svg>
+</div>
+
+### id significativi per i percorsi
+Per facilitare il posizionamento degli snodi, 
+inseriamo `id` significativi per i percorsi in `mappa.svg`:
+
+```diff lang="xml" title="mappa.svg"
+
+      <!-- LAYER 2: PERCORSI PEDONALI -->
+        <g id="layer-percorsi">
+-           <rect  x="50" y="270" width="700" height="60" fill="#d1d5db" rx="4" />
++           <rect id="percorso-orizzontale" x="50" y="270" width="700" height="60" fill="#d1d5db" rx="4" />
+
+-           <rect  x="180" y="80" width="50" height="440" fill="#d1d5db" rx="4" />
++           <rect id="percorso-est" x="570" y="80" width="50" height="440" fill="#d1d5db" rx="4" />
+
+-           <rect  x="180" y="80" width="50" height="440" fill="#d1d5db" rx="4" />
++           <rect id="percorso-ovest" x="180" y="80" width="50" height="440" fill="#d1d5db" rx="4" />
+        </g>
+```
+
+<AsideCaution title="Hai personalizzati i percorsi?">
+In questo caso personalizza, se necessario, gli id in modo che rispecchino
+la geometria dei tuoi percorsi.
+
+#### Convenzione sui nomi dei nodi
+Per evitare problemi successivi all'integrazione del grafo, conviene usare un naming convention chiaro e costante:
+
+- usa prefissi coerenti come `snodo-`, `edificio-`, `locale-`, `incrocio-`;
+- mantieni sempre id univoci all'interno dell'SVG;
+- usa gli stessi nomi anche nel file `grafo.json` e nel codice JavaScript;
+- evita spazi, maiuscole inconsistenti o id generici come `punto1`, `punto2`.
+
+Questa regola semplifica sia la lettura del grafo sia la funzione `ottieniCoordinateNodo()`, che si basa su `document.getElementById(idNodo)`.
+</AsideCaution>
+
+### il layer degli snodi
+Ora introduciamo in fondo alla `mappa.svg` il layer degli snodi, posizionando i primi punti di accesso ortogonali agli edifici e gli incroci principali:
+
+```diff lang="xml" title="mappa.svg"
+    <!-- LAYER GIA' ESISTENTI -->
+
++   <!-- NUOVO LAYER SNODI STRADALI E DI ACCESSO  -->
++   <g id="layer-snodi">
++   <!-- Snodi di accesso ortogonali agli edifici -->
++       <circle id="snodo-uffici" cx="205" cy="150" r="4" fill="#dc2626" />
++       <circle id="snodo-aule" cx="205" cy="430" r="4" fill="#dc2626" />
++       <circle id="snodo-mensa" cx="310" cy="300" r="4" fill="#dc2626" />
++
++       <!-- Snodi situati agli incroci stradali principali -->
++       <circle id="snodo-incrocio-ovest" cx="205" cy="300" r="4" fill="#0284c7" />
++       <circle id="snodo-incrocio-est" cx="595" cy="300" r="4" fill="#0284c7" />
++ </g>
+
+</svg>
+
+```
+<AsideTip title="Come saranno generati i percorsi?">
+I percorsi da un locale a un altro saranno costituiti da segmenti da un 
+nodo a un altro fino a destinazione. Grazie all'algoritmo di Dijkstra
+verrà identificata il percorso più corto tra tutti i percorsi possibili.
+</AsideTip>
+
+### visibilità degli snodi sulla mappa
+Per facilitare il posizionamento e la calibrazione visiva, 
+aggiungiamo nel file
+`style.css` questa regola:
+```diff lang="css" title="style.css"
+
++ /* Regola in style.css: commenta o decommenta display per mostrare/nascondere gli snodi */
++ #layer-snodi {
++ /* display: none; */
++ }
+
+```
+
+<AsideTip title="Suggerimento Operativo">
+Lascia la riga `display: none;` commentata durante la configurazione per vedere i pallini rossi e blu posizionati al centro delle strade. La attiveremo (nascondendoli) solo a lavoro ultimato.
+</AsideTip>
+
+<AsideToDo title="Esercizio di consolidamento">
+Completa il layer-snodi aggiungendo i nodi ortogonali mancanti 
+per i Laboratori e la Palestra 
+(e per gli eventuali nuovi locali aggiunti da te), 
+assicurandoti che ogni snodo si trovi esattamente 
+al centro delle corsie stradali!
+</AsideToDo>
+
+## Definizione del Grafo con gli Snodi (`grafo.json`)
+Ora che abbiamo posizionato gli snodi stradali in `mappa.svg`, dobbiamo aggiornare il file `grafo.json`. I collegamenti non uniranno più direttamente gli edifici, ma passeranno attraverso i nodi di snodo.
+
+<Aside type="tip" title="Ricordiamo i concetti di Grafo Non Orientato e Pesato">
+- **Non orientato**: I collegamenti ([archi](https://it.wikipedia.org/wiki/Grafo)) sono bidirezionali. Se lo snodo `A` è collegato allo snodo `B` con un certo peso, la stessa percorrenza vale in entrambi i
+versi.
+- **Pesato**: Ogni arco ha un costo numerico (il peso, es. metri o secondi), utilizzato da **Dijkstra** per calcolare il percorso minimo.
+</Aside>
+
+Ecco un frammento corretto di grafo.json che modella il passaggio dagli uffici agli incroci tramite gli snodi:
+
+```json title="grafo.json"
+{
+  "edificio-uffici": {
+    "snodo-uffici": 30
+  },
+  "snodo-uffici": {
+    "edificio-uffici": 30,
+    "snodo-incrocio-ovest": 100
+  },
+  "snodo-incrocio-ovest": {
+    "snodo-uffici": 100,
+    "snodo-aule": 100,
+    "snodo-mensa": 100
+  }
+}
+```
+
+### Come è strutturato `grafo.json`?
+Questo file rappresenta il grafo stradale e di collegamento del campus utilizzando un oggetto `JSON` nidificato (una mappa o tabella di adiacenza):
+
+- **Chiavi principali (nodi)**: Ogni chiave di primo livello (come `"edificio-uffici"` o `"snodo-incrocio-ovest"`) rappresenta un punto di riferimento della mappa, sia esso un edificio o un incrocio strategico.
+
+- **Oggetti interni (archi e pesi)**: All'interno di ogni nodo troviamo un ulteriore oggetto che elenca i vicini direttamente raggiungibili e, come valore numerico, il peso (la distanza in metri o il costo di percorrenza) necessario per spostarsi da un punto all'altro.
+
+- **Bidirezionalità**: Noterai che i collegamenti sono speculari (es. da `edificio-uffici` a `snodo-uffici` e viceversa), rispettando la natura di grafo non orientato in cui le strade sono percorribili in entrambi i sensi.
+
+<Aside type="tip" title="📏 Dal peso stimato alla distanza geometrica esatta">
+
+Nelle prime fasi di modellazione di un grafo, l'utilizzo di valori fissi e approssimativi (come **100** per le dorsali principali e **30** per i brevi raccordi di uscita verso i locali) è una scelta **estremamente pragmatica ed efficace per fini didattici**. 
+
+##### Perché l'approccio approssimativo è "OK" per i nostri fini:
+1. **Focus sull'algoritmo:** Permette agli studenti di concentrarsi sulla logica di funzionamento di **Dijkstra** e sulla struttura dati del grafo (`grafo.json`), senza il rischio di distrarsi con calcoli geometrici ripetitivi.
+2. **Proporzione logica corretta:** Ai fini del calcolo del percorso minimo, ciò che conta davvero non è l'unità di misura reale (metri o chilometri), ma la **relazione di costo** tra i vari archi. Assegnare un peso maggiore alle strade lunghe e uno minore ai vialetti di accesso garantisce che l'algoritmo scelga comunque la strada corretta.
+
+##### Come calcolare la distanza reale in punti (pixel)
+
+Per un rigore geometrico assoluto, i pesi degli archi dovrebbero corrispondere esattamente alla distanza in pixel sul piano cartesiano del `viewBox` dell'SVG (`0 0 800 600`). 
+
+Poiché nella nostra mappa i percorsi stradali sono **ortogonali** (cioè si muovono esclusivamente in orizzontale o in verticale), il calcolo della distanza tra due nodi A e B è estremamente semplice e non richiede formule complesse come il teorema di Pitagora:
+
+- **Spostamento orizzontale:** La distanza corrisponde alla differenza delle coordinate `x` in valore assoluto:  
+  `Distanza = |x₂ - x₁|`
+
+- **Spostamento verticale:** La distanza corrisponde alla differenza delle coordinate `y` in valore assoluto:  
+  `Distanza = |y₂ - y₁|`
+
+*Esempio pratico:* Se un tratto di strada verticale parte dal punto `y = 80` e arriva a `y = 220`, il peso esatto dell'arco nel file `grafo.json` sarà semplicemente `|220 - 80| = 140` punti.
+</Aside>
+
+<AsideToDo title="Esercizio di consolidamento">
+- Completa il file `grafo.json` 
+aggiungendo i nodi mancanti per collegare la Mensa, i Laboratori, 
+la Palestra e l'incrocio est (snodo-incrocio-est) con i relativi pesi stimati!
+- ricordati di collegare anche i locali che hai aggiunto nella tua mappa personalizzata!
+</AsideToDo>
+
+## Commit e Sincronizzazione Finale (Git / GitHub)
+
+<Steps>
+1. **Verifica i file**: Apri il pannello **Source Control** di VS Code e controlla che tutti i file modificati e creati ( `grafo.json`, `mappa.svg`, `locali.json`, `style.css`, `script.js` e `index.html`) siano presenti nell'area di staging.
+2. **Crea il commit**: Scrivi il messaggio di commit: `"Completata Lezione 4: Grafi, Dijkstra e animazione del percorso parte 1/2"` e conferma.
+3. **Sincronizza**: Effettua il **Publish Branch** o **Sync Changes** per inviare tutto su GitHub.
+</Steps>
+
+

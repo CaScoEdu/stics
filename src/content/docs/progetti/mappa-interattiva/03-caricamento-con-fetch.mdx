@@ -12,55 +12,47 @@ import {
 import Mermaid from "@/components/Mermaid.astro";
 import StepCard from '@/components/StepCard.astro';
 import Checklist from '@/components/Checklist.astro';
+import AsideCaution from '@/components/AsideCaution.astro';
+import AsideNote from '@/components/AsideNote.astro';
+import AsideTip from '@/components/AsideTip.astro';
+import AsideToDo from '@/components/AsideToDo.astro';
+import { Quiz, QuizIntro, QuizResults } from 'starlight-quiz/components';
+import ExpectedResults from "@/components/ExpectedResults.astro"
+import KeyConcepts from "@/components/KeyConcepts.astro"
+import Prerequisites from "@/components/Prerequisites.astro"
+import TocAsideHint from '@/components/TocAsideHint.astro';
 
-export let stepNumber = 1;
 
-<Aside type="tip" title="Prerequisiti per questa lezione">
+In questa lezione trasformiamo l'architettura della nostra applicazione: separiamo 
+la grafica vettoriale e i dati strutturati in file esterni dedicati (`mappa.svg` e `locali.json`), 
+per poi caricarli dinamicamente nel browser sfruttando le API asincrone di JavaScript
+ (`fetch`, `async` e `await`).
+ 
+ <AsideTip title="Output finale">
+ L'output finale è una pagina leggera e modulare, con menu popolati automaticamente 
+ e un sistema di evidenziazione simmetrica (partenza e destinazione) sia da menu a tendina 
+ che tramite clic diretto sulla mappa.
+ </AsideTip>
+
+## Introduzione
+
+<ExpectedResults>
+- la grafica SVG è esternalizzata e responsive;
+- i dati dei locali sono letti da un file JSON esterno;
+- i menu di selezione si popolano autonomamente all'avvio;
+- la selezione di partenza e destinazione evidenzia visivamente gli edifici sulla mappa.
+</ExpectedResults>
+
+<Prerequisites>
 - aver completato la lezione precedente e avere a disposizione i file `index.html`, `style.css` e `mappa.svg` della mappa
 - conoscere le basi di [HTML](https://it.wikipedia.org/wiki/HTML), [CSS](https://it.wikipedia.org/wiki/CSS) e [JavaScript](https://it.wikipedia.org/wiki/JavaScript), in particolare funzioni ed eventi
 - conoscere le basi del [DOM](https://it.wikipedia.org/wiki/Document_Object_Model) e saper selezionare elementi HTML e SVG tramite `id`
 - conoscere la sintassi di base degli oggetti e degli array JavaScript e dei dati in formato JSON
 - avere familiarità con le richieste `fetch()`, le funzioni `async`/`await` e la gestione delle Promise
 - saper avviare il progetto con un server locale e usare gli strumenti di sviluppo del browser
-</Aside>
+</Prerequisites>
 
-<LinkButton
-    href="https://youtu.be/gZEkC0hiGTM"
-    variant="primary"
-    icon="youtube"
-    iconPlacement="end"
->
-guarda il video introduttivo
-</LinkButton>
-
-## 📋 Analisi dei requisiti
-
-<StepCard stepNumber={stepNumber++}>
-
-### 🎯 Obiettivo della lezione
-
-- In questa lezione trasformiamo l'architettura della nostra applicazione: separiamo 
-la grafica vettoriale e i dati strutturati in file esterni dedicati (`mappa.svg` e `locali.json`), 
-per poi caricarli dinamicamente nel browser sfruttando le API asincrone di JavaScript
- (`fetch`, `async` e `await`).
- 
- - L'output finale è una pagina leggera e modulare, con menu popolati automaticamente 
- e un sistema di evidenziazione simmetrica (partenza e destinazione) sia da menu a tendina 
- che tramite clic diretto sulla mappa.
-
-<Aside type="note" title="Risultato atteso">
-Al termine della lezione avrai un'applicazione in cui:
-- la grafica SVG è esternalizzata e responsive;
-- i dati dei locali sono letti da un file JSON esterno;
-- i menu di selezione si popolano autonomamente all'avvio;
-- la selezione di partenza e destinazione evidenzia visivamente gli edifici sulla mappa.
-</Aside>
-
-</StepCard>
-
-<StepCard stepNumber={stepNumber++}>
-
-### 👥 Diagramma dei Casi d'Uso
+## Diagramma dei Casi d'Uso
 
 <Mermaid chart={`
  flowchart TD
@@ -88,15 +80,17 @@ Al termine della lezione avrai un'applicazione in cui:
     class Sistema system;
 `} />
 
-diagramma fatto con [Mermaid](https://mermaid.live/edit#pako:eNqNk1FvmzAQx7-K5b60EokgaQjjYdOW9GnaVrVTpQ3y4NkHWAUfso1SluS719jJNm0v4wXu7nf_-3PgA-UogOa0anHPG6Yt-botFXHXo3XRdfEkjbQEVSsVEGNRw-6GzGZvyQeNewNFuJFeoxi4NbvQfM5O3MbJFO-FINJCZ4hFwl3mzE1FT22BSwGHB2Bi9EwD_JngYN-dAhmAiT1-BOiJabDvpaqP51n_UN_AHMk9G4s7ZUGTno0dKEsEWCbbi09X9-OfWCvF4f7MMM6htyAus33Vi37GI3kAq8fiscE9Aa1Rkw6MYTWcJX3Zizq5v_u9qQ2qSuqu-KKFM8ZDBOKykhCHraCC6-Kuc46JBg6yt7ubUgXQ2LGF8JlIJds2v4KsWsGbyFiNz5Bf3S5ZfLv-E570_pcNpgNcVdUS4l9w9SPjcUwjWmspaG71ABHtQDufLqSHSaaktoEOSpq7Rw1ieJlxbFGXtFQn19oz9R2xu3RrHOqG5hVrjYuGXjALW8lqzX4joNy-NjgoS_OVV6D5gb7QfLlO5mm2SBbJOk5WaZpEdHTZ1TzOsjTN0sS92nKRniL604-M59naCYCQ7n_-FA6APwenV1CD_oo/)
 
-</StepCard>
+<AsideTip title="Spiegazione">
+Il **Diagramma dei Casi d'Uso** mostra le azioni disponibili all'utente nella mappa interattiva del campus: 
+- visualizzare la mappa, 
+- selezionare il punto di partenza e 
+- scegliere la destinazione.
 
-## 📐 Progettazione
+La selezione del punto di partenza e della destinazione include obbligatoriamente (`<<include>>`) la funzionalità che evidenzia gli edifici selezionati.
+</AsideTip>
 
-<StepCard stepNumber={stepNumber++}>
-
-### 📁 Struttura dei file del progetto
+## Struttura dei file del progetto
 
 Al termine di questa lezione, la cartella del progetto conterrà questi file nella directory radice:
 
@@ -108,13 +102,12 @@ Al termine di questa lezione, la cartella del progetto conterrà questi file nel
   - **mappa.svg** Grafica vettoriale della mappa, caricata nella pagina
   - **locali.json** Elenco degli edifici, usato per popolare il menu di selezione
 </FileTree>
-</StepCard>
 
-<StepCard stepNumber={stepNumber++}>
+## Diagramma di Sequenza
 
-### 🔀 Diagramma di Sequenza
+<TocAsideHint />
 
-  <Mermaid chart={`
+<Mermaid chart={`
   sequenceDiagram
     actor Utente
     participant HTML as index.html
@@ -140,17 +133,14 @@ Al termine di questa lezione, la cartella del progetto conterrà questi file nel
     DOM-->>Utente: Mostra edifici illuminati simmetricamente
 `} />
 
-diagramma fatto con [Mermaid](https://mermaid.live/edit#pako:eNqNk1FvmzAQx7-K5b60EokgaQjjYdOW9GnaVrVTpQ3y4NkHWAUfso1SluS719jJNm0v4wXu7nf_-3PgA-UogOa0anHPG6Yt-botFXHXo3XRdfEkjbQEVSsVEGNRw-6GzGZvyQeNewNFuJFeoxi4NbvQfM5O3MbJFO-FINJCZ4hFwl3mzE1FT22BSwGHB2Bi9EwD_JngYN-dAhmAiT1-BOiJabDvpaqP51n_UN_AHMk9G4s7ZUGTno0dKEsEWCbbi09X9-OfWCvF4f7MMM6htyAus33Vi37GI3kAq8fiscE9Aa1Rkw6MYTWcJX3Zizq5v_u9qQ2qSuqu-KKFM8ZDBOKykhCHraCC6-Kuc46JBg6yt7ubUgXQ2LGF8JlIJds2v4KsWsGbyFiNz5Bf3S5ZfLv-E570_pcNpgNcVdUS4l9w9SPjcUwjWmspaG71ABHtQDufLqSHSaaktoEOSpq7Rw1ieJlxbFGXtFQn19oz9R2xu3RrHOqG5hVrjYuGXjALW8lqzX4joNy-NjgoS_OVV6D5gb7QfLlO5mm2SBbJOk5WaZpEdHTZ1TzOsjTN0sS92nKRniL604-M59naCYCQ7n_-FA6APwenV1CD_oo/)
 
+<AsideTip title="Spiegazione">
 Il Diagramma di Sequenza descrive la dimensione temporale e l'interazione dinamica tra i componenti del sistema: il tempo scorre verticalmente dall'alto verso il basso, mostrando l'ordine cronologico delle richieste asincrone (`fetch()`) con cui la pagina carica la grafica vettoriale (`mappa.svg`) e i dati strutturati (`locali.json`) all'avvio, fino alla gestione degli eventi utente e all'aggiornamento visivo simmetrico degli edifici nel `DOM`.
-</StepCard>
+</AsideTip>
 
+## Diagramma dei componenti
 
-<StepCard stepNumber={stepNumber++}>
-
-### 🧩 Diagramma dei componenti
-
-  <Mermaid chart={`
+<Mermaid chart={`
   flowchart TD
     Browser[Browser Web]
     HTML[index.html]
@@ -183,20 +173,14 @@ Il Diagramma di Sequenza descrive la dimensione temporale e l'interazione dinami
     class Mappa,Menu html;
 `} />
 
-diagramma fatto con [Mermaid](https://mermaid.live/edit#pako:eNqNk1FvmzAQx7-K5b60EokgaQjjYdOW9GnaVrVTpQ3y4NkHWAUfso1SluS719jJNm0v4wXu7nf_-3PgA-UogOa0anHPG6Yt-botFXHXo3XRdfEkjbQEVSsVEGNRw-6GzGZvyQeNewNFuJFeoxi4NbvQfM5O3MbJFO-FINJCZ4hFwl3mzE1FT22BSwGHB2Bi9EwD_JngYN-dAhmAiT1-BOiJabDvpaqP51n_UN_AHMk9G4s7ZUGTno0dKEsEWCbbi09X9-OfWCvF4f7MMM6htyAus33Vi37GI3kAq8fiscE9Aa1Rkw6MYTWcJX3Zizq5v_u9qQ2qSuqu-KKFM8ZDBOKykhCHraCC6-Kuc46JBg6yt7ubUgXQ2LGF8JlIJds2v4KsWsGbyFiNz5Bf3S5ZfLv-E570_pcNpgNcVdUS4l9w9SPjcUwjWmspaG71ABHtQDufLqSHSaaktoEOSpq7Rw1ieJlxbFGXtFQn19oz9R2xu3RrHOqG5hVrjYuGXjALW8lqzX4joNy-NjgoS_OVV6D5gb7QfLlO5mm2SBbJOk5WaZpEdHTZ1TzOsjTN0sS92nKRniL604-M59naCYCQ7n_-FA6APwenV1CD_oo/)
 
+<AsideTip title="Spiegazione">
 Il browser carica la pagina e lo script usa `fetch()` 
 per recuperare `mappa.svg` e `locali.json`. 
 La mappa viene inserita nel [DOM](https://it.wikipedia.org/wiki/Document_Object_Model), mentre i dati popolano il menu; quando l’utente seleziona un edificio, lo script ne aggiorna l’evidenziazione.
+</AsideTip>
 
-</StepCard>
-
----
-## 🛠️ Realizzazione
-
-<StepCard stepNumber={stepNumber++}>
-
-### 🌿 Creazione del Branch di Lavoro `lezione-3`
+## Creazione del Branch di Lavoro `lezione-3`
 Prima di aggiungere il caricamento dinamico con `fetch()`, creiamo un branch dedicato per isolare le modifiche di questa lezione:
 
 <Steps>
@@ -205,13 +189,13 @@ Prima di aggiungere il caricamento dinamico con `fetch()`, creiamo un branch ded
 seleziona `Crea un nuovo branch...` (`Create new branch...`). 
 3. Digita il nome del nuovo branch: `lezione-3` e premi Invio.
 </Steps>
+
+<AsideNote title="Prendi nota">
 Ora stai lavorando su una copia indipendente dalla Lezione 2, pronta per aggiungere il caricamento di `mappa.svg` e `locali.json` tramite `fetch()`!
+</AsideNote>
 
-</StepCard>
+## Esternalizzazione della Grafica: `mappa.svg`
 
-<StepCard stepNumber={stepNumber++}>
-
-### 🖼️ Esternalizzazione della Grafica: `mappa.svg`
 Separiamo il codice grafico dall'HTML principale 
 creando un file `mappa.svg` nella radice del progetto.
 Impostiamo `width="100%"` e `height="100%"` 
@@ -236,11 +220,7 @@ per renderlo completamente responsive all'interno del suo contenitore:
 </svg>
 ```
 
-</StepCard>
-
-<StepCard stepNumber={stepNumber++}>
-
-### 🏢 Dati in `locali.json`
+## Dati in `locali.json`
 Creiamo il file `locali.json` per archiviare gli identificativi degli edifici (corrispondenti agli id presenti nell'SVG) e i nomi leggibili da mostrare nei menu a tendina:
 
 ```json title="locali.json"
@@ -248,20 +228,19 @@ Creiamo il file `locali.json` per archiviare gli identificativi degli edifici (c
    { "id": "edificio-uffici", "nome": "Uffici Amministrativi" },
    { "id": "edificio-aule", "nome": "Edificio Aule" }
 ]
-```
-<Aside type="note" title="Completa locali.json" icon="puzzle">
-TODO: Aggiungi qui gli altri edifici presenti nel tuo file mappa.svg (es. Laboratori, Mensa, ecc.)
-</Aside>
 
-<Aside type="caution" title="Presta attenzione agli id!">
+```
+
+<AsideToDo title="Completa locali.json" >
+Aggiungi qui gli altri edifici presenti nel tuo file mappa.svg (es. Laboratori, Mensa, ecc.)
+</AsideToDo>
+
+<AsideCaution title="Presta attenzione agli id!">
 Gli `id` dei locali  devono essere gli 
 stessi utilizzati nella `mappa.svg`.
-</Aside>
+</AsideCaution>
 
-</StepCard>
-
-<StepCard stepNumber={stepNumber++}>
-### 🎨 Stili in `style.css`
+## Stili in `style.css`
 
 Aggiorniamo poi `style.css` con le regole responsive per il contenitore della mappa e le classi CSS per l'evidenziazione simmetrica di partenza e destinazione.
 
@@ -338,11 +317,7 @@ Aggiorniamo poi `style.css` con le regole responsive per il contenitore della ma
 + }
 ```
 
-</StepCard>
-
-<StepCard stepNumber={stepNumber++}>
-
-### ⚙️ Logica Asincrona in `script.js`
+## Logica Asincrona in `script.js`
 Gestiamo il caricamento dell'SVG e del JSON tramite `fetch()` 
 e `async/await`, collegando sia i menu `<select>`
  sia il clic diretto sugli edifici della mappa
@@ -406,11 +381,13 @@ function selezionaDaMappa(idEdificio) {
 }
 ```
 
-</StepCard>
+<AsideTip title="Spiegazione dello script">
+`aggiornaEvidenziazione()` legge i valori dei menu **Partenza** e **Destinazione**, rimuove le evidenziazioni precedenti e applica le classi CSS corrispondenti ai locali selezionati. L’operatore `?.` evita un errore se l’elemento SVG con quell’ID non esiste.
 
-<StepCard stepNumber={stepNumber++}>
+`selezionaDaMappa(idEdificio)` gestisce i clic sui locali della mappa: il primo seleziona la partenza, il secondo la destinazione. Se entrambe sono già impostate, un nuovo clic avvia una selezione da capo. Infine richiama `aggiornaEvidenziazione()` per aggiornare la mappa. In questo modo menu e mappa restano sincronizzati.
+</AsideTip>
 
-### 🧱 Struttura HTML in index.html
+## Struttura HTML in index.html
 Il file HTML principale si alleggerisce notevolmente, ospitando soltanto i due menu a tendina e il contenitore vuoto in cui verrà iniettato mappa.svg:
 
 ```diff lang="html" title="index.html"
@@ -454,18 +431,13 @@ Il file HTML principale si alleggerisce notevolmente, ospitando soltanto i due m
 </html>
 ```
 
-</StepCard>
-<StepCard stepNumber={stepNumber++}>
-### 🧪 Collaudo
+## Collaudo
 Esegui il progetto e verifica che le selezioni dei locali avvengano correttamente.
-<Aside type="caution" title="Prevenzione errori CORS">
+<AsideCaution title="Prevenzione errori CORS">
 Avvia sempre il progetto con **Live Server** in VS Code (e non aprendo direttamente il file con un doppio clic o come file locale `file://`) per evitare il blocco **CORS** imposto dai browser sulle chiamate asincrone <code>fetch()</code>.
-</Aside>
-</StepCard>
+</AsideCaution>
 
-<StepCard stepNumber={stepNumber++}>
-
-### 🚀 Commit e Sincronizzazione Finale (Git / GitHub)
+## Commit e Sincronizzazione Finale (Git / GitHub)
 
 <Steps>
 1. **Verifica i file**: Apri il pannello **Source Control** di VS Code e controlla che tutti i file modificati e creati (`mappa.svg`, `locali.json`, `style.css`, `script.js` e `index.html`) siano presenti nell'area di staging.
@@ -473,27 +445,91 @@ Avvia sempre il progetto con **Live Server** in VS Code (e non aprendo direttame
 3. **Sincronizza**: Effettua il **Publish Branch** o **Sync Changes** per inviare tutto su GitHub.
 </Steps>
 
-</StepCard>
+## Riepilogo
 
-<Aside type="note" title="Sintesi Concetti Chiave" icon="puzzle">
+<KeyConcepts>
 - [`mappa.svg`](https://it.wikipedia.org/wiki/Scalable_Vector_Graphics): separa la grafica della mappa dal file HTML e la rende responsive con larghezza e altezza a 100%.
 - [`fetch()`](https://developer.mozilla.org/it/docs/Web/API/Fetch_API/Using_Fetch): carica file esterni come `mappa.svg` e `locali.json` in modo asincrono; approfondisci la [programmazione asincrona](https://it.wikipedia.org/wiki/Programmazione_asincrona).
 - [`async` / `await`](https://developer.mozilla.org/it/docs/Web/JavaScript/Reference/Statements/async_function): aspetta il completamento delle richieste prima di usare i dati o inserire il contenuto nel DOM.
 - [`locali.json`](https://www.json.org/json-it.html): contiene la lista di edifici con `id` e `nome`, utile per popolare i menu a tendina; JSON significa [JavaScript Object Notation](https://it.wikipedia.org/wiki/JavaScript_Object_Notation).
 - [`innerHTML`](https://developer.mozilla.org/it/docs/Web/API/Element/innerHTML): inserisce il markup SVG caricato nel contenitore HTML della pagina, nel [DOM](https://it.wikipedia.org/wiki/Document_Object_Model).
 - [`classList`](https://developer.mozilla.org/it/docs/Web/API/Element/classList): aggiunge o rimuove classi come `.selezionato-da` e `.selezionato-a` per evidenziare i locali nel [DOM](https://it.wikipedia.org/wiki/Document_Object_Model).
-</Aside>
+</KeyConcepts>
 
-<Checklist id="progetto-mappa-caricamento-dinamico" title="✅ Verifica dell'apprendimento">
-- [ ] So creare un branch dedicato per le modifiche della lezione
-- [ ] So separare la grafica della mappa in un file `mappa.svg` e renderla responsiva
-- [ ] So creare un file `locali.json` con `id` e nomi degli edifici
-- [ ] So usare `fetch()` e `async/await` per caricare dati e grafiche esterne
-- [ ] So popolare i menu `<select>` con le `option` dei locali e aggiornarne lo stato
-- [ ] So verificare nel browser che la mappa e i menu si carichino correttamente con Live Server
-<Aside type="tip" title="Ottimo lavoro!" slot="reward">
-  Ora sai come separare grafica e dati, caricare risorse esterne con `fetch()`
-  e costruire una mappa interattiva più ordinata e mantenibile.
-</Aside>
-</Checklist>
+## Verifica dell'Apprendimento
 
+<QuizIntro 
+resetLabel="Reimposta tutte le risposte"
+textLabel="Le risposte ai quiz di questa pagina vengono salvate nella memoria locale (local storage) del tuo browser e rimangono memorizzate tra una visita e l'altra"
+/>
+
+<Quiz id="quiz-fetch-svg">
+Qual è lo scopo della funzione `caricaMappaSVG()`?
+
+- [ ] Convertire i dati JSON in elementi `<option>`.
+- [x] Recuperare `mappa.svg` con `fetch()` e inserirne il testo nel contenitore HTML.
+  > Esatto: il contenuto restituito da `fetch()` viene assegnato a `innerHTML` del `mappa-container`.
+- [ ] Evidenziare automaticamente gli edifici della mappa.
+</Quiz>
+
+<Quiz id="quiz-json-locali">
+Cosa produce `await risposta.json()` nello script?
+
+- [ ] Una stringa contenente tutto il codice SVG.
+- [ ] Una classe CSS da aggiungere agli edifici.
+- [x] Una struttura dati JavaScript corrispondente al contenuto del file `locali.json`.
+  > Esatto: in questo caso il JSON viene convertito in un array di oggetti con `id` e `nome`.
+</Quiz>
+
+<Quiz id="quiz-popola-select">
+Come vengono aggiunti dinamicamente gli edifici ai due menu `<select>`?
+
+- [ ] Copiando manualmente gli elementi `option` dentro `index.html`.
+- [x] Percorrendo l'array `locali` con `forEach()` e aggiungendo elementi `option` a `select-da` e `select-a`.
+  > Esatto: per ogni locale viene creata un'opzione con `l.id` come valore e `l.nome` come testo visibile.
+- [ ] Recuperando i nomi dagli elementi `<rect>` presenti nell'SVG.
+</Quiz>
+
+<Quiz id="quiz-async-await">
+Perché le funzioni `async` usano l'operatore `await` con `fetch()`?
+
+- [ ] Per fermare definitivamente l'esecuzione dell'intera pagina.
+- [x] Per attendere la risposta asincrona prima di leggere il testo o il JSON.
+  > Esatto: `await` sospende temporaneamente la funzione finché la relativa operazione asincrona non è completata.
+- [ ] Per impedire al browser di caricare `mappa.svg` e `locali.json`.
+</Quiz>
+
+<Quiz id="quiz-evidenziazione-simmetrica">
+Quali classi CSS usa `aggiornaEvidenziazione()` per distinguere partenza e destinazione?
+
+- [ ] `attivo` e `selezionato`.
+- [x] `selezionato-da` e `selezionato-a`.
+  > Esatto: il primo indica la partenza in verde, il secondo la destinazione in rosso.
+- [ ] `hover-da` e `hover-a`.
+</Quiz>
+
+<Quiz id="quiz-clic-mappa-fetch">
+Come gestisce `selezionaDaMappa(idEdificio)` i clic sulla mappa?
+
+- [ ] Imposta sempre la destinazione e lascia vuota la partenza.
+- [ ] Rimuove tutti gli edifici dal DOM.
+- [x] Imposta prima la partenza, poi la destinazione e infine ricomincia la selezione se entrambe sono già definite.
+  > Esatto: la funzione sincronizza i due menu e richiama `aggiornaEvidenziazione()` per aggiornare la mappa.
+</Quiz>
+
+<Quiz id="quiz-live-server-fetch">
+Perché è consigliato usare Live Server quando si eseguono richieste `fetch()`?
+
+- [ ] Per rendere più grandi automaticamente i file SVG e JSON.
+- [x] Per servire i file tramite HTTP e evitare i problemi CORS associati all'apertura diretta con `file://`.
+  > Esatto: in ambiente locale Live Server permette al browser di caricare correttamente `mappa.svg` e `locali.json`.
+- [ ] Per convertire automaticamente il JSON in HTML.
+</Quiz>
+
+<QuizResults 
+titleLabel="Il tuo punteggio"
+progressLabel="Avanzamento Quiz"
+answeredLabel="risposte alle domande"
+correctLabel="risposte corrette"
+resetLabel="Reimposta tutte le risposte"
+ />

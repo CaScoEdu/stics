@@ -5,7 +5,10 @@ interface Props {
   title?: string;
 }
 
-const { title = 'Risultati attesi' } = Astro.props;
+const isEn = Astro.url.pathname.startsWith('/en/');
+
+const { title = isEn ? 'Key Concepts' : 'Concetti chiave',} = Astro.props;
+
 ---
 
 <Aside type="note" title={title} icon="puzzle">

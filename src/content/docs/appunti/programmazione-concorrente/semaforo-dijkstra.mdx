@@ -20,14 +20,14 @@ Introduzione ai semafori di Dijkstra, alle primitive wait e signal basate su var
 
 ## Introduzione
 
-<ExpectedResults title="Risultati attesi">
+<ExpectedResults>
 - Descrivere il funzionamento dei [semafori](https://it.wikipedia.org/wiki/Semaforo_(informatica)) e delle primitive `wait(S)` e `signal(S)`.
 - Distinguere un semaforo generico da un semaforo binario usato come [mutex](https://it.wikipedia.org/wiki/Mutua_esclusione).
 - Spiegare perché `wait(S)` deve essere atomica e come un semaforo binario protegge una sezione critica.
 - Applicare il protocollo acquisizione–uso–rilascio per prevenire le [race condition](https://it.wikipedia.org/wiki/Race_condition).
 </ExpectedResults>
 
-<Prerequisites title="Prerequisiti">
+<Prerequisites>
 - concetti di base su processi ed esecuzione concorrente
 - variabili e risorse condivise tra processi
 - nozioni di sezione critica e mutua esclusione
@@ -163,7 +163,7 @@ Mentre il processo `Q1` possiede la risorsa (ha eseguito `wait` e non ha ancora 
 
 ## Riepilogo
 
-<KeyConcepts title="Concetti chiave">
+<KeyConcepts>
 - [Semaforo](https://it.wikipedia.org/wiki/Semaforo_(informatica)): variabile di sincronizzazione che rappresenta la disponibilità di una risorsa o di un evento.
 - [Mutua esclusione](https://it.wikipedia.org/wiki/Mutua_esclusione): proprietà che permette l'accesso alla sezione critica a un solo processo alla volta.
 - [Mutex](https://it.wikipedia.org/wiki/Mutua_esclusione): semaforo binario inizializzato a `1`, usato per proteggere una risorsa condivisa.

@@ -5,9 +5,9 @@ interface Props {
   title?: string;
 }
 
-const { title = 'Try it yourself' } = Astro.props;
+const { title = ' ' } = Astro.props;
 ---
 
-<Aside type="tip" title={title} icon="pen">
+<Aside type="tip" title={"To Do: " +title} icon="pen">
   <slot />
 </Aside>

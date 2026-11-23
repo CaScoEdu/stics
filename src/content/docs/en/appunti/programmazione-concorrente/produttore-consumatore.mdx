@@ -19,14 +19,14 @@ import Prerequisites from "@/components/Prerequisites.astro"
 
 An introduction to synchronization between a producer and a consumer using a one-message buffer and two semaphores.
 
-<ExpectedResults title="Learning outcomes">
+<ExpectedResults>
 - Distinguish competition from collaboration between processes.
 - Identify the roles of the producer, consumer, and shared buffer.
 - Understand how `deposited` and `consumed` coordinate message deposits and retrievals.
 - Follow the complete cycle of waiting, depositing, signaling, and consuming.
 </ExpectedResults>
 
-<Prerequisites title="Prerequisites">
+<Prerequisites>
 - Basic knowledge of processes and threads
 - The distinction between sequential and concurrent execution
 - Familiarity with shared data and semaphore `wait` and `signal` operations
@@ -154,7 +154,7 @@ Use the **simulator** to see how **synchronization** protects the **shared buffe
 
 ## Summary
 
-<KeyConcepts title="Key concepts">
+<KeyConcepts>
 - [Producer and consumer](https://en.wikipedia.org/wiki/Producer%E2%80%93consumer_problem): processes that collaborate by exchanging messages.
 - [Shared buffer](https://en.wikipedia.org/wiki/Data_buffer): a memory area where the producer deposits a message and the consumer retrieves it.
 - [Semaphore](https://en.wikipedia.org/wiki/Semaphore_(programming)): a synchronization mechanism based on atomic `wait` and `signal` operations.

@@ -14,6 +14,10 @@ export default defineConfig({
     starlight({
       title: 'stics',
       favicon: './public/images/favicon.svg',
+      expressiveCode: {
+        // Primo tema = dark mode, secondo tema = light mode
+        themes: ['github-dark', 'github-light'],
+      },
       customCss: [
         './src/styles/custom.css', // Percorso del tuo file CSS globale
       ],
@@ -109,10 +113,11 @@ export default defineConfig({
               items: [{ autogenerate: { directory: 'progetti/mappa-interattiva' } }],
             }
           ]
-        },        
+        },
       ],
       // Registra il componente personalizzato per il footer
       components: {
+        ThemeSelect: './src/components/CustomThemeSelect.astro',
         Footer: './src/components/CustomFooter.astro'
       },
       credits: true,

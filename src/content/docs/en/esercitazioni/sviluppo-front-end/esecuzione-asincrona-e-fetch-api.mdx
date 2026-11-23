@@ -15,19 +15,20 @@ import { Quiz, QuizIntro, QuizResults } from 'starlight-quiz/components';
 import ExpectedResults from "@/components/ExpectedResults.astro"
 import KeyConcepts from "@/components/KeyConcepts.astro"
 import Prerequisites from "@/components/Prerequisites.astro"
+import TocAsideHint from '@/components/TocAsideHint.astro';
 
 Learn how to manage asynchronous execution in JavaScript and retrieve data from web services with the Fetch API.
 
 ## Introduction
 
-<ExpectedResults title="Expected Results">
+<ExpectedResults>
 - the contents of `hello.txt` are requested from the server with `fetch()`;
 - waiting for the response and reading the text are managed with `async` and `await`;
 - the result is checked with `response.ok` and displayed in the DOM;
 - errors are caught with `try/catch` and communicated to the user.
 </ExpectedResults>
 
-<Prerequisites title="Prerequisites">
+<Prerequisites>
 - know how to create and edit HTML and JavaScript files
 - understand variables, functions, and DOM usage
 - know how to open a page in a browser and use the developer tools
@@ -78,6 +79,8 @@ Before writing the code, make sure to create both files in the same working fold
 - Purpose: Illustrates the chronological order of events when the user starts a `fetch()` request and the browser waits for the file contents.
 
 - Reading note: Time flows vertically from top to bottom.
+
+<TocAsideHint />
 
 <Mermaid chart={`
 sequenceDiagram
@@ -131,7 +134,6 @@ Let's see which logical components interact during `fetch()` execution: the [bro
     JS -->|"6. output.textContent = text"| DOM
 `} />
 
-diagramma fatto con [Mermaid](https://mermaid.live/edit#pako:eNqNk1FvmzAQx7-K5b60EokgaQjjYdOW9GnaVrVTpQ3y4NkHWAUfso1SluS719jJNm0v4wXu7nf_-3PgA-UogOa0anHPG6Yt-botFXHXo3XRdfEkjbQEVSsVEGNRw-6GzGZvyQeNewNFuJFeoxi4NbvQfM5O3MbJFO-FINJCZ4hFwl3mzE1FT22BSwGHB2Bi9EwD_JngYN-dAhmAiT1-BOiJabDvpaqP51n_UN_AHMk9G4s7ZUGTno0dKEsEWCbbi09X9-OfWCvF4f7MMM6htyAus33Vi37GI3kAq8fiscE9Aa1Rkw6MYTWcJX3Zizq5v_u9qQ2qSuqu-KKFM8ZDBOKykhCHraCC6-Kuc46JBg6yt7ubUgXQ2LGF8JlIJds2v4KsWsGbyFiNz5Bf3S5ZfLv-E570_pcNpgNcVdUS4l9w9SPjcUwjWmspaG71ABHtQDufLqSHSaaktoEOSpq7Rw1ieJlxbFGXtFQn19oz9R2xu3RrHOqG5hVrjYuGXjALW8lqzX4joNy-NjgoS_OVV6D5gb7QfLlO5mm2SBbJOk5WaZpEdHTZ1TzOsjTN0sS92nKRniL604-M59naCYCQ7n_-FA6APwenV1CD_oo/)
 
 In practice, when the user clicks the button, the browser executes the [JavaScript](https://en.wikipedia.org/wiki/JavaScript) function that starts `fetch()`. The request is sent to the [server](https://en.wikipedia.org/wiki/Server), which returns a `Response`; the code then reads the content and inserts it into the `DOM`. The key point is that the browser does not freeze: it continues responding to events while waiting for the server response.
 
@@ -156,7 +158,6 @@ Let's see where the files reside during real execution or in an environment such
     TXT -->|2. Response 200: Hello World!| ENGINE
     ENGINE -->|3. Update output.textContent| HTML
 `} />
-diagramma fatto con [Mermaid](https://mermaid.live/edit#pako:eNqNk1FvmzAQx7-K5b60EokgaQjjYdOW9GnaVrVTpQ3y4NkHWAUfso1SluS719jJNm0v4wXu7nf_-3PgA-UogOa0anHPG6Yt-botFXHXo3XRdfEkjbQEVSsVEGNRw-6GzGZvyQeNewNFuJFeoxi4NbvQfM5O3MbJFO-FINJCZ4hFwl3mzE1FT22BSwGHB2Bi9EwD_JngYN-dAhmAiT1-BOiJabDvpaqP51n_UN_AHMk9G4s7ZUGTno0dKEsEWCbbi09X9-OfWCvF4f7MMM6htyAus33Vi37GI3kAq8fiscE9Aa1Rkw6MYTWcJX3Zizq5v_u9qQ2qSuqu-KKFM8ZDBOKykhCHraCC6-Kuc46JBg6yt7ubUgXQ2LGF8JlIJds2v4KsWsGbyFiNz5Bf3S5ZfLv-E570_pcNpgNcVdUS4l9w9SPjcUwjWmspaG71ABHtQDufLqSHSaaktoEOSpq7Rw1ieJlxbFGXtFQn19oz9R2xu3RrHOqG5hVrjYuGXjALW8lqzX4joNy-NjgoS_OVV6D5gb7QfLlO5mm2SBbJOk5WaZpEdHTZ1TzOsjTN0sS92nKRniL604-M59naCYCQ7n_-FA6APwenV1CD_oo/)
 
 In this diagram, the browser is the client: it executes [HTML](https://en.wikipedia.org/wiki/HTML) and `JavaScript`, while the `hello.txt` file resides on the web server. The `fetch()` request originates in the browser, the server responds with a `200 OK` status, and the `JavaScript` code updates the page content in the `DOM`.
 
@@ -252,7 +253,7 @@ data-slug-hash="GgrwzxR" data-user="Scocco" style="height: 300px; box-sizing: bo
 
 ## Summary
 
-<KeyConcepts title="Key Concepts">
+<KeyConcepts>
 - [Asynchronous execution](https://en.wikipedia.org/wiki/Asynchronous_I/O): allows operations such as a network request to be waited on without blocking the interface.
 - [Promise](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise): represents the future result of an asynchronous operation.
 - `async` and `await`: simplify Promise handling; `await` waits for a result without freezing the browser.

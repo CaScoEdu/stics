@@ -14,6 +14,7 @@ import { Quiz, QuizIntro, QuizResults } from 'starlight-quiz/components';
 import ExpectedResults from "@/components/ExpectedResults.astro"
 import KeyConcepts from "@/components/KeyConcepts.astro"
 import Prerequisites from "@/components/Prerequisites.astro"
+import TocAsideHint from '@/components/TocAsideHint.astro';
 
 In this lesson, we lay the foundations for our map portal: we create the SVG vector graphic structure within the HTML page and separate visual styles into an external stylesheet (`style.css`).
 
@@ -21,14 +22,14 @@ The final result is a vector map organized into logical layers (ground, paths, a
 
 ## Introduction
 
-<ExpectedResults title="Expected outcomes">
+<ExpectedResults>
 - the map structure is created in SVG vector format;
 - graphic elements are divided into logical layers using group tags (`<g>`);
 - the visual styles for the page and map are kept in an external CSS file;
 - the code is tracked in a dedicated Git branch and on GitHub.
 </ExpectedResults>
 
-<Prerequisites title="Prerequisites">
+<Prerequisites>
 - know the fundamentals of [HTML](https://it.wikipedia.org/wiki/HTML), [CSS](https://it.wikipedia.org/wiki/CSS), and [JavaScript](https://it.wikipedia.org/wiki/JavaScript)
 - be able to create, read, and modify [SVG](https://it.wikipedia.org/wiki/Scalable_Vector_Graphics) elements
 - understand variables, functions, and how to use the [DOM](https://it.wikipedia.org/wiki/Document_Object_Model)
@@ -59,7 +60,6 @@ class U1 usecase;
 class Sistema system;
 `} />
 
-Diagram created with [Mermaid](https://mermaid.live/edit#pako:eNqNk1FvmzAQx7-K5b60EokgaQjjYdOW9GnaVrVTpQ3y4NkHWAUfso1SluS719jJNm0v4wXu7nf_-3PgA-UogOa0anHPG6Yt-botFXHXo3XRdfEkjbQEVSsVEGNRw-6GzGZvyQeNewNFuJFeoxi4NbvQfM5O3MbJFO-FINJCZ4hFwl3mzE1FT22BSwGHB2Bi9EwD_JngYN-dAhmAiT1-BOiJabDvpaqP51n_UN_AHMk9G4s7ZUGTno0dKEsEWCbbi09X9-OfWCvF4f7MMM6htyAus33Vi37GI3kAq8fiscE9Aa1Rkw6MYTWcJX3Zizq5v_u9qQ2qSuqu-KKFM8ZDBOKykhCHraCC6-Kuc46JBg6yt7ubUgXQ2LGF8JlIJds2v4KsWsGbyFiNz5Bf3S5ZfLv-E570_pcNpgNcVdUS4l9w9SPjcUwjWmspaG71ABHtQDufLqSHSaaktoEOSpq7Rw1ieJlxbFGXtFQn19oz9R2xu3RrHOqG5hVrjYuGXjALW8lqzX4joNy-NjgoS_OVV6D5gb7QfLlO5mm2SBbJOk5WaZpEdHTZ1TzOsjTN0sS92nKRniL604-M59naCYCQ7n_-FA6APwenV1CD_oo/)
 
 ## The Campus Map in SVG
 
@@ -146,6 +146,8 @@ At the end of this lesson, the project folder will contain two main files in its
 
 - How to read it: Time flows vertically from top to bottom.
 
+<TocAsideHint />
+
 <Mermaid chart={`
 sequenceDiagram
 actor User
@@ -162,7 +164,6 @@ HTML->>SVG: Interprets the structural layers (<g> and <rect>)
 Browser-->>User: Renders the page and displays the vector map
 `} />
 
-Diagram created with [Mermaid](https://mermaid.live/edit#pako:eNqNk1FvmzAQx7-K5b60EokgaQjjYdOW9GnaVrVTpQ3y4NkHWAUfso1SluS719jJNm0v4wXu7nf_-3PgA-UogOa0anHPG6Yt-botFXHXo3XRdfEkjbQEVSsVEGNRw-6GzGZvyQeNewNFuJFeoxi4NbvQfM5O3MbJFO-FINJCZ4hFwl3mzE1FT22BSwGHB2Bi9EwD_JngYN-dAhmAiT1-BOiJabDvpaqP51n_UN_AHMk9G4s7ZUGTno0dKEsEWCbbi09X9-OfWCvF4f7MMM6htyAus33Vi37GI3kAq8fiscE9Aa1Rkw6MYTWcJX3Zizq5v_u9qQ2qSuqu-KKFM8ZDBOKykhCHraCC6-Kuc46JBg6yt7ubUgXQ2LGF8JlIJds2v4KsWsGbyFiNz5Bf3S5ZfLv-E570_pcNpgNcVdUS4l9w9SPjcUwjWmspaG71ABHtQDufLqSHSaaktoEOSpq7Rw1ieJlxbFGXtFQn19oz9R2xu3RrHOqG5hVrjYuGXjALW8lqzX4joNy-NjgoS_OVV6D5gb7QfLlO5mm2SBbJOk5WaZpEdHTZ1TzOsjTN0sS92nKRniL604-M59naCYCQ7n_-FA6APwenV1CD_oo/)
 
 <AsideTip title="Diagram explanation">
 The **Sequence Diagram** describes the initial loading flow for **Lesson 1**: when the page opens, the **browser** processes the `HTML` structure, retrieves the external `style.css` stylesheet, and interprets the `SVG` markup organized into layers (`ground`, `paths`, `buildings`), finally rendering the graphic for the user.
@@ -201,9 +202,9 @@ class CSS,SVG cssSvg;
 class Terreno,Percorsi,Edifici layer;
 `} />
 
-Diagram created with [Mermaid](https://mermaid.live/edit#pako:eNqNk1FvmzAQx7-K5b60EokgaQjjYdOW9GnaVrVTpQ3y4NkHWAUfso1SluS719jJNm0v4wXu7nf_-3PgA-UogOa0anHPG6Yt-botFXHXo3XRdfEkjbQEVSsVEGNRw-6GzGZvyQeNewNFuJFeoxi4NbvQfM5O3MbJFO-FINJCZ4hFwl3mzE1FT22BSwGHB2Bi9EwD_JngYN-dAhmAiT1-BOiJabDvpaqP51n_UN_AHMk9G4s7ZUGTno0dKEsEWCbbi09X9-OfWCvF4f7MMM6htyAus33Vi37GI3kAq8fiscE9Aa1Rkw6MYTWcJX3Zizq5v_u9qQ2qSuqu-KKFM8ZDBOKykhCHraCC6-Kuc46JBg6yt7ubUgXQ2LGF8JlIJds2v4KsWsGbyFiNz5Bf3S5ZfLv-E570_pcNpgNcVdUS4l9w9SPjcUwjWmspaG71ABHtQDufLqSHSaaktoEOSpq7Rw1ieJlxbFGXtFQn19oz9R2xu3RrHOqG5hVrjYuGXjALW8lqzX4joNy-NjgoS_OVV6D5gb7QfLlO5mm2SBbJOk5WaZpEdHTZ1TzOsjTN0sS92nKRniL604-M59naCYCQ7n_-FA6APwenV1CD_oo/)
-
- A **component diagram** is a UML structural diagram used to model the physical, static view of a system. Its main purpose is to show the organization and dependencies among software modules, code files, libraries, and resources, highlighting how different project elements are assembled and interact with one another and with the runtime environment, such as the **browser**.
+<AsideNote title="Component diagram">
+A **component diagram** is a structural UML diagram used to model the physical and static view of a system. Its main purpose is to show the organization of and dependencies between the various software modules, code files, libraries, and resources, highlighting how the project's different elements aggregate and interact with one another and with the runtime environment, such as the **browser**.
+</AsideNote>
 
 <AsideTip title="Diagram explanation">
 This diagram represents the clean, modular architecture developed in the first lesson of the Campus Map project:
@@ -361,7 +362,7 @@ Open the **Source Control** panel in VS Code (`Ctrl + Shift + G`) 🔧:
 
 ## Summary
 
-<KeyConcepts title="Key concepts">
+<KeyConcepts>
 - [SVG](https://it.wikipedia.org/wiki/Scalable_Vector_Graphics): vector format used to build the campus map.
 - [`viewBox`](https://it.wikipedia.org/wiki/Scalable_Vector_Graphics): defines the map's coordinate area and proportions.
 - [`<g>`](https://it.wikipedia.org/wiki/Scalable_Vector_Graphics): groups SVG elements into layers, such as ground, paths, and buildings.

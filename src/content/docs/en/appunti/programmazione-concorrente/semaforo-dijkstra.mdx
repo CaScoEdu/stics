@@ -20,14 +20,14 @@ An introduction to Dijkstra's semaphores, the wait and signal primitives based o
 
 ## Introduction
 
-<ExpectedResults title="Learning objectives">
+<ExpectedResults>
 - Describe how [semaphores](https://en.wikipedia.org/wiki/Semaphore_(programming)) and the `wait(S)` and `signal(S)` primitives work.
 - Distinguish a general semaphore from a binary semaphore used as a [mutex](https://en.wikipedia.org/wiki/Mutual_exclusion).
 - Explain why `wait(S)` must be atomic and how a binary semaphore protects a critical section.
 - Apply the acquire–use–release protocol to prevent [race conditions](https://en.wikipedia.org/wiki/Race_condition).
 </ExpectedResults>
 
-<Prerequisites title="Prerequisites">
+<Prerequisites>
 - Basic concepts of processes and concurrent execution
 - Variables and resources shared between processes
 - An understanding of critical sections and mutual exclusion
@@ -163,7 +163,7 @@ While process `Q1` holds the resource (it has executed `wait` and has not yet ex
 
 ## Summary
 
-<KeyConcepts title="Key concepts">
+<KeyConcepts>
 - [Semaphore](https://en.wikipedia.org/wiki/Semaphore_(programming)): a synchronization variable representing the availability of a resource or an event.
 - [Mutual exclusion](https://en.wikipedia.org/wiki/Mutual_exclusion): a property that allows only one process at a time to access a critical section.
 - [Mutex](https://en.wikipedia.org/wiki/Mutual_exclusion): a binary semaphore initialized to `1`, used to protect a shared resource.
