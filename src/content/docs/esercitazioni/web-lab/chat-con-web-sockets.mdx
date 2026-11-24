@@ -1,0 +1,490 @@
+---
+title: chat con i Web Sockets
+description: In questa esercitazione realizzeremo una semplice chat utilizzando i Web Socket.
+---
+
+import {
+    FileTree,
+    Steps,
+    TabItem,
+    Tabs
+} from "@astrojs/starlight/components";
+import AsideTip from '@/components/AsideTip.astro';
+import AsideCaution from '@/components/AsideCaution.astro';
+import Mermaid from "@/components/Mermaid.astro";
+import { Quiz, QuizIntro, QuizResults } from 'starlight-quiz/components';
+import ExpectedResults from "@/components/ExpectedResults.astro"
+import KeyConcepts from "@/components/KeyConcepts.astro"
+import Prerequisites from "@/components/Prerequisites.astro"
+import TocAsideHint from '@/components/TocAsideHint.astro';
+
+Ecco un'esercitazione pratica e completa per creare una mini chat / bacheca in tempo reale con WebSocket e Node.js usando la libreria leggera ws e una pagina HTML/JS nativa (senza framework aggiuntivi).
+
+A differenza di una classica richiesta HTTP (dove il client chiede e il server risponde una sola volta), un WebSocket apre una connessione persistente e bidirezionale: sia il server sia i client connessi possono inviare messaggi in qualsiasi momento.
+
+Architettura dell'esercitazione
+- Server (server.js): avvia un server WebSocket sulla porta 8080, ascolta gli eventi connection, message e close, e inoltra (broadcast) ogni messaggio ricevuto a tutti i client attualmente connessi.
+
+- Client (index.html): si connette a ws://localhost:8080, mostra lo stato della connessione, invia i messaggi digitati e aggiorna la lista in tempo reale all'arrivo di nuovi messaggi.
+
+## Introduzione
+
+<ExpectedResults>
+- il server WebSocket viene avviato in Node.js sulla porta `8080` tramite la libreria `ws`;
+- i client si collegano a `ws://localhost:8080` e ricevono una notifica di connessione riuscita;
+- l'invio di un messaggio da un client viene inoltrato in broadcast a tutti i client connessi con relativo timestamp;
+- il client aggiorna lo stato della connessione (`open`, `close`, `error`) e gestisce la disconnessione in modo sicuro.
+</ExpectedResults>
+
+<Prerequisites>
+- avere installato Node.js e saper usare il terminale (anche quello integrato di Visual Studio Code)
+- saper creare e modificare file HTML, CSS e JavaScript
+- conoscere manipolazione del DOM, eventi e serializzazione JSON (`JSON.stringify` / `JSON.parse`)
+- sapere aprire pagine nel browser (es. con `Live Server`) e consultare i log di terminale e console.
+</Prerequisites>
+
+## Diagramma dei Casi d'Uso
+
+Il Diagramma dei Casi d'Uso descrive il flusso dell'esercitazione:
+- l'utente apre il client e stabilisce una connessione WebSocket con il server Node.js,
+- quindi può inviare messaggi di testo in tempo reale e ricevere quelli inviati dagli altri client connessi oppure visualizzare gli avvisi di stato e disconnessione.
+
+<Mermaid chart={`
+  flowchart LR
+    Utente(["🚶 Utente"])
+
+    subgraph Sistema ["Bacheca Real-Time con WebSocket e Node.js"]
+        U1(["Connettersi a ws://localhost:8080"])
+        U2(["Inviare un messaggio nella chat"])
+        U3(["Ricevere messaggi in broadcast e avvisi di stato"])
+        U1 --> U2
+        U1 --> U3
+        U2 -.-> U3
+    end
+
+    Utente --> U1
+
+    classDef actor fill:#1e3a8a,stroke:#3b82f6,color:#fff,stroke-width:2px;
+    classDef usecase fill:#2563eb,stroke:#1d4ed8,color:#fff,stroke-width:2px;
+    classDef system fill:#f8fafc,stroke:#64748b,stroke-width:2px,color:#0f172a;
+
+    class Utente actor;
+    class U1,U2,U3 usecase;
+    class Sistema system;
+`} />
+
+## Diagramma di Sequenza
+
+- A cosa serve: Illustra l'ordine cronologico degli eventi durante la connessione WebSocket, l'invio di un messaggio in broadcast e la chiusura della connessione.
+
+- Nota di lettura: Il tempo scorre verticalmente dall'alto verso il basso.
+
+<TocAsideHint />
+
+<Mermaid chart={`
+sequenceDiagram
+actor UtenteA as Client A (Browser)
+participant Server as Server Node.js (ws:8080)
+actor UtenteB as Client B (Browser)
+
+UtenteA->>Server: Richiesta Upgrade + connessione WebSocket
+Server-->>UtenteA: Connessione aperta + messaggio di sistema
+UtenteB->>Server: Richiesta Upgrade + connessione WebSocket
+Server-->>UtenteB: Connessione aperta + messaggio di sistema
+
+UtenteA->>Server: Invia testo messaggio (socket.send)
+Server->>Server: Formatta JSON con timestamp e cicla su wss.clients
+Server-->>UtenteA: Broadcast messaggio JSON
+Server-->>UtenteB: Broadcast messaggio JSON
+
+UtenteA->>Server: Chiude scheda o perde connessione (close)
+Server->>Server: Rimuove il socket da wss.clients
+`} />
+
+<AsideTip title="Spiegazione del diagramma">
+Il **Diagramma di Sequenza** descrive il flusso bidirezionale della chat:
+- ogni scheda o finestra che apre `index.html` instaura una connessione WebSocket distinta sul server `ws://localhost:8080`.
+- Quando un client invia un messaggio, il server lo incapsula in un oggetto JSON con timestamp e lo inoltra a tutti i client attivi con `readyState === WebSocket.OPEN`.
+</AsideTip>
+
+## Diagramma di Deployment
+
+Vediamo dove vengono eseguiti i componenti durante l'esercitazione in locale: il server gira in un processo **Node.js** in ascolto su `ws://localhost:8080`, mentre il file `index.html` viene aperto nel **[browser](https://it.wikipedia.org/wiki/Browser)** (ad esempio tramite `Live Server` in Visual Studio Code).
+
+<TocAsideHint />
+
+<Mermaid chart={`
+  flowchart LR
+    subgraph LocalClient ["Macchina Locale - Browser"]
+        HTML["index.html\n(HTML, CSS, JS Client)"]
+        WS["Client WebSocket\nws://localhost:8080"]
+    end
+
+    subgraph LocalNode ["Macchina Locale - Runtime Node.js"]
+        SRV["server.js\n(WebSocketServer su :8080)"]
+        MOD["Modulo ws\n(node_modules/ws)"]
+    end
+
+    HTML --> WS
+    WS <-->|"Connessione persistente WS"| SRV
+    SRV --- MOD
+`} />
+
+<AsideTip title="Spiegazione del diagramma">
+In questo diagramma, il server `server.js` rimane in esecuzione nel terminale (`node server.js`) sulla porta `8080`, mentre una o più istanze di `index.html` si collegano via `ws://localhost:8080`. 
+</AsideTip>
+
+<AsideCaution>
+Ricordati di salvare il file con estensione corretta `index.html` e di avviare il server prima di inviare messaggi dal browser.
+</AsideCaution>
+
+## Struttura dei file del progetto
+
+Prima di scrivere il codice, inizializza il progetto nella cartella di lavoro con `npm init -y`, installa `ws` (`npm install ws`) e assicurati che `"type": "module"` sia presente una sola volta in `package.json`:
+
+<FileTree>
+- lab-websocket-node/
+  - **server.js** Server WebSocket in Node.js (porta `8080`) con broadcast ai client connessi
+  - **index.html** Interfaccia client HTML/CSS/JS per inviare e ricevere messaggi in tempo reale
+  - **package.json** Configurazione del progetto Node.js con `"type": "module"` e dipendenza `ws`
+</FileTree>
+
+## Codifica
+
+Fasi operative
+
+<Steps>
+1. ### Inizializza il progetto e installa ws:
+    - Prerequisito: Node.js installato.
+    - Crea una cartella per il laboratorio, inizializza il progetto e installa il pacchetto ws:    
+    
+    ```bash title="Bash"
+    mkdir lab-websocket-node
+    cd lab-websocket-node
+    npm init -y
+    npm install ws
+    ```
+    <AsideTip title="Spiegazione dei comandi">
+
+    - `mkdir lab-websocket-node`: crea una nuova cartella chiamata `lab-websocket-node` in cui raccogliere i file dell'esercitazione.
+    - `cd lab-websocket-node`: sposta la directory di lavoro del terminale dentro la cartella appena creata, così tutti i comandi successivi agiranno lì.
+    - `npm init -y`: inizializza un nuovo progetto Node.js e genera automaticamente il file `package.json` con i valori predefiniti (senza chiedere risposta a ogni domanda).
+    - `npm install ws`: scarica e installa la libreria `ws` dentro `node_modules` e la registra tra le dipendenze in `package.json`, permettendoci di creare il server WebSocket in `server.js`.
+    </AsideTip>
+
+2. ### Modifica package.json
+    Apri il file package.json nella cartella del progetto e apporta le seguenti modifiche:
+    ```diff lang="json" title="package.json"
+    {
+        "name": "lab-websocket-node",
+        "version": "1.0.0",
+    +   "description": "Esercitazione chat real-time con WebSocket e Node.js",
+
+        "main": "server.js",
+        "scripts": {
+            "test": "echo \"Error: no test specified\" && exit 1"
+        },
+    -   "type": "commonjs",
+    +   "type": "module",
+    +   "scripts": {
+    +       "start": "node server.js",
+    +       "test": "echo \"Error: no test specified\" && exit 1"
+        "dependencies": {
+            "ws": "^8.0.0"
+        }
+    }
+    ```
+    <AsideTip title="Spiegazione della modifica">
+    **`CommonJS`** è il vecchio sistema di moduli di Node.js, mentre **`"type": "module"`** indica lo standard JavaScript attuale (`import`/`export`), coerente con la sintassi `import` che useremo in `server.js`. Se lasciassi CommonJS con `import`, Node.js darebbe errore.
+    </AsideTip>
+
+2. ### Scrivi il server WebSocket (server.js):
+    
+    Crea il file server.js con il codice seguente. 
+    
+    Ogni nuovo client entra in wss.clients, così il server può inviare il messaggio a tutti gli utenti attivi.  
+      
+    Il file `server.js` crea un **server WebSocket** in Node.js sulla porta `8080` usando la libreria `ws` e inoltra in **broadcast** i messaggi ricevuti a tutti i client connessi.
+
+    Ecco come funziona passo passo:
+
+    ##### 3.1. Importazione e avvio del server
+
+    * `import { WebSocketServer, WebSocket } from 'ws';` importa la classe per creare il server WebSocket e le costanti/tipi della libreria `ws`.
+    * `const PORT = 8080;` imposta la porta su cui il server resta in ascolto.
+    * `const wss = new WebSocketServer({ port: PORT });` avvia il server WebSocket sulla porta `8080` e stampa un messaggio di conferma in console.
+
+    ```javascript title="server.js"
+    import { WebSocketServer, WebSocket } from 'ws';
+
+    const PORT = 8080;
+    const wss = new WebSocketServer({ port: PORT });
+
+    console.log(`Server WebSocket in ascolto su ws://localhost:${PORT}`);
+    ```
+
+    ##### 3.2. Gestione di una nuova connessione (`connection`)
+
+    Ogni volta che un client (ad esempio una scheda del browser che apre `index.html`) si collega a `ws://localhost:8080`, scatta `wss.on('connection', (socket, req) => { ... })`:
+
+    * `req.socket.remoteAddress` recupera l'indirizzo del client e `wss.clients.size` indica quanti client sono attivi in quel momento.
+    * `socket.send(...)` invia **solo a quel client** un messaggio JSON con `type: 'system'` per confermare che la connessione è attiva.
+
+    ```javascript title="server.js"
+    /* ...  */
+
+    wss.on('connection', (socket, req) => {
+        const clientIp = req.socket.remoteAddress;
+        console.log(`Nuovo client connesso (${clientIp}). Client attivi: ${wss.clients.size}`);
+
+        socket.send(
+            JSON.stringify({
+                type: 'system',
+                text: 'Connessione WebSocket stabilita con il server.'
+            })
+        );
+    ```
+
+    ##### 3.3. Ricezione e inoltro in broadcast (`message`)
+
+    Quando un client invia dati, si attiva `socket.on('message', (rawData) => { ... })`:
+
+    * `rawData.toString().trim()` converte i dati ricevuti in testo e rimuove gli spazi superflui; se il messaggio è vuoto (`!messageText`), viene ignorato.
+    * Viene costruito un oggetto JSON (`payload`) con:
+    * `type: 'chat'` per distinguerlo dai messaggi di sistema;
+    * `text` con il testo del messaggio;
+    * `timestamp` con l'ora locale (`it-IT`).
+    * Il ciclo `for (const client of wss.clients)` scorre tutti i client collegati e invia il `payload` solo a quelli con `client.readyState === WebSocket.OPEN` (connessione effettivamente aperta).
+
+    ```javascript title="server.js"
+    /* ...  */
+
+        socket.on('message', (rawData) => {
+            const messageText = rawData.toString().trim();
+            if (!messageText) return;
+
+            console.log(`Messaggio ricevuto: ${messageText}`);
+
+            const payload = JSON.stringify({
+                type: 'chat',
+                text: messageText,
+                timestamp: new Date().toLocaleTimeString('it-IT')
+            });
+
+            for (const client of wss.clients) {
+                if (client.readyState === WebSocket.OPEN) {
+                    client.send(payload);
+                }
+            }
+        });
+    ```
+
+    ##### 3.4. Chiusura ed errori (`close` ed `error`)
+
+    * `socket.on('close', ...)` scatta quando un client chiude la scheda o perde la connessione e aggiorna in console il numero di client attivi.
+    * `socket.on('error', ...)` intercetta eventuali errori sul singolo socket evitando che il server si blocchi per un problema su una connessione.
+
+    ```javascript title="server.js"
+    /* ...  */
+
+        socket.on('close', () => {
+            console.log(`Client disconnesso. Client attivi: ${wss.clients.size}`);
+        });
+
+        socket.on('error', (err) => {
+            console.error('Errore sul socket:', err.message);
+        });
+    });
+    ```
+
+3.  ### Crea il client HTML/JS (index.html):
+    Crea il file index.html nella stessa cartella. Apri due schede del browser sullo stesso file per testare la comunicazione in tempo reale tra più client.
+    ```html
+    <!DOCTYPE html>
+    <html lang="it">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Lab WebSocket con Node.js</title>
+        <style>
+            body { font-family: system-ui, sans-serif; max-width: 640px; margin: 2rem auto; padding: 0 1rem; }
+            #status { font-weight: 600; margin-bottom: 1rem; }
+            #messages { border: 1px solid #cbd5e1; border-radius: 8px; padding: 1rem; height: 280px; overflow-y: auto; margin-bottom: 1rem; background: #f8fafc; }
+            .msg { margin-bottom: 0.5rem; padding: 0.4rem 0.6rem; border-radius: 6px; background: #ffffff; border: 1px solid #e2e8f0; }
+            .sys { color: #475569; font-style: italic; background: #f1f5f9; }
+            form { display: flex; gap: 0.5rem; }
+            input { flex: 1; padding: 0.6rem; border: 1px solid #94a3b8; border-radius: 6px; }
+            button { padding: 0.6rem 1rem; border: none; border-radius: 6px; background: #2563eb; color: #fff; cursor: pointer; }
+            button:disabled { background: #94a3b8; cursor: not-allowed; }
+        </style>
+    </head>
+    <body>
+        <h1>Bacheca Real-Time (WebSocket)</h1>
+        <div id="status">Stato: connessione in corso...</div>
+        <div id="messages"></div>
+
+        <form id="chat-form">
+            <input id="msg-input" type="text" placeholder="Scrivi un messaggio..." autocomplete="off" required />
+            <button id="send-btn" type="submit" disabled>Invia</button>
+        </form>
+
+        <script>
+            const statusEl = document.getElementById('status');
+            const messagesEl = document.getElementById('messages');
+            const formEl = document.getElementById('chat-form');
+            const inputEl = document.getElementById('msg-input');
+            const sendBtn = document.getElementById('send-btn');
+
+            const socket = new WebSocket('ws://localhost:8080');
+
+            function appendMessage(htmlContent, isSystem = false) {
+                const div = document.createElement('div');
+                div.className = isSystem ? 'msg sys' : 'msg';
+                div.innerHTML = htmlContent;
+                messagesEl.appendChild(div);
+                messagesEl.scrollTop = messagesEl.scrollHeight;
+            }
+
+            socket.addEventListener('open', () => {
+                statusEl.textContent = 'Stato: connesso a ws://localhost:8080';
+                sendBtn.disabled = false;
+            });
+
+            socket.addEventListener('message', (event) => {
+                const data = JSON.parse(event.data);
+                if (data.type === 'system') {
+                    appendMessage(data.text, true);
+                    return;
+                }
+                appendMessage(`<strong>[${data.timestamp}]</strong> ${escapeHtml(data.text)}`);
+            });
+
+            socket.addEventListener('close', () => {
+                statusEl.textContent = 'Stato: disconnesso dal server';
+                sendBtn.disabled = true;
+            });
+
+            socket.addEventListener('error', () => {
+                statusEl.textContent = 'Stato: errore di connessione';
+            });
+
+            formEl.addEventListener('submit', (event) => {
+                event.preventDefault();
+                const text = inputEl.value.trim();
+                if (!text || socket.readyState !== WebSocket.OPEN) return;
+
+                socket.send(text);
+                inputEl.value = '';
+                inputEl.focus();
+            });
+
+            function escapeHtml(str) {
+            return str
+                .replaceAll('&', '&amp;')
+                .replaceAll('<', '&lt;')
+                .replaceAll('>', '&gt;')
+                .replaceAll('"', '&quot;');
+            }
+        </script>
+    </body>
+    </html>
+    ```
+    In sintesi, il server `server.js` usa la libreria `ws` per accettare connessioni persistenti su `ws://localhost:8080`, mentre il client `index.html` usa l'API nativa [WebSocket](https://developer.mozilla.org/it/docs/Web/API/WebSockets_API) del [browser](https://it.wikipedia.org/wiki/Browser):
+    - l'evento `open` abilita il pulsante di invio quando il canale è pronto,
+    - `socket.send(text)` invia il messaggio al server e l'evento `message` riceve il payload [JSON](https://it.wikipedia.org/wiki/JSON) da mostrare nel [DOM](https://it.wikipedia.org/wiki/Document_Object_Model),
+    - l'evento `close` aggiorna lo stato e disabilita l'invio se il server si spegne o la scheda viene chiusa.
+
+</Steps>
+
+## Test del codice
+
+<AsideTip title="Suggerimenti">
+- Avvia prima il server dal terminale con `node server.js`.
+- Apri `index.html` in **due schede o finestre** del browser (ad esempio tramite `Live Server` in `Visual Studio Code`) per simulare due client connessi.
+- Invia un messaggio da una scheda e verifica che appaia in entrambe e nel log del terminale Node.js.
+</AsideTip>
+
+<AsideCaution title="Attenzione al server spento, all'estensione del file e alla cartella aperta">
+Riferimento: [`WebSocket`](https://developer.mozilla.org/it/docs/Web/API/WebSockets_API).
+Se il server Node.js non è avviato, il client non potrà completare la connessione (`stato: disconnesso` o `errore di connessione`).
+Verifica inoltre che il file si chiami esattamente `index.html` (e non `index-html`) e che in `Visual Studio Code` sia aperta la cartella del progetto, non la directory home.
+</AsideCaution>
+
+## Riepilogo
+
+<KeyConcepts>
+- [WebSocket](https://developer.mozilla.org/it/docs/Web/API/WebSockets_API): protocollo di comunicazione bidirezionale e persistente tra client e server su un'unica connessione.
+- [Node.js](https://it.wikipedia.org/wiki/Node.js): ambiente di esecuzione JavaScript lato server usato qui per ospitare il server WebSocket.
+- `WebSocketServer` (`ws`): classe della libreria `ws` che ascolta le connessioni in ingresso e gestisce `wss.clients`.
+- `broadcast`: invio di un messaggio ricevuto da un client a tutti gli altri client attualmente connessi e aperti.
+- `readyState` (`WebSocket.OPEN`): proprietà che indica lo stato attuale della connessione prima di inviare dati con `send()`.
+- Eventi `connection`, `open`, `message`, `close` ed `error`: gestori che permettono di reagire all'apertura, allo scambio dati, alla chiusura o agli errori del socket.
+- [JSON](https://it.wikipedia.org/wiki/JSON): formato testuale usato per strutturare messaggi di sistema e di chat (`type`, `text`, `timestamp`).
+- [DOM](https://it.wikipedia.org/wiki/Document_Object_Model): struttura della pagina HTML aggiornata dinamicamente al ricevimento dei nuovi messaggi.
+</KeyConcepts>
+
+## Verifica dell'Apprendimento
+
+<QuizIntro 
+resetLabel="Reimposta tutte le risposte"
+textLabel="Le risposte ai quiz di questa pagina vengono salvate nella memoria locale (local storage) del tuo browser e rimangono memorizzate tra una visita e l'altra"
+/>
+
+<Quiz id="quiz-ws-differenza-http">
+Qual è una differenza chiave tra una classica richiesta HTTP e una connessione WebSocket?
+
+- [ ] WebSocket non può inviare messaggi dal server verso il client.
+- [x] WebSocket mantiene una connessione persistente e bidirezionale tra client e server.
+    > Esatto: una volta aperta la connessione, sia il server sia i client connessi possono inviare messaggi in qualsiasi momento senza riaprire ogni volta una nuova richiesta.
+- [ ] WebSocket funziona solo senza JavaScript nel browser.
+</Quiz>
+
+<Quiz id="quiz-ws-clients">
+Nel codice del server Node.js, a cosa serve l'insieme `wss.clients`?
+
+- [ ] A salvare in modo permanente i messaggi su database.
+- [ ] A convertire automaticamente l'HTML in CSS.
+- [x] A tenere traccia dei client attualmente connessi per inviare messaggi in broadcast.
+    > Esatto: iterando su `wss.clients` e controllando `client.readyState === WebSocket.OPEN`, il server può inoltrare il messaggio a tutti i client attivi.
+</Quiz>
+
+<Quiz id="quiz-ws-ready-state">
+Perché prima di chiamare `socket.send(text)` nel client si controlla `socket.readyState === WebSocket.OPEN`?
+
+- [ ] Per evitare di inviare dati quando la connessione non è ancora aperta o è già chiusa.
+- [ ] Per cifrare automaticamente il testo del messaggio.
+- [x] Per assicurarsi che il canale WebSocket sia effettivamente pronto a trasmettere messaggi.
+    > Esatto: verificare `WebSocket.OPEN` evita errori o invii a vuoto quando il socket è ancora in fase di connessione (`CONNECTING`) o già chiuso (`CLOSED`).
+</Quiz>
+
+<Quiz id="quiz-ws-due-schede">
+Se apri `index.html` in due schede diverse del browser connesse a `ws://localhost:8080`, come le tratta il server?
+
+- [ ] Come un'unica connessione condivisa che sovrascrive i messaggi.
+- [x] Come due connessioni WebSocket distinte (`wss.clients.size` aumenta di 1 per ciascuna).
+    > Esatto: ogni scheda esegue `new WebSocket(...)` in modo isolato e genera un proprio oggetto `socket` sul server.
+</Quiz>
+
+<Quiz id="quiz-ws-event-message">
+Quale evento sul client scatta quando il server invia un nuovo messaggio tramite `client.send(payload)`?
+
+- [ ] `submit`
+- [x] `message`
+    > Esatto: sul client l'ascoltatore `socket.addEventListener('message', ...)` riceve `event.data` contenente il payload inviato dal server.
+</Quiz>
+
+<Quiz id="quiz-ws-escape-html">
+A cosa serve la funzione `escapeHtml(str)` prima di inserire il testo del messaggio nella pagina?
+
+- [ ] A formattare l'orario con il fuso orario italiano.
+- [x] A neutralizzare caratteri HTML speciali (come `<` e `>`) per evitare che vengano interpretati come tag o script.
+    > Esatto: fare l'escape dei caratteri speciali riduce il rischio di iniezione HTML/XSS quando si inserisce testo proveniente dagli utenti.
+</Quiz>
+
+<QuizResults 
+titleLabel="Il tuo punteggio"
+progressLabel="Avanzamento Quiz"
+answeredLabel="risposte alle domande"
+correctLabel="risposte corrette"
+resetLabel="Reimposta tutte le risposte"
+ />

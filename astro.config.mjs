@@ -88,12 +88,12 @@ export default defineConfig({
               items: [{ autogenerate: { directory: 'esercitazioni/software-engineering' } }]
             },
             {
-              label: 'Sviluppo Front End',
+              label: 'Web Lab',
               collapsed: true,
               translations: {
-                en: 'Front End Development',
+                en: 'Web Lab',
               },
-              items: [{ autogenerate: { directory: 'esercitazioni/sviluppo-front-end' } }],
+              items: [{ autogenerate: { directory: 'esercitazioni/web-lab' } }],
             },
           ]
         },
