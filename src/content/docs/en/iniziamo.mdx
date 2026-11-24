@@ -1,10 +1,163 @@
 ---
-title: Getting started
+title: 🚀 Getting Started
 icon: rocket
+
 ---
-
 import { Aside } from "@astrojs/starlight/components";
+import AsideNote from "@/components/AsideNote.astro";
+import TocAsideHint from "@/components/TocAsideHint.astro";
+import Mermaid from "@/components/Mermaid.astro";
+import { Icon } from '@astrojs/starlight/components';
+import IconInline from "@/components/IconInline.astro";
+import { QuizIntro, Quiz, QuizResults } from "starlight-quiz/components";
 
-<Aside type="tip" icon="starlight">
-  You can move through the pages in sequence or select a page from the sidebar.
-</Aside>
+
+<AsideNote>
+The screen is divided into **four panels**:
+- <IconInline icon="up-arrow" />the **Top Panel**
+- <IconInline icon="left-arrow" />the **Left Panel**
+- <IconInline icon="document" />the **Center Panel**
+- <IconInline icon="right-arrow" />the **Right Panel**
+</AsideNote>
+
+## <IconInline icon="up-arrow" />The Top Panel
+The **top panel** contains:
+- the logo
+- the search box <IconInline icon="magnifier" />
+- links to social media:
+  - <IconInline icon="linkedin" />LinkedIn
+  - <IconInline icon="youtube" /> YouTube
+  - <IconInline icon="github" /> GitHub
+- a button to **hide or show the right panel**
+- a **theme** selector (Light/Dark) <IconInline icon="sun" />/<IconInline icon="moon" />
+- a **language** selector (English/Italian) <IconInline icon="translate" />
+
+## <IconInline icon="left-arrow" />The Left Panel
+In this panel, you can **select the page** you are interested in:
+- choose a section (Notes, Practical Labs, or Projects)
+- choose a topic
+- choose a page
+
+## <IconInline icon="document" />The Center Panel
+This is the **main panel**, which displays the **content of the selected page**.
+
+## <IconInline icon="right-arrow" />The Right Panel
+In this panel, you can see:
+- your **quiz progress** (if the page contains a quiz)
+- your **progress on the current page** and **select a section**.
+
+
+### Expanding the Center Panel
+If **diagrams in the center panel are difficult to read**, you can
+**hide the right panel** to **expand the center panel**.
+Sometimes you will see the following hint:
+<TocAsideHint />
+#### Example Diagram
+This diagram is provided just to demonstrate the effect of **expanding the center panel**:
+
+<Mermaid chart={`
+sequenceDiagram
+actor User
+participant HTML as index.html / DOM
+participant JS as script.js
+participant CSS as style.css
+
+alt Selection from Dropdown Menu
+  User->>HTML: Select an option in <select> (onchange)
+  HTML->>JS: Call evidenziaEdificioDaMenu()
+else Direct Selection from Map
+  User->>HTML: Click an SVG building (onclick)
+  HTML->>JS: Call selezionaDaMappa(idEdificio)
+  JS->>HTML: Update the <select> value
+end
+
+JS->>JS: rimuoviSelezionePrecedente()
+JS->>HTML: document.getElementById(idSelezionato)
+HTML-->>JS: Return the SVG building element
+JS->>CSS: Aggiunge la classe .attivo
+CSS-->>User: Show the highlighted building (yellow border and glow)
+`} />
+
+## <IconInline icon="magnifier" />Knowledge Check
+
+<QuizIntro 
+resetLabel="Reset all answers"
+textLabel="Quiz answers on this page are saved in your browser's local storage and remain available between visits"
+/>
+
+<Quiz id="quiz-menu-tendina">
+What is the main purpose of the left panel?
+
+- [ ] Show progress on the current page.
+- [x] Allow you to select the page you are interested in.
+  > Correct: the left panel lets you navigate between pages.
+- [ ] Change the site's theme.
+</Quiz>
+
+<Quiz id="quiz-evento-onchange">
+Which option is available in the top panel?
+
+- [ ] Select a section of the page.
+- [ ] View the content of the selected page.
+- [x] Select the language, Italian or English.
+  > Correct: the top panel includes a language selector.
+</Quiz>
+
+<Quiz id="quiz-tema">
+Which themes can you select in the top panel?
+
+- [ ] Blue or green.
+- [x] Light or dark.
+  > Correct: the theme selector lets you choose between the light and dark themes.
+- [ ] Italian or English.
+</Quiz>
+
+<Quiz id="quiz-lingua">
+Which languages can you select in the top panel?
+
+- [ ] French or German.
+- [ ] Light or dark.
+- [x] Italian or English.
+  > Correct: the language selector lets you choose between Italian and English.
+</Quiz>
+
+<Quiz id="quiz-getelementbyid">
+What is the purpose of the center panel?
+
+- [x] Show the content of the selected page.
+  > Correct: the center panel is the main panel for displaying content.
+- [ ] Show social media links.
+- [ ] Select a section from the table of contents.
+</Quiz>
+
+<Quiz id="quiz-classe-attivo">
+What can you do in the right panel?
+
+- [ ] Change the site's language.
+- [x] Check your progress on the page and select a section.
+  > Correct: the right panel shows your progress and lets you jump to a section.
+- [ ] Choose which page to open in the center panel.
+</Quiz>
+
+<Quiz id="quiz-clic-mappa">
+Why might it be useful to hide the right panel?
+
+- [ ] To view social media links.
+- [x] To expand the center panel and read diagrams more easily.
+  > Correct: hiding the right panel allows the center panel to expand.
+- [ ] To automatically change the page language.
+</Quiz>
+
+<QuizResults 
+titleLabel="Your score"
+progressLabel="Quiz progress"
+answeredLabel="questions answered"
+correctLabel="correct answers"
+resetLabel="Reset all answers"
+ />
+
+ ## <IconInline icon="left-arrow" />Previous / Next<IconInline icon="right-arrow" />
+ At the bottom of the page, you can go to the next page or return to the previous one
+ by clicking the cards:
+  - **Next** <IconInline icon="right-arrow" /> and
+  - <IconInline icon="left-arrow" /> **Previous**

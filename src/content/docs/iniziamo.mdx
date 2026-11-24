@@ -1,12 +1,164 @@
 ---
-title: Iniziamo
+title: 🚀 Iniziamo
 icon: rocket
 
 ---
 import { Aside } from "@astrojs/starlight/components";
+import AsideNote from "@/components/AsideNote.astro";
+import TocAsideHint from "@/components/TocAsideHint.astro";
+import Mermaid from "@/components/Mermaid.astro";
+import { Icon } from '@astrojs/starlight/components';
+import IconInline from "@/components/IconInline.astro";
+import { QuizIntro, Quiz, QuizResults } from "starlight-quiz/components";
 
-<Aside type="tip" icon="starlight">
-Puoi avanzare di pagina in pagina in sequenza oppure selezionare una pagina dal menu laterale
-</Aside>
 
+<AsideNote>
+Lo schermo è diviso in **quattro pannelli**:
+- <IconInline icon="up-arrow" />il **Pannello Superiore**
+- <IconInline icon="left-arrow" />il **Pannello a Sinistra**
+- <IconInline icon="document" />il **Pannello Centrale**
+- <IconInline icon="right-arrow" />il **Pannello a Destra**
+</AsideNote>
+
+## <IconInline icon="up-arrow" />il Pannello Superiore
+Il **pannello superiore** contiene:
+- il logo
+- il riquadro per la ricerca <IconInline icon="magnifier" />
+- link a siti social:
+  - <IconInline icon="linkedin" />LinkedIn
+  - <IconInline icon="youtube" /> YouTube
+  - <IconInline icon="github" /> GitHub
+- pulsante per **nascondere o mostrare il pannello di destra**
+- selettore del **tema** (Chiaro/Scuro) <IconInline icon="sun" />/<IconInline icon="moon" />
+- selettore della **lingua** (Italiano/Inglese)<IconInline icon="translate" />
+
+## <IconInline icon="up-arrow" />il Pannello a Sinistra
+In questo pannello puoi **selezionare la pagina** di tuo interesse:
+- scegli la sezione (Appunti, Esercitazioni o Progetti)
+- scegli un argomento
+- scegli la pagina
+
+## <IconInline icon="document" />il Pannello Centrale
+È il **pannello principale** con i **contenuti della pagina selezionata**.
+
+## <IconInline icon="right-arrow" />il Pannello a Destra 
+In questo pannello puoi vedere:
+- il tuo **avanzamento nel quiz** (se la pagina contiene un quiz)
+- il tuo **avanzamento nella pagina** attuale e **selezionare un paragrafo**.
+
+
+### Espansione Pannello Centrale
+Nel caso di **diagrammi difficili da leggere** nel pannello centrale, è possibile
+**nascondere il pannello a destra** per **espandere il pannello centrale**.
+A volte troverai il seguente suggerimento:
+<TocAsideHint />
+#### Diagramma di esempio
+Al solo scopo di provare l'effetto di **espansione del pannello centrale**:
+
+<Mermaid chart={`
+sequenceDiagram
+actor Utente
+participant HTML as index.html / DOM
+participant JS as script.js
+participant CSS as style.css
+
+alt Selezione da Menu a Tendina
+    Utente->>HTML: Seleziona voce nel <select> (onchange)
+    HTML->>JS: Invocazione evidenziaEdificioDaMenu()
+else Selezione Diretta da Mappa
+    Utente->>HTML: Clicca su edificio SVG (onclick)
+    HTML->>JS: Invocazione selezionaDaMappa(idEdificio)
+    JS->>HTML: Aggiorna valore del <select>
+end
+
+JS->>JS: rimuoviSelezionePrecedente()
+JS->>HTML: document.getElementById(idSelezionato)
+HTML-->>JS: Restituisce l'elemento SVG dell'edificio
+JS->>CSS: Aggiunge la classe .attivo
+CSS-->>Utente: Mostra l'edificio illuminato (bordo giallo e bagliore)
+`} />
+
+## <IconInline icon="magnifier" />Verifica dell'Apprendimento
+
+<QuizIntro 
+resetLabel="Reimposta tutte le risposte"
+textLabel="Le risposte ai quiz di questa pagina vengono salvate nella memoria locale (local storage) del tuo browser e rimangono memorizzate tra una visita e l'altra"
+/>
+
+<Quiz id="quiz-menu-tendina">
+Qual è la funzione principale del pannello a sinistra?
+
+- [ ] Mostrare l'avanzamento nella pagina attuale.
+- [x] Permettere di selezionare la pagina di interesse.
+  > Esatto: il pannello a sinistra serve a navigare tra le pagine.
+- [ ] Cambiare il tema del sito.
+</Quiz>
+
+<Quiz id="quiz-evento-onchange">
+Quale opzione è disponibile nel pannello superiore?
+
+- [ ] Selezionare un paragrafo della pagina.
+- [ ] Visualizzare i contenuti della pagina selezionata.
+- [x] Selezionare la lingua, tra italiano e inglese.
+  > Esatto: il pannello superiore include un selettore della lingua.
+</Quiz>
+
+<Quiz id="quiz-tema">
+Quali temi puoi selezionare nel pannello superiore?
+
+- [ ] Blu o verde.
+- [x] Chiaro o scuro.
+  > Esatto: il selettore del tema permette di scegliere tra il tema chiaro e quello scuro.
+- [ ] Italiano o inglese.
+</Quiz>
+
+<Quiz id="quiz-lingua">
+Quali lingue puoi selezionare nel pannello superiore?
+
+- [ ] Francese o tedesco.
+- [ ] Chiaro o scuro.
+- [x] Italiano o inglese.
+  > Esatto: il selettore della lingua permette di scegliere tra italiano e inglese.
+</Quiz>
+
+<Quiz id="quiz-getelementbyid">
+Qual è il ruolo del pannello centrale?
+
+- [x] Mostrare i contenuti della pagina selezionata.
+  > Esatto: il pannello centrale è il pannello principale dedicato ai contenuti.
+- [ ] Mostrare i link ai social.
+- [ ] Selezionare un paragrafo dal sommario.
+</Quiz>
+
+<Quiz id="quiz-classe-attivo">
+Che cosa puoi fare nel pannello a destra?
+
+- [ ] Cambiare la lingua del sito.
+- [x] Controllare l'avanzamento nella pagina e selezionare un paragrafo.
+  > Esatto: il pannello a destra mostra l'avanzamento e permette di raggiungere un paragrafo.
+- [ ] Scegliere quale pagina aprire nel pannello centrale.
+</Quiz>
+
+<Quiz id="quiz-clic-mappa">
+Perché potrebbe essere utile nascondere il pannello a destra?
+
+- [ ] Per visualizzare i link ai social.
+- [x] Per ampliare il pannello centrale e leggere meglio i diagrammi.
+  > Esatto: nascondendo il pannello a destra, il pannello centrale può espandersi.
+- [ ] Per cambiare automaticamente la lingua della pagina.
+</Quiz>
+
+<QuizResults 
+titleLabel="Il tuo punteggio"
+progressLabel="Avanzamento Quiz"
+answeredLabel="risposte alle domande"
+correctLabel="risposte corrette"
+resetLabel="Reimposta tutte le risposte"
+ />
+
+ ## <IconInline icon="left-arrow" />Indietro / Avanti<IconInline icon="right-arrow" />
+ A fondo pagina puo avanzare o tornare alla pagina precedente
+  cliccando sulle card 
+  - **Avanti**<IconInline icon="right-arrow" /> e 
+  - <IconInline icon="left-arrow" />**Indietro**
   

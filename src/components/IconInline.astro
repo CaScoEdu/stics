@@ -1,0 +1,26 @@
+---
+import { Icon } from '@astrojs/starlight/components';
+
+interface Props {
+  icon: string;
+  size?: string;
+  color?: string;
+  class?: string;
+  offset?: string;
+}
+
+const {
+  icon,
+  size = '1.1em',
+  color = 'var(--sl-color-text-accent)',
+  class: className = '',
+  offset = '-0.2em',
+} = Astro.props;
+---
+
+<span
+  class:list={['icon-inline', className]}
+  style={`display: inline-block; vertical-align: ${offset}; margin-inline: 0.15em; line-height: 1;`}
+>
+  <Icon name={icon as any} size={size} color={color} />
+</span>
