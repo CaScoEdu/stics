@@ -1,0 +1,148 @@
+---
+import IconInline from './IconInline.astro';
+
+interface Props {
+  html?: boolean;
+  css?: boolean;
+  js?: boolean;
+  svg?: boolean;
+  node?: boolean;
+  npm?: boolean;
+  json?: boolean;
+  git?: boolean;
+  github?: boolean;
+  vscode?: boolean;
+}
+
+type CategoryKey =
+  | 'languages'
+  | 'platforms'
+  | 'packageManagers'
+  | 'data'
+  | 'versionControl'
+  | 'ide';
+
+interface ToolItem {
+  key: keyof Props;
+  category: CategoryKey;
+  label: string;
+  icon: string;
+}
+
+const isEn = Astro.url.pathname.startsWith('/en/');
+
+// Ordine canonico delle categorie e degli elementi al loro interno
+const CATALOG: ToolItem[] = [
+  { key: 'html', category: 'languages', label: 'HTML', icon: 'seti:html' },
+  { key: 'css', category: 'languages', label: 'CSS', icon: 'seti:css' },
+  { key: 'js', category: 'languages', label: 'JavaScript', icon: 'seti:javascript' },
+  { key: 'svg', category: 'languages', label: 'SVG', icon: 'seti:svg' },
+
+  { key: 'node', category: 'platforms', label: 'Node.js', icon: 'node' },
+
+  { key: 'npm', category: 'packageManagers', label: 'npm', icon: 'seti:npm' },
+
+  { key: 'json', category: 'data', label: isEn ? 'JSON' : 'JSON', icon: 'seti:json' },
+
+  { key: 'git', category: 'versionControl', label: 'Git', icon: 'seti:git' },
+  { key: 'github', category: 'versionControl', label: 'GitHub', icon: 'github' },
+
+  { key: 'vscode', category: 'ide', label: 'Visual Studio Code', icon: 'vscode' },
+];
+
+const CATEGORY_LABELS: Record<CategoryKey, { it: string; en: string }> = {
+  languages: { it: 'Linguaggi', en: 'Languages' },
+  platforms: { it: 'Piattaforme', en: 'Platforms' },
+  packageManagers: { it: 'Gestori di pacchetti', en: 'Package Managers' },
+  data: { it: 'Dati strutturati', en: 'Structured data' },
+  versionControl: { it: 'Controllo versione', en: 'Version Control' },
+  ide: { it: 'IDE suggerito', en: 'Suggested IDE' },
+};
+
+const CATEGORY_ORDER: CategoryKey[] = [
+  'languages',
+  'platforms',
+  'packageManagers',
+  'data',
+  'versionControl',
+  'ide',
+];
+
+const activeTools = CATALOG.filter((item) => Astro.props[item.key] === true);
+
+const grouped = CATEGORY_ORDER
+  .map((category) => ({
+    category,
+    title: isEn ? CATEGORY_LABELS[category].en : CATEGORY_LABELS[category].it,
+    items: activeTools.filter((item) => item.category === category),
+  }))
+  .filter((group) => group.items.length > 0);
+---
+
+{grouped.length > 0 && (
+  <aside class="stics-tools-box" aria-label={isEn ? 'Tools used' : 'Strumenti utilizzati'}>
+    <ul class="stics-tools-list">
+      {grouped.map((group) => (
+        <li>
+          <strong>{group.title}:</strong>{' '}
+          {group.items.map((item, idx) => (
+            <>
+              <span class="stics-tool-item">
+                <IconInline icon={item.icon} />
+                <span class="stics-tool-name">{item.label}</span>
+              </span>
+              {idx < group.items.length - 1 && ', '}
+            </>
+          ))}
+        </li>
+      ))}
+    </ul>
+  </aside>
+)}
+
+<style>
+  .stics-tools-box {
+    --tools-border: #9333ea;
+    --tools-bg: #f3e8ff;
+    --tools-icon: #6b21a8;
+
+    margin-block: 1.25rem;
+    padding: 0.9rem 1.15rem;
+    border-inline-start: 4px solid var(--tools-border);
+    background-color: var(--tools-bg);
+    color: var(--sl-color-gray-1);
+  }
+
+  :global(:root:not([data-theme='light'])) .stics-tools-box {
+    --tools-border: #a855f7;
+    --tools-bg: color-mix(in srgb, #9333ea 16%, transparent);
+    --tools-icon: #d8b4fe;
+  }
+
+  .stics-tools-header {
+    margin-bottom: 0.35rem;
+    font-size: 1.15rem;
+    line-height: 1.2;
+    color: var(--tools-icon);
+  }
+
+  .stics-tools-list {
+    margin: 0;
+    padding-inline-start: 1.25rem;
+  }
+
+  .stics-tools-list li {
+    margin-block: 0.3rem;
+  }
+
+  .stics-tool-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    vertical-align: middle;
+  }
+
+  .stics-tool-name {
+    font-weight: 500;
+  }
+</style>

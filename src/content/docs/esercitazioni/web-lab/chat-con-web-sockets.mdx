@@ -1,40 +1,51 @@
 ---
 title: chat con i Web Sockets
 description: In questa esercitazione realizzeremo una semplice chat utilizzando i Web Socket.
+sidebar:
+    order: 50
 ---
 
 import {
     FileTree,
-    Steps,
-    TabItem,
-    Tabs
+    Steps
 } from "@astrojs/starlight/components";
 import AsideTip from '@/components/AsideTip.astro';
 import AsideCaution from '@/components/AsideCaution.astro';
+import IconInline from "@/components/IconInline.astro";
 import Mermaid from "@/components/Mermaid.astro";
 import { Quiz, QuizIntro, QuizResults } from 'starlight-quiz/components';
 import ExpectedResults from "@/components/ExpectedResults.astro"
 import KeyConcepts from "@/components/KeyConcepts.astro"
 import Prerequisites from "@/components/Prerequisites.astro"
 import TocAsideHint from '@/components/TocAsideHint.astro';
+import Tools from "@/components/Tools.astro";
 
-Ecco un'esercitazione pratica e completa per creare una mini chat / bacheca in tempo reale con WebSocket e Node.js usando la libreria leggera ws e una pagina HTML/JS nativa (senza framework aggiuntivi).
+Ecco un'esercitazione pratica e completa
+per creare una **mini chat / bacheca in tempo reale**
+con [**WebSocket**](https://it.wikipedia.org/wiki/WebSocket) e **Node.js**,
+usando la libreria leggera `ws` e una pagina [**HTML**](https://it.wikipedia.org/wiki/HTML)/[**JavaScript**](https://it.wikipedia.org/wiki/JavaScript) nativa (senza framework aggiuntivi).
 
-A differenza di una classica richiesta HTTP (dove il client chiede e il server risponde una sola volta), un WebSocket apre una connessione persistente e bidirezionale: sia il server sia i client connessi possono inviare messaggi in qualsiasi momento.
+A differenza di una classica richiesta [**HTTP**](https://it.wikipedia.org/wiki/Hypertext_Transfer_Protocol) (dove il client chiede e il server risponde una sola volta), un **WebSocket** apre una **connessione persistente e bidirezionale**: sia il server sia i client connessi possono inviare messaggi in qualsiasi momento.
 
-Architettura dell'esercitazione
-- Server (server.js): avvia un server WebSocket sulla porta 8080, ascolta gli eventi connection, message e close, e inoltra (broadcast) ogni messaggio ricevuto a tutti i client attualmente connessi.
+<AsideTip title="Come nasce la connessione: Upgrade HTTP sopra TCP">
+La connessione inizia su un normale socket [**TCP**](https://it.wikipedia.org/wiki/Transmission_Control_Protocol): il client invia una richiesta **HTTP/1.1 `GET`** con gli header `Upgrade: websocket` e `Connection: Upgrade` (insieme a `Sec-WebSocket-Key` per l'handshake). Se il server supporta WebSocket, risponde con **`101 Switching Protocols`** e `Upgrade: websocket`: da quel momento la stessa connessione TCP resta aperta e viene riutilizzata per scambiare frame WebSocket bidirezionali, senza ripetere l'overhead HTTP a ogni messaggio.
+</AsideTip>
 
-- Client (index.html): si connette a ws://localhost:8080, mostra lo stato della connessione, invia i messaggi digitati e aggiorna la lista in tempo reale all'arrivo di nuovi messaggi.
+**Architettura dell'esercitazione**
+- **Server** (`server.js`): avvia un server WebSocket sulla porta `8080`, ascolta gli eventi `connection`, `message` e `close`, e inoltra (**broadcast**) ogni messaggio ricevuto a tutti i client attualmente connessi.
+
+- **Client** (`index.html`): si connette a `ws://localhost:8080`, mostra lo stato della connessione, invia i messaggi digitati e aggiorna la lista in tempo reale all'arrivo di nuovi messaggi.
 
 ## Introduzione
 
 <ExpectedResults>
-- il server WebSocket viene avviato in Node.js sulla porta `8080` tramite la libreria `ws`;
+- il server WebSocket viene avviato in [Node.js](https://it.wikipedia.org/wiki/Node.js) sulla porta `8080` tramite la libreria `ws`;
 - i client si collegano a `ws://localhost:8080` e ricevono una notifica di connessione riuscita;
 - l'invio di un messaggio da un client viene inoltrato in broadcast a tutti i client connessi con relativo timestamp;
 - il client aggiorna lo stato della connessione (`open`, `close`, `error`) e gestisce la disconnessione in modo sicuro.
 </ExpectedResults>
+
+<Tools html css js vscode node json npm />
 
 <Prerequisites>
 - avere installato Node.js e saper usare il terminale (anche quello integrato di Visual Studio Code)
@@ -138,7 +149,7 @@ In questo diagramma, il server `server.js` rimane in esecuzione nel terminale (`
 Ricordati di salvare il file con estensione corretta `index.html` e di avviare il server prima di inviare messaggi dal browser.
 </AsideCaution>
 
-## Struttura dei file del progetto
+## <IconInline icon="seti:folder" /> Struttura dei file del progetto
 
 Prima di scrivere il codice, inizializza il progetto nella cartella di lavoro con `npm init -y`, installa `ws` (`npm install ws`) e assicurati che `"type": "module"` sia presente una sola volta in `package.json`:
 
@@ -151,7 +162,7 @@ Prima di scrivere il codice, inizializza il progetto nella cartella di lavoro co
 
 ## Codifica
 
-Fasi operative
+**Fasi operative**
 
 <Steps>
 1. ### Inizializza il progetto e installa ws:
@@ -198,7 +209,7 @@ Fasi operative
     **`CommonJS`** è il vecchio sistema di moduli di Node.js, mentre **`"type": "module"`** indica lo standard JavaScript attuale (`import`/`export`), coerente con la sintassi `import` che useremo in `server.js`. Se lasciassi CommonJS con `import`, Node.js darebbe errore.
     </AsideTip>
 
-2. ### Scrivi il server WebSocket (server.js):
+3. ### Scrivi il server WebSocket (server.js):
     
     Crea il file server.js con il codice seguente. 
     
@@ -297,103 +308,134 @@ Fasi operative
     });
     ```
 
-3.  ### Crea il client HTML/JS (index.html):
-    Crea il file index.html nella stessa cartella. Apri due schede del browser sullo stesso file per testare la comunicazione in tempo reale tra più client.
-    ```html
+4.  ### Crea il client HTML/JS (index.html):
+
+    ##### 4.1. Intestazione (`<head>`) e metadati
+    Apre il documento HTML5 in italiano, imposta la codifica UTF-8 per i caratteri accentati, adatta la scala ai dispositivi mobili tramite viewport e definisce il titolo della scheda del browser.    
+    
+    ```html title"index.html"
     <!DOCTYPE html>
+
     <html lang="it">
-    <head>
-        <meta charset="UTF-8" />
-        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <title>Lab WebSocket con Node.js</title>
-        <style>
-            body { font-family: system-ui, sans-serif; max-width: 640px; margin: 2rem auto; padding: 0 1rem; }
-            #status { font-weight: 600; margin-bottom: 1rem; }
-            #messages { border: 1px solid #cbd5e1; border-radius: 8px; padding: 1rem; height: 280px; overflow-y: auto; margin-bottom: 1rem; background: #f8fafc; }
-            .msg { margin-bottom: 0.5rem; padding: 0.4rem 0.6rem; border-radius: 6px; background: #ffffff; border: 1px solid #e2e8f0; }
-            .sys { color: #475569; font-style: italic; background: #f1f5f9; }
-            form { display: flex; gap: 0.5rem; }
-            input { flex: 1; padding: 0.6rem; border: 1px solid #94a3b8; border-radius: 6px; }
-            button { padding: 0.6rem 1rem; border: none; border-radius: 6px; background: #2563eb; color: #fff; cursor: pointer; }
-            button:disabled { background: #94a3b8; cursor: not-allowed; }
-        </style>
-    </head>
-    <body>
-        <h1>Bacheca Real-Time (WebSocket)</h1>
-        <div id="status">Stato: connessione in corso...</div>
-        <div id="messages"></div>
+        <head>
+            <meta charset="UTF-8" />
+            <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+            <title>Lab WebSocket con Node.js</title>
+        </head>
+    ```
+    ##### 4.2. Foglio di stile interno (`<style>` dentro `<head>`)
+    Definisce l'impaginazione centrata della bacheca, l'area scorrevole dei messaggi (#messages), la distinzione grafica tra messaggi di chat (.msg) e avvisi di sistema (.sys), oltre allo stato disabilitato del pulsante di invio.
+    
+    <TocAsideHint />
 
-        <form id="chat-form">
-            <input id="msg-input" type="text" placeholder="Scrivi un messaggio..." autocomplete="off" required />
-            <button id="send-btn" type="submit" disabled>Invia</button>
-        </form>
+    ```diff lang="html" title"index.html"
 
-        <script>
-            const statusEl = document.getElementById('status');
-            const messagesEl = document.getElementById('messages');
-            const formEl = document.getElementById('chat-form');
-            const inputEl = document.getElementById('msg-input');
-            const sendBtn = document.getElementById('send-btn');
+    +       <style>
+    +           body { font-family: system-ui, sans-serif; max-width: 640px; margin: 2rem auto; padding: 0 1rem; }
+    +           #status { font-weight: 600; margin-bottom: 1rem; }
+    +           #messages { border: 1px solid #cbd5e1; border-radius: 8px; padding: 1rem; height: 280px; overflow-y: auto; margin-bottom: 1rem; background: #f8fafc; }
+    +           .msg { margin-bottom: 0.5rem; padding: 0.4rem 0.6rem; border-radius: 6px; background: #ffffff; border: 1px solid #e2e8f0; }
+    +           .sys { color: #475569; font-style: italic; background: #f1f5f9; }
+    +           form { display: flex; gap: 0.5rem; }
+    +           input { flex: 1; padding: 0.6rem; border: 1px solid #94a3b8; border-radius: 6px; }
+    +           button { padding: 0.6rem 1rem; border: none; border-radius: 6px; background: #2563eb; color: #fff; cursor: pointer; }
+    +           button:disabled { background: #94a3b8; cursor: not-allowed; }
+    +       </style>
 
-            const socket = new WebSocket('ws://localhost:8080');
+        </head>
+    ```
 
-            function appendMessage(htmlContent, isSystem = false) {
-                const div = document.createElement('div');
-                div.className = isSystem ? 'msg sys' : 'msg';
-                div.innerHTML = htmlContent;
-                messagesEl.appendChild(div);
-                messagesEl.scrollTop = messagesEl.scrollHeight;
-            }
+    ##### 4.3. Struttura della pagina (`<body>`)
+    Crea l'interfaccia minima dell'applicazione: il titolo, il riquadro #status per lo stato della connessione, il contenitore #messages dove compariranno i messaggi e il form #chat-form con casella di testo e pulsante Invia (inizialmente disabilitato finché il WebSocket non è connesso).
+    
+    ```html title"index.html"
+        <body>
 
-            socket.addEventListener('open', () => {
-                statusEl.textContent = 'Stato: connesso a ws://localhost:8080';
-                sendBtn.disabled = false;
-            });
+            <h1>Bacheca Real-Time (WebSocket)</h1>
+            <div id="status">Stato: connessione in corso...</div>
+            <div id="messages"></div>
 
-            socket.addEventListener('message', (event) => {
-                const data = JSON.parse(event.data);
-                if (data.type === 'system') {
-                    appendMessage(data.text, true);
-                    return;
+            <form id="chat-form">
+                <input id="msg-input" type="text" placeholder="Scrivi un messaggio..." autocomplete="off" required />
+                <button id="send-btn" type="submit" disabled>Invia</button>
+            </form>
+    ```
+
+    ##### 4.4. Script — Riferimenti al DOM, connessione WebSocket e funzione di rendering
+    Recupera gli elementi chiave della pagina, apre la connessione verso ws://localhost:8080 tramite l'API nativa WebSocket e definisce appendMessage() per aggiungere un elemento al contenitore e far scorrere automaticamente verso il basso la chat
+    ```html title"index.html"
+
+            <script>
+                const statusEl = document.getElementById('status');
+                const messagesEl = document.getElementById('messages');
+                const formEl = document.getElementById('chat-form');
+                const inputEl = document.getElementById('msg-input');
+                const sendBtn = document.getElementById('send-btn');
+
+                const socket = new WebSocket('ws://localhost:8080');
+
+                function appendMessage(htmlContent, isSystem = false) {
+                    const div = document.createElement('div');
+                    div.className = isSystem ? 'msg sys' : 'msg';
+                    div.innerHTML = htmlContent;
+                    messagesEl.appendChild(div);
+                    messagesEl.scrollTop = messagesEl.scrollHeight;
                 }
-                appendMessage(`<strong>[${data.timestamp}]</strong> ${escapeHtml(data.text)}`);
-            });
+    ```
+    ##### 4.5. Script — Gestione degli eventi del socket (open, message, close, error)
+    Reagisce ai cambiamenti del canale WebSocket: abilita il pulsante all'apertura (open), decodifica il JSON ricevuto dal server e lo stampa a video (message), disabilita l'invio alla chiusura (close) e segnala eventuali anomalie (error).
+    
+    ```html title"index.html"
 
-            socket.addEventListener('close', () => {
-                statusEl.textContent = 'Stato: disconnesso dal server';
-                sendBtn.disabled = true;
-            });
+                socket.addEventListener('open', () => {
+                    statusEl.textContent = 'Stato: connesso a ws://localhost:8080';
+                    sendBtn.disabled = false;
+                });
 
-            socket.addEventListener('error', () => {
-                statusEl.textContent = 'Stato: errore di connessione';
-            });
+                socket.addEventListener('message', (event) => {
+                    const data = JSON.parse(event.data);
+                    if (data.type === 'system') {
+                        appendMessage(data.text, true);
+                        return;
+                    }
+                    appendMessage(`<strong>[${data.timestamp}]</strong> ${escapeHtml(data.text)}`);
+                });
 
-            formEl.addEventListener('submit', (event) => {
-                event.preventDefault();
-                const text = inputEl.value.trim();
-                if (!text || socket.readyState !== WebSocket.OPEN) return;
+                socket.addEventListener('close', () => {
+                    statusEl.textContent = 'Stato: disconnesso dal server';
+                    sendBtn.disabled = true;
+                });
 
-                socket.send(text);
-                inputEl.value = '';
-                inputEl.focus();
-            });
+                socket.addEventListener('error', () => {
+                    statusEl.textContent = 'Stato: errore di connessione';
+                });
+    ```
+    ##### 4.6. Script — Invio del form, sanitizzazione (escapeHtml) e chiusura del documento
+    Intercetta l'invio del form impedendo il ricaricamento della pagina, verifica che il testo non sia vuoto e che il socket sia in stato WebSocket.OPEN, invia il messaggio e svuota l'input; escapeHtml() neutralizza i caratteri speciali prima di inserirli nell'HTML, poi si chiudono script e body.
 
-            function escapeHtml(str) {
-            return str
-                .replaceAll('&', '&amp;')
-                .replaceAll('<', '&lt;')
-                .replaceAll('>', '&gt;')
-                .replaceAll('"', '&quot;');
-            }
-        </script>
-    </body>
+    ```html title"index.html"
+
+                formEl.addEventListener('submit', (event) => {
+                    event.preventDefault();
+                    const text = inputEl.value.trim();
+                    if (!text || socket.readyState !== WebSocket.OPEN) return;
+
+                    socket.send(text);
+                    inputEl.value = '';
+                    inputEl.focus();
+                });
+
+                function escapeHtml(str) {
+                    return str
+                        .replaceAll('&', '&amp;')
+                        .replaceAll('<', '&lt;')
+                        .replaceAll('>', '&gt;')
+                        .replaceAll('"', '&quot;');
+                }
+            </script>
+        </body>
     </html>
     ```
-    In sintesi, il server `server.js` usa la libreria `ws` per accettare connessioni persistenti su `ws://localhost:8080`, mentre il client `index.html` usa l'API nativa [WebSocket](https://developer.mozilla.org/it/docs/Web/API/WebSockets_API) del [browser](https://it.wikipedia.org/wiki/Browser):
-    - l'evento `open` abilita il pulsante di invio quando il canale è pronto,
-    - `socket.send(text)` invia il messaggio al server e l'evento `message` riceve il payload [JSON](https://it.wikipedia.org/wiki/JSON) da mostrare nel [DOM](https://it.wikipedia.org/wiki/Document_Object_Model),
-    - l'evento `close` aggiorna lo stato e disabilita l'invio se il server si spegne o la scheda viene chiusa.
-
 </Steps>
 
 ## Test del codice

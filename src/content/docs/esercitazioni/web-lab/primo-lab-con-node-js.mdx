@@ -1,0 +1,147 @@
+---
+title: Primo script con Node.js
+description: Una breve esercitazione pratica per eseguire il tuo primo file JavaScript con Node.js prima di realizzare la chat con i Web Socket.
+sidebar:
+    order: 49
+---
+
+import {
+    FileTree,
+    Steps
+} from "@astrojs/starlight/components";
+import AsideTip from '@/components/AsideTip.astro';
+import AsideCaution from '@/components/AsideCaution.astro';
+import IconInline from "@/components/IconInline.astro";
+import Mermaid from "@/components/Mermaid.astro";
+import { Quiz, QuizIntro, QuizResults } from 'starlight-quiz/components';
+import ExpectedResults from "@/components/ExpectedResults.astro"
+import KeyConcepts from "@/components/KeyConcepts.astro"
+import Prerequisites from "@/components/Prerequisites.astro"
+import TocAsideHint from '@/components/TocAsideHint.astro';
+import Tools from "@/components/Tools.astro";
+
+Prima di realizzare la chat in tempo reale con **WebSocket** e `ws`, è utile verificare che [**Node.js**](https://it.wikipedia.org/wiki/Node.js) funzioni correttamente sul computer e osservare come JavaScript viene eseguito lato server anziché all'interno di una scheda del browser.
+
+<AsideTip title="Cos'è Node.js?">
+[**Node.js**](https://it.wikipedia.org/wiki/Node.js) è un ambiente di esecuzione (*runtime*) open source che permette di eseguire codice **JavaScript** fuori dal browser — ad esempio su un server o direttamente sul proprio computer — basato sul motore V8 di Google e dotato di moduli integrati per lavorare con file, rete e sistema operativo.
+</AsideTip>
+
+A differenza degli script eseguiti nel browser — che interagiscono con il `DOM` e con `window` — uno script **Node.js** viene eseguito direttamente nel runtime del sistema operativo e può accedere a moduli integrati come `node:os`.
+
+<AsideTip title="Perché iniziare con uno script Node.js minimale?">
+Eseguire prima un piccolo script permette di verificare l'installazione di `node`, prendere confidenza con il terminale e usare `"type": "module"` con la sintassi `import` prima di gestire connessioni di rete ed eventi in `server.js`.
+</AsideTip>
+
+## Introduzione
+
+<ExpectedResults>
+- verifichi dal terminale la versione installata di [Node.js](https://it.wikipedia.org/wiki/Node.js);
+- inizializzi un piccolo progetto con `"type": "module"` in `package.json`;
+- esegui `app.js` usando un modulo integrato di Node.js (`node:os`) e leggi il risultato nel terminale.
+</ExpectedResults>
+
+<Tools vscode node json npm />
+
+<Prerequisites>
+- avere installato [Node.js](https://it.wikipedia.org/wiki/Node.js) sul computer
+- saper aprire e usare il terminale (anche quello integrato in Visual Studio Code)
+- conoscere le basi di [**JavaScript**](https://it.wikipedia.org/wiki/JavaScript) (variabili, stringhe e `console.log()`)
+</Prerequisites>
+
+## Struttura del progetto
+
+Crea una cartella dedicata per questa esercitazione preparatoria, così da tenerla separata dal progetto WebSocket:
+
+<FileTree>
+- lab-node-intro/
+  - **app.js** Piccolo script che utilizza il modulo integrato `node:os`
+  - **package.json** Configurazione del progetto con `"type": "module"`
+</FileTree>
+
+## Procedura passo passo
+
+<Steps>
+
+1. **Crea la cartella e inizializza il progetto**
+
+   Apri il terminale in Visual Studio Code ed esegui:
+
+   ```bash
+   node -v
+   mkdir lab-node-intro
+   cd lab-node-intro
+   npm init -y
+   ```
+
+2. Abilita gli ES Modules in package.json
+
+    Assicurati che in package.json sia presente una sola volta "type": "module", così da poter usare la sintassi standard import al posto del vecchio require() (CommonJS).
+
+3. Crea ed esegui app.js
+    Crea il file app.js con il codice riportato qui sotto;
+    
+    ```javascript title="app.js"
+    import os from 'node:os';
+
+    const username = os.userInfo().username;
+    const platform = `${os.platform()} (${os.arch()})`;
+    const currentTime = new Date().toLocaleTimeString('it-IT');
+
+    console.log(`Ciao ${username}! Node.js è attivo su ${platform} alle ${currentTime}.`);  ```
+    ```
+    poi avvialo dal terminale:
+    ```bash
+   node app.js
+   ```
+4. Vedrai sul terminale un testo tipo:
+    ```text
+    Ciao ilTuoNome! Node.js è attivo su win32 (x64) alle 17:49:10.
+    ```
+
+    <AsideTip title="Cosa significa il messaggio nel terminale">
+    - **`ilTuoNome`**: è il nome dell'utente attualmente collegato al computer, letto da `os.userInfo().username`.
+    - **`win32 (x64)`** *(oppure `linux (x64)` / `darwin (arm64)`)*: indica il sistema operativo (`os.platform()`, dove `win32` identifica Windows, `darwin` macOS e `linux` Linux) e l'architettura del processore (`os.arch()`, ad esempio `x64` per processori a 64 bit o `arm64` per Apple Silicon/ARM).
+    - **`17:49:10`**: è l'orario locale della macchina al momento dell'esecuzione dello script, formattato secondo le convenzioni italiane (`it-IT`).
+    </AsideTip>
+</Steps>
+
+## Verifica dell'Apprendimento
+
+<QuizIntro 
+resetLabel="Reimposta tutte le risposte"
+textLabel="Le risposte ai quiz di questa pagina vengono salvate nella memoria locale (local storage) del tuo browser e rimangono memorizzate tra una visita e l'altra"
+/>
+
+<Quiz id="quiz-node-os-userinfo">
+Quale proprietà o metodo del modulo `node:os` abbiamo usato per leggere il nome dell'utente corrente?
+
+- [ ] `os.platform()`
+- [x] `os.userInfo().username`
+    > Esatto: `os.userInfo()` restituisce le informazioni sull'utente corrente e `.username` ne estrae il nome.
+- [ ] `os.arch()`
+</Quiz>
+
+<Quiz id="quiz-node-platform-arch">
+Nel messaggio stampato dal terminale, cosa rappresentano `os.platform()` e `os.arch()`?
+
+- [ ] La versione di Node.js e il nome della cartella del progetto.
+- [x] Il sistema operativo (es. `win32`, `darwin`, `linux`) e l'architettura del processore (es. `x64`, `arm64`).
+    > Esatto: `os.platform()` identifica la piattaforma del sistema operativo e `os.arch()` l'architettura hardware su cui gira il runtime.
+- [ ] L'indirizzo IP locale e la porta di rete.
+</Quiz>
+
+<Quiz id="quiz-node-es-modules">
+Perché in `package.json` impostiamo `"type": "module"` nello script `app.js`?
+
+- [x] Per consentire l'uso della sintassi moderna `import` al posto del vecchio `require()` (`CommonJS`).
+- [ ] Per eseguire automaticamente il file nel browser tramite `Live Server`.
+- [ ] Per disattivare `console.log()` durante l'esecuzione.
+</Quiz>
+
+<QuizResults 
+titleLabel="Il tuo punteggio"
+progressLabel="Avanzamento Quiz"
+answeredLabel="risposte alle domande"
+correctLabel="risposte corrette"
+resetLabel="Reimposta tutte le risposte"
+/>

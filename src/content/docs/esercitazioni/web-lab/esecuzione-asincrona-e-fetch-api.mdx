@@ -1,6 +1,8 @@
 ---
 title: Esecuzione Asincrona e fetch API
 description: Esecuzione asincrona JavaScript e Fetch API.
+sidebar:
+    order: 30
 ---
 
 import {
@@ -10,12 +12,14 @@ import {
 } from "@astrojs/starlight/components";
 import AsideTip from '@/components/AsideTip.astro';
 import AsideCaution from '@/components/AsideCaution.astro';
+import IconInline from "@/components/IconInline.astro";
 import Mermaid from "@/components/Mermaid.astro";
 import { Quiz, QuizIntro, QuizResults } from 'starlight-quiz/components';
 import ExpectedResults from "@/components/ExpectedResults.astro"
 import KeyConcepts from "@/components/KeyConcepts.astro"
 import Prerequisites from "@/components/Prerequisites.astro"
 import TocAsideHint from '@/components/TocAsideHint.astro';
+import Tools from "@/components/Tools.astro";
 
 Impara a gestire l'esecuzione asincrona in JavaScript e a recuperare dati da servizi web con la Fetch API.
 
@@ -27,6 +31,8 @@ Impara a gestire l'esecuzione asincrona in JavaScript e a recuperare dati da ser
 - il risultato viene controllato tramite `response.ok` e mostrato nel DOM;
 - gli errori vengono intercettati con `try/catch` e comunicati all'utente.
 </ExpectedResults>
+
+<Tools html js vscode />
 
 <Prerequisites>
 - saper creare e modificare file HTML e JavaScript
@@ -64,7 +70,8 @@ Il Diagramma dei Casi d'Uso descrive il flusso dell'esercitazione:
     class Sistema system;
 `} />
 
-## Struttura dei file del progetto
+## ## <IconInline icon="seti:folder" /> Struttura dei file del progetto
+Struttura dei file del progetto
 
 Prima di scrivere il codice, assicurati di creare i due file nella stessa cartella di lavoro:
 

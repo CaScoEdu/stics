@@ -1,0 +1,147 @@
+---
+title: First script with Node.js
+description: A short practical exercise to run your first JavaScript file with Node.js before building the WebSocket chat.
+sidebar:
+    order: 49
+---
+
+import {
+    FileTree,
+    Steps
+} from "@astrojs/starlight/components";
+import AsideTip from '@/components/AsideTip.astro';
+import AsideCaution from '@/components/AsideCaution.astro';
+import IconInline from "@/components/IconInline.astro";
+import Mermaid from "@/components/Mermaid.astro";
+import { Quiz, QuizIntro, QuizResults } from 'starlight-quiz/components';
+import ExpectedResults from "@/components/ExpectedResults.astro"
+import KeyConcepts from "@/components/KeyConcepts.astro"
+import Prerequisites from "@/components/Prerequisites.astro"
+import TocAsideHint from '@/components/TocAsideHint.astro';
+import Tools from "@/components/Tools.astro";
+
+Before building the real-time chat with **WebSocket** and `ws`, it's useful to check that [**Node.js**](https://en.wikipedia.org/wiki/Node.js) works correctly on your computer and see how JavaScript runs on the server rather than inside a browser tab.
+
+<AsideTip title="What is Node.js?">
+[**Node.js**](https://en.wikipedia.org/wiki/Node.js) is an open-source runtime environment that lets you run **JavaScript** code outside the browser—for example, on a server or directly on your computer. It is based on Google's V8 engine and includes built-in modules for working with files, networks, and the operating system.
+</AsideTip>
+
+Unlike scripts running in a browser—which interact with the `DOM` and `window`—a **Node.js** script runs directly in the operating system's runtime and can access built-in modules such as `node:os`.
+
+<AsideTip title="Why start with a minimal Node.js script?">
+Running a small script first lets you check that `node` is installed, get comfortable with the terminal, and use `"type": "module"` with `import` syntax before handling network connections and events in `server.js`.
+</AsideTip>
+
+## Introduction
+
+<ExpectedResults>
+- check the installed version of [Node.js](https://en.wikipedia.org/wiki/Node.js) from the terminal;
+- initialize a small project with `"type": "module"` in `package.json`;
+- run `app.js` using a built-in Node.js module (`node:os`) and read the output in the terminal.
+</ExpectedResults>
+
+<Tools vscode node json npm />
+
+<Prerequisites>
+- avere installato [Node.js](https://it.wikipedia.org/wiki/Node.js) sul computer
+- saper aprire e usare il terminale (anche quello integrato in Visual Studio Code)
+- conoscere le basi di [**JavaScript**](https://it.wikipedia.org/wiki/JavaScript) (variabili, stringhe e `console.log()`)
+</Prerequisites>
+
+## Project structure
+
+Create a dedicated folder for this preparatory exercise to keep it separate from the WebSocket project:
+
+<FileTree>
+- lab-node-intro/
+    - **app.js** A small script that uses the built-in `node:os` module
+    - **package.json** Project configuration with `"type": "module"`
+</FileTree>
+
+## Step-by-step instructions
+
+<Steps>
+
+1. **Create the folder and initialize the project**
+
+    Open the terminal in Visual Studio Code and run:
+
+   ```bash
+   node -v
+   mkdir lab-node-intro
+   cd lab-node-intro
+   npm init -y
+   ```
+
+2. Enable ES modules in package.json
+
+    Make sure `"type": "module"` appears only once in `package.json`, so you can use the standard `import` syntax instead of the older `require()` (CommonJS).
+
+3. Create and run app.js
+    Create the `app.js` file with the code below:
+    
+    ```javascript title="app.js"
+    import os from 'node:os';
+
+    const username = os.userInfo().username;
+    const platform = `${os.platform()} (${os.arch()})`;
+    const currentTime = new Date().toLocaleTimeString('en-US');
+
+    console.log(`Hello ${username}! Node.js is running on ${platform} at ${currentTime}.`);  ```
+    ```
+    Then run it from the terminal:
+    ```bash
+   node app.js
+   ```
+4. You will see output like this in the terminal:
+    ```text
+    Hello yourName! Node.js is running on win32 (x64) at 5:49:10 PM.
+    ```
+
+    <AsideTip title="What the terminal message means">
+    - **`yourName`**: the name of the user currently signed in to the computer, read from `os.userInfo().username`.
+    - **`win32 (x64)`** *(or `linux (x64)` / `darwin (arm64)`)*: the operating system (`os.platform()`, where `win32` identifies Windows, `darwin` macOS, and `linux` Linux) and the processor architecture (`os.arch()`, such as `x64` for 64-bit processors or `arm64` for Apple Silicon/ARM).
+    - **`5:49:10 PM`**: the computer's local time when the script runs, formatted according to US English conventions (`en-US`).
+    </AsideTip>
+</Steps>
+
+## Knowledge check
+
+<QuizIntro 
+resetLabel="Reset all answers"
+textLabel="Your answers to this page's quizzes are saved in your browser's local storage and remain saved between visits."
+/>
+
+<Quiz id="quiz-node-os-userinfo">
+Which property or method from the `node:os` module did we use to read the current user's name?
+
+- [ ] `os.platform()`
+- [x] `os.userInfo().username`
+    > Correct: `os.userInfo()` returns information about the current user, and `.username` extracts their name.
+- [ ] `os.arch()`
+</Quiz>
+
+<Quiz id="quiz-node-platform-arch">
+In the message printed in the terminal, what do `os.platform()` and `os.arch()` represent?
+
+- [ ] The Node.js version and the project folder name.
+- [x] The operating system (e.g. `win32`, `darwin`, `linux`) and processor architecture (e.g. `x64`, `arm64`).
+    > Correct: `os.platform()` identifies the operating system platform, and `os.arch()` identifies the hardware architecture on which the runtime is running.
+- [ ] The local IP address and network port.
+</Quiz>
+
+<Quiz id="quiz-node-es-modules">
+Why do we set `"type": "module"` in `package.json` for the `app.js` script?
+
+- [x] To allow the modern `import` syntax instead of the older `require()` (`CommonJS`).
+- [ ] To automatically run the file in a browser using `Live Server`.
+- [ ] To disable `console.log()` while the script runs.
+</Quiz>
+
+<QuizResults 
+titleLabel="Your score"
+progressLabel="Quiz progress"
+answeredLabel="questions answered"
+correctLabel="correct answers"
+resetLabel="Reset all answers"
+/>

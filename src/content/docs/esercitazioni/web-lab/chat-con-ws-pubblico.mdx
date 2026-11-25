@@ -1,0 +1,146 @@
+---
+title: Web Sockets con Server pubblico
+description: Procedura passo passo per pubblicare il server WebSocket su Render e far chattare i client dai PC.
+sidebar:
+    order: 51
+---
+
+import {
+    FileTree,
+    Steps
+} from "@astrojs/starlight/components";
+import AsideTip from '@/components/AsideTip.astro';
+import AsideCaution from '@/components/AsideCaution.astro';
+import IconInline from "@/components/IconInline.astro";
+import Mermaid from "@/components/Mermaid.astro";
+import { Quiz, QuizIntro, QuizResults } from 'starlight-quiz/components';
+import ExpectedResults from "@/components/ExpectedResults.astro"
+import KeyConcepts from "@/components/KeyConcepts.astro"
+import Prerequisites from "@/components/Prerequisites.astro"
+import TocAsideHint from '@/components/TocAsideHint.astro';
+import Tools from "@/components/Tools.astro";
+
+Dopo aver provato i WebSocket in locale, vediamo come utilizzare un server WebSocket remoto. Pubblicando `server.js` su un servizio cloud per processi **Node.js** persistenti, come [**Render**](https://render.com/), il server sarà raggiungibile in rete e i browser potranno collegarsi al suo endpoint sicuro **`wss://`**, anche da postazioni che non comunicano direttamente tra loro sulla rete locale o da fuori aula.
+
+<Mermaid chart={`
+flowchart LR
+    PC1["PC Lab 1\n(Browser + index.html)"] -->|wss://...| Cloud["Render Web Service\n(server.js su process.env.PORT)"]
+    PC2["PC Lab 2\n(Browser + index.html)"] -->|wss://...| Cloud
+    PC3["PC Lab 3\n(Browser + index.html)"] -->|wss://...| Cloud
+    Cloud -->|broadcast JSON| PC1
+    Cloud -->|broadcast JSON| PC2
+    Cloud -->|broadcast JSON| PC3
+`} />
+
+<AsideTip title="Perché usare wss:// invece di ws:// nel deploy cloud?">
+I servizi cloud espongono l'endpoint pubblico su **HTTPS** e **WebSocket sicuro (`wss://`)**. Se una pagina viene caricata tramite `https://` — o se il server espone un endpoint protetto — il client deve usare **`wss://`** al posto di `ws://localhost:8080`.
+</AsideTip>
+
+## Introduzione
+
+<ExpectedResults>
+- adatti `server.js` per leggere la porta dinamica da `process.env.PORT`;
+- pubblichi il progetto del server su un repository [**GitHub**](https://github.com/) con `package.json` e `ws`;
+- configuri un **Web Service** su Render con `npm install` e `node server.js`;
+- colleghi `index.html` all'indirizzo `wss://` del servizio per scambiare messaggi tra più postazioni.
+</ExpectedResults>
+
+<Tools html js vscode node json npm />
+
+<Prerequisites>
+- aver completato la chat WebSocket locale con `server.js` e `index.html`
+- saper caricare un progetto su un repository **GitHub** tramite Git o Visual Studio Code
+- avere un account su [**Render**](https://render.com/)
+</Prerequisites>
+
+## Struttura del repository server
+
+Sul repository GitHub dedicato al server WebSocket servono almeno i file essenziali per installare le dipendenze e avviare il processo:
+
+<FileTree>
+- ws-chat-server/
+  - **package.json** Configurazione con `"type": "module"` e dipendenza `ws`
+  - **server.js** Server WebSocket in ascolto su `process.env.PORT || 8080`
+</FileTree>
+
+## Procedura passo passo
+
+<Steps>
+
+1. **Adatta la porta in `server.js`**
+
+   In ambiente cloud la porta non è fissa a `8080`, ma viene assegnata tramite la variabile d'ambiente `process.env.PORT`:
+
+   ```javascript
+   import { WebSocketServer, WebSocket } from 'ws';
+
+   const PORT = process.env.PORT || 8080;
+   const wss = new WebSocketServer({ port: PORT });
+
+   console.log(`Server WebSocket in ascolto sulla porta ${PORT}`);
+
+
+2. **Pubblica `package.json` e `server.js` su GitHub**
+    Verifica che `package.json` contenga `"type": "module"` e `ws` in `"dependencies"` (non serve caricare `node_modules`), poi fai commit e push su un repository GitHub.
+3. **Crea il Web Service su Render**
+    Accedi alla dashboard di Render, clicca su **New +** → **Web Service** e collega il tuo repository GitHub. Imposta:
+    * **Build Command**: `npm install`
+    * **Start Command**: `node server.js`
+
+
+4. **Avvia il deploy e copia l'URL del servizio**
+    Completa la creazione del servizio e attendi che il deploy risulti attivo. Render assegnerà un URL del tipo `https://nome-servizio.onrender.com`.
+5. **Aggiorna l'indirizzo `wss://` in `index.html**`
+    Nel client, sostituisci l'indirizzo locale con il corrispondente endpoint `wss://` (senza `https://`):
+    ```javascript
+    const socket = new WebSocket('wss://nome-servizio.onrender.com');
+
+    ```
+
+6. Apri `index.html` nei browser delle diverse postazioni in laboratorio e invia un messaggio per verificare il broadcast in tempo reale.
+
+</Steps>
+
+## Riepilogo
+
+## Verifica dell'Apprendimento
+
+<QuizIntro
+resetLabel="Reimposta tutte le risposte"
+textLabel="Le risposte ai quiz di questa pagina vengono salvate nella memoria locale (local storage) del tuo browser e rimangono memorizzate tra una visita e l'altra"
+/>
+
+<Quiz id="quiz-localhost-to-render-port">
+Quale modifica facciamo alla porta in `server.js` passando da `localhost` a Render?
+
+- [ ] Impostiamo una porta fissa `8080` ignorando l'ambiente.
+- [x] Usiamo `const PORT = process.env.PORT || 8080;` così Render assegna la porta dinamicamente, mantenendo `8080` come fallback in locale.
+    > Esatto: su Render la porta viene fornita tramite variabile d'ambiente `process.env.PORT`.
+- [ ] Rimuoviamo l'argomento `{ port: PORT }` dal `WebSocketServer`.
+</Quiz>
+
+<Quiz id="quiz-localhost-to-render-url">
+Nel client `index.html`, cosa cambia nell'indirizzo passato a `new WebSocket(...)` passando da `localhost` a Render?
+
+- [x] Si passa da `ws://localhost:...` a `wss://<nome-servizio>.onrender.com`.
+    > Esatto: il servizio su Render espone l'endpoint sicuro su TLS, quindi il client usa `wss://` senza numero di porta locale.
+- [ ] Si usa `http://<nome-servizio>.onrender.com:8080`.
+- [ ] Non serve modificare l'URL perché `localhost` punta già al servizio Render.
+</Quiz>
+
+<Quiz id="quiz-localhost-to-render-commands">
+Quali comandi configuriamo sul Web Service di Render per installare le dipendenze e avviare il server al posto dell'avvio manuale in locale?
+
+- [ ] Build Command: `node server.js` — Start Command: `npm install`
+- [ ] Build Command: `npm run dev` — Start Command: `index.html`
+- [x] Build Command: `npm install` — Start Command: `node server.js`
+    > Esatto: Render installa i pacchetti da `package.json` con `npm install` e avvia il server con `node server.js`.
+</Quiz>
+
+<QuizResults
+titleLabel="Il tuo punteggio"
+progressLabel="Avanzamento Quiz"
+answeredLabel="risposte alle domande"
+correctLabel="risposte corrette"
+resetLabel="Reimposta tutte le risposte"
+/>

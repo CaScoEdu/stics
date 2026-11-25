@@ -1,0 +1,380 @@
+---
+title: "05. Graphs, Dijkstra, and Route Animation - Part 2/2"
+description: "Interactive Campus Map Project - Lesson 4: modeling the network as a weighted graph, implementing Dijkstra in dijkstra.js, and animating the route polyline."
+---
+
+import {
+    Aside,
+    Steps
+} from "@astrojs/starlight/components";
+import AsideCaution from '@/components/AsideCaution.astro';
+import AsideNote from '@/components/AsideNote.astro';
+import AsideTip from '@/components/AsideTip.astro';
+import { Quiz, QuizIntro, QuizResults } from 'starlight-quiz/components';
+import KeyConcepts from "@/components/KeyConcepts.astro"
+
+In the previous lesson, we created the route graph.
+In this lesson:
+- use Dijkstra's algorithm to find the best route between a starting location and a destination
+- display the route on the interactive map as an animated dotted line
+
+## Create the `lesson-5` Working Branch
+Before adding the graph structure and Dijkstra's algorithm to calculate shortest paths, create a dedicated branch to isolate this lesson's changes:
+
+<Steps>
+1. Open the Source Control panel in VS Code (`Ctrl + Shift + G`).
+2. Click the current branch name at the bottom left (or at the top of the panel) and select `Create new branch...`.
+3. Enter the new branch name, `lesson-5`, and press Enter.
+</Steps>
+
+<AsideNote title="Take note">
+You are now working on a copy independent from Lesson 4, ready to add `grafo.json`, `dijkstra.js`, and the navigation logic between buildings!
+</AsideNote>
+
+## Dijkstra's Algorithm (`dijkstra.js`)
+<Aside type="tip" title="How does Dijkstra's algorithm work?">
+- The algorithm starts at a source node and sets its initial distance to `0`, and the distance to every other node to `Infinity (∞)`.
+- It progressively explores unvisited neighboring nodes, updating the shortest known path until it reaches the destination node.
+</Aside>
+Separate the algorithmic logic into its own file, `dijkstra.js`:
+
+```javascript title="dijkstra.js"
+ /**
+ * Dijkstra's algorithm for finding the shortest path in a weighted graph
+ */
+function calcolaDijkstra(grafo, inizio, fine) {
+  if (!grafo || !Object.hasOwn(grafo, inizio) || !Object.hasOwn(grafo, fine)) {
+    return [];
+  }
+
+  const distanze = {};
+  const precedenti = {};
+  const nodiNonVisitati = new Set();
+
+  // Initialize distances
+  Object.keys(grafo).forEach(nodo => {
+    distanze[nodo] = Infinity;
+    precedenti[nodo] = null;
+    nodiNonVisitati.add(nodo);
+  });
+  distanze[inizio] = 0;
+
+  while (nodiNonVisitati.size > 0) {
+    // Find the unvisited node with the shortest distance
+    let nodoCorrente = null;
+    nodiNonVisitati.forEach(nodo => {
+      if (nodoCorrente === null || distanze[nodo] < distanze[nodoCorrente]) {
+        nodoCorrente = nodo;
+      }
+    });
+
+    if (distanze[nodoCorrente] === Infinity || nodoCorrente === fine) break;
+
+    nodiNonVisitati.delete(nodoCorrente);
+
+    // Update the distances of neighboring nodes
+    const vicini = grafo[nodoCorrente] || {};
+    for (let vicino in vicini) {
+      if (nodiNonVisitati.has(vicino)) {
+        let nuovaDistanza = distanze[nodoCorrente] + vicini[vicino];
+        if (nuovaDistanza < distanze[vicino]) {
+          distanze[vicino] = nuovaDistanza;
+          precedenti[vicino] = nodoCorrente;
+        }
+      }
+    }
+  }
+
+  // Reconstruct the path backwards
+  const percorso = [];
+  let at = fine;
+  while (at !== null && at !== undefined) {
+    percorso.unshift(at);
+    at = precedenti[at];
+  }
+
+  return percorso[0] === inizio ? percorso : [];
+}
+```
+
+## Update `script.js`
+
+Overview of the logic and route-drawing functions
+-   `aggiornaEvidenziazione()` (updated):
+
+  This is the interaction's central engine.
+  It runs whenever the user selects a starting point or destination:
+  - clears old marks from the map,
+  - applies visual classes to the menus and buildings,
+  - asynchronously loads `grafo.json` using `fetch()`,
+  - calls **Dijkstra's algorithm** to calculate the shortest path, then draws the line.
+
+- `selezionaDaMappa(idEdificio)`:
+
+  Lets the user interact directly with the SVG map by clicking buildings instead of using the dropdown menus. It handles selections intelligently: the first click sets the starting point, the second sets the destination, and subsequent clicks start over by clearing the previous selection.
+
+- `ottieniCoordinateNodo(idNodo)`:
+
+  An essential geometric helper function.
+  It queries the SVG map DOM to find the element matching a given ID
+  (whether it is a circle with a `<circle>` tag or a rectangle with a `<rect>` tag),
+  reads its positional attributes, calculates its exact center, and returns the x and y coordinates ready to be drawn.
+
+- `disegnaPercorsoAnimato(nodi)`:
+
+  Takes the array of node IDs calculated by Dijkstra, converts each one into real coordinates using the previous function, and dynamically creates an SVG graphic element as a `<polyline>` tag. It inserts it precisely into the DOM (just below the buildings layer) to show the route on the map.
+
+- `rimuoviSelezioniPrecedenti()`:
+
+  The cleanup (reset) function. Before calculating and displaying a new route, it removes highlighting CSS classes from previously selected buildings and removes any previously drawn polyline from the DOM, preventing visual overlap.
+
+<AsideTip title="Optimizing SVG layers">
+We'll insert the dynamic route between the roads and buildings layers using `insertBefore`, so the line passes beneath the buildings without covering their labels!
+</AsideTip>
+
+- Replace the `aggiornaEvidenziazione()` function
+- Add the new functions
+    - `ottieniCoordinateNodo(idNodo)`
+    - `disegnaPercorsoAnimato(nodi)`
+    - `rimuoviSelezioniPrecedenti()`
+    
+```diff lang="javascript" title="script.js"
+
+-function aggiornaEvidenziazione() {
+-  
+-  /* codice vecchia funzione */
+-
+- }
++// Update the highlighting function
++async function aggiornaEvidenziazione() {
++  rimuoviSelezioniPrecedenti();
++  
++  const idPartenza = document.getElementById("select-da").value;
++  const idDestinazione = document.getElementById("select-a").value;
++
++  if (idPartenza) document.getElementById(idPartenza)?.classList.add("attivo-partenza");
++  if (idDestinazione) document.getElementById(idDestinazione)?.classList.add("attivo-destinazione");
++
++  // Calculate and draw the route with Dijkstra
++  if (idPartenza && idDestinazione) {
++    try {
++      const risposta = await fetch("grafo.json");
++      const grafo = await risposta.json();
++
++      const percorsoNodi = calcolaDijkstra(grafo, idPartenza, idDestinazione);
++      
++      if (percorsoNodi.length > 0) {
++        disegnaPercorsoAnimato(percorsoNodi);
++      }
++    } catch (errore) {
++      console.error("Errore nel calcolo del percorso:", errore);
++    }
++  }
++}
++
++// Read coordinates directly from SVG elements
++function ottieniCoordinateNodo(idNodo) {
++  const elemento = document.getElementById(idNodo);
++  if (!elemento) return null;
++
++  if (elemento.tagName.toLowerCase() === "circle") {
++    return `${elemento.getAttribute("cx")},${elemento.getAttribute("cy")}`;
++  }
++
++  const rect = elemento.querySelector("rect") || elemento;
++  const x = parseFloat(rect.getAttribute("x")) + parseFloat(rect.getAttribute("width")) / 2;
++  const y = parseFloat(rect.getAttribute("y")) + parseFloat(rect.getAttribute("height")) / 2;
++  
++  return `${x},${y}`;
++}
++
++// Draw the polyline between the roads and buildings
++function disegnaPercorsoAnimato(nodi) {
++  const svgRoot = document.querySelector("#mappa-container svg");
++  if (!svgRoot) return;
++
++  const puntiStringa = nodi
++    .map(id => ottieniCoordinateNodo(id))
++    .filter(Boolean)
++    .join(" ");
++
++  if (puntiStringa) {
++    const gDinamico = document.createElementNS("http://www.w3.org/2000/svg", "g");
++    gDinamico.id = "layer-percorso-dinamico";
++
++    const polyline = document.createElementNS("http://www.w3.org/2000/svg", "polyline");
++    polyline.setAttribute("points", puntiStringa);
++    polyline.setAttribute("class", "percorso-animato");
++
++    gDinamico.appendChild(polyline);
++
++    // Insert the dynamic route immediately before the buildings layer
++    const layerEdifici = svgRoot.querySelector("#layer-edifici");
++    if (layerEdifici) {
++      svgRoot.insertBefore(gDinamico, layerEdifici);
++    } else {
++      svgRoot.appendChild(gDinamico);
++    }
++  }
++}
++
++function rimuoviSelezioniPrecedenti() {
++  document.querySelectorAll(".attivo-destinazione, .attivo-partenza").forEach(el => {
++    el.classList.remove("attivo-destinazione", "attivo-partenza");
++  });
++  document.querySelector("#layer-percorso-dinamico")?.remove();
++}
+
+/* funzione selezionaDaMappa inalterata: */
+
+function selezionaDaMappa(idEdificio) {
+    /* ... */
+}
+
+```
+
+## Animated Dotted-Line Style in `style.css`
+
+Add these new CSS rules at the end of the file:
+
+```diff lang="css" title="style.css"
++/* Style for the animated dotted route line */
++.percorso-animato {
++  fill: none;
++  stroke: #0284c7;
++  stroke-width: 6;
++  stroke-linecap: round;
++  stroke-linejoin: round;
++  stroke-dasharray: 12, 12;
++  animation: serpentina 1s linear infinite;
++  filter: drop-shadow(0px 0px 6px rgba(2, 132, 199, 0.6));
++}
++
++@keyframes serpentina {
++  from {
++    stroke-dashoffset: 24;
++  }
++  to {
++    stroke-dashoffset: 0;
++  }
++}
+
+```
+<AsideNote title="🐍 The animated dotted-line effect">
+
+The animated dotted-line effect (or moving-trail effect) uses a clever technique that manipulates the dashes of an SVG line with CSS.
+
+Here's how it works:
+
+1. `stroke-dasharray: 12, 12;`: This property turns a continuous line into a regular dashed line, alternating 12-pixel dashes and 12-pixel gaps (for a total pattern length of 24 pixels).
+
+2. `stroke-dashoffset`: This property determines the starting point of the dash pattern along the line.
+
+3. The `@keyframes` animation: by continuously and linearly (`infinite`) changing `stroke-dashoffset` from `24` to `0`, the dashes move forward along the route.
+
+To the human eye, this continuous movement of the dashes creates the familiar optical illusion of a moving flow (like "marching ants" or an animated navigation route).
+</AsideNote>
+
+## Test
+Run the project and verify that location selections work correctly and display the animated route between the starting point and destination.
+<AsideCaution title="Preventing CORS errors">
+Always launch the project using **Live Server** in VS Code (don't open the file directly by double-clicking it or as a local `file://` file) to avoid the **CORS** restriction browsers apply to asynchronous <code>fetch()</code> requests.
+</AsideCaution>
+
+## Final Commit and Sync (Git / GitHub)
+
+<Steps>
+1. **Check the files**: Open VS Code's **Source Control** panel and make sure all modified and created files (`dijkstra.js`, `grafo.json`, `mappa.svg`, `locali.json`, `style.css`, `script.js`, and `index.html`) are in the staging area.
+2. **Create the commit**: Enter the commit message `"Completed Lesson 5: Graphs, Dijkstra, and Route Animation Part 2/2"` and confirm.
+3. **Sync**: Use **Publish Branch** or **Sync Changes** to push everything to GitHub.
+</Steps>
+
+## Summary
+
+<KeyConcepts>
+- [`grafo.json`](https://en.wikipedia.org/wiki/Graph_(discrete_mathematics)): represents the campus network as nodes and weighted edges; weights indicate distances or travel costs.
+- [Dijkstra's algorithm](https://en.wikipedia.org/wiki/Dijkstra%27s_algorithm): finds the shortest path between a starting point and a destination in a graph with non-negative weights.
+- [`dijkstra.js`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Modules): contains the shortest-path algorithm, separate from the interface logic.
+- [`fetch()`](https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API/Using_Fetch) and [`async` / `await`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/async_function): asynchronously load `grafo.json` before calculating the route.
+- [SVG coordinates](https://developer.mozilla.org/en-US/docs/Web/SVG/Attribute): the `cx`, `cy`, `x`, and `y` attributes are used to find node positions on the map.
+- [`<polyline>`](https://developer.mozilla.org/en-US/docs/Web/SVG/Element/polyline) and [CSS animations](https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_animations/Using_CSS_animations): draw and animate the route's dotted line.
+- [`classList`](https://developer.mozilla.org/en-US/docs/Web/API/Element/classList): adds or removes highlighting classes for the starting point and destination.
+</KeyConcepts>
+
+## Knowledge Check
+
+<QuizIntro 
+resetLabel="Reset all answers"
+textLabel="Your answers to this page's quizzes are saved in your browser's local storage and remain there between visits."
+/>
+
+<Quiz id="quiz-grafo-pesato">
+How is the graph represented in `grafo.json`?
+
+- [ ] As a list of colors associated with buildings.
+- [x] As an adjacency list where each node lists its neighbors and the weight of each edge.
+  > Correct: each node contains its reachable connections and their travel costs.
+- [ ] As a sequence of HTML `<option>` elements.
+</Quiz>
+
+<Quiz id="quiz-grafo-bidirezionale">
+What does it mean that the graph in this lesson is undirected?
+
+- [ ] Nodes cannot have weights.
+- [x] A connection between two nodes can be traversed in either direction.
+  > Correct: connections are listed reciprocally for the nodes they join.
+- [ ] Dijkstra visits nodes in alphabetical order.
+</Quiz>
+
+<Quiz id="quiz-dijkstra-percorso">
+What does `calcolaDijkstra(grafo, inizio, fine)` return when it finds a path?
+
+- [ ] The weight of only the first edge.
+- [x] An ordered array of node IDs connecting the starting point and destination.
+  > Correct: the script uses the returned array to find coordinates and draw the route.
+- [ ] A string containing the complete SVG map markup.
+</Quiz>
+
+<Quiz id="quiz-pesi-dijkstra">
+What role do edge weights play in Dijkstra's calculation?
+
+- [ ] They indicate which color to use to draw each node.
+- [x] They represent the cost of connections and allow routes to be compared.
+  > Correct: weights can represent distances or travel costs; Dijkstra searches for the shortest path.
+- [ ] They determine the order in which CSS files are loaded.
+</Quiz>
+
+<Quiz id="quiz-coordinate-nodi">
+How does `ottieniCoordinateNodo(idNodo)` get the coordinates of an SVG `<circle>` node?
+
+- [ ] It reads the `x` and `y` attributes of the HTML container.
+- [x] It reads the element's `cx` and `cy` attributes.
+  > Correct: `cx` and `cy` identify the circle's center and provide the point to draw.
+- [ ] It uses the corresponding edge weight in `grafo.json`.
+</Quiz>
+
+<Quiz id="quiz-polyline-percorso">
+Which SVG element is created to draw the calculated route?
+
+- [ ] A `<rect>` element for each edge.
+- [x] A `<polyline>` with points corresponding to the nodes' coordinates.
+  > Correct: the polyline's points follow the order of nodes returned by Dijkstra.
+- [ ] An `<option>` element inserted into the destination menu.
+</Quiz>
+
+<Quiz id="quiz-animazione-serpentina">
+What effect does the combination of `stroke-dasharray` and `stroke-dashoffset` produce in the route's CSS?
+
+- [ ] It changes the position of buildings on the map.
+- [x] It moves dashes along the polyline, animating the route.
+  > Correct: the animation changes the dash offset over time.
+- [ ] It calculates the minimum distance between graph nodes.
+</Quiz>
+
+<QuizResults 
+titleLabel="Your score"
+progressLabel="Quiz progress"
+answeredLabel="questions answered"
+correctLabel="correct answers"
+resetLabel="Reset all answers"
+ />

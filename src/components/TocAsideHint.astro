@@ -11,8 +11,8 @@ const isEn = Astro.url.pathname.startsWith('/en/');
 const {
   title = isEn ? 'Reading tip' : 'Suggerimento di lettura',
   message = isEn
-    ? 'This diagram is easier to read with more horizontal space. You can hide the right sidebar while studying it and reopen it afterwards.'
-    : 'Questo diagramma si legge meglio con più spazio orizzontale. Puoi chiudere il pannello di destra mentre lo studi e riaprirlo dopo.',
+    ? 'Maybe this part is easier to read with more horizontal space. You can hide the right sidebar while studying it and reopen it afterwards.'
+    : 'Forse questa parte si legge meglio con più spazio orizzontale. Puoi chiudere il pannello di destra mentre lo studi e riaprirlo dopo.',
   hideLabel = isEn ? 'Hide right sidebar' : 'Nascondi pannello destro',
   showLabel = isEn ? 'Show right sidebar' : 'Mostra pannello destro',
 } = Astro.props;
