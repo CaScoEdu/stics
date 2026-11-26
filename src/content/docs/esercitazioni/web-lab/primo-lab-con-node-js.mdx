@@ -10,23 +10,18 @@ import {
     Steps
 } from "@astrojs/starlight/components";
 import AsideTip from '@/components/AsideTip.astro';
-import AsideCaution from '@/components/AsideCaution.astro';
-import IconInline from "@/components/IconInline.astro";
-import Mermaid from "@/components/Mermaid.astro";
 import { Quiz, QuizIntro, QuizResults } from 'starlight-quiz/components';
 import ExpectedResults from "@/components/ExpectedResults.astro"
-import KeyConcepts from "@/components/KeyConcepts.astro"
 import Prerequisites from "@/components/Prerequisites.astro"
-import TocAsideHint from '@/components/TocAsideHint.astro';
 import Tools from "@/components/Tools.astro";
 
-Prima di realizzare la chat in tempo reale con **WebSocket** e `ws`, è utile verificare che [**Node.js**](https://it.wikipedia.org/wiki/Node.js) funzioni correttamente sul computer e osservare come JavaScript viene eseguito lato server anziché all'interno di una scheda del browser.
+Prima di realizzare la chat in tempo reale con [**WebSocket**](https://it.wikipedia.org/wiki/WebSocket) e `ws`, è utile verificare che [**Node.js**](https://it.wikipedia.org/wiki/Node.js) funzioni correttamente sul computer e osservare come JavaScript viene eseguito lato server anziché all'interno di una scheda del browser.
 
 <AsideTip title="Cos'è Node.js?">
-[**Node.js**](https://it.wikipedia.org/wiki/Node.js) è un ambiente di esecuzione (*runtime*) open source che permette di eseguire codice **JavaScript** fuori dal browser — ad esempio su un server o direttamente sul proprio computer — basato sul motore V8 di Google e dotato di moduli integrati per lavorare con file, rete e sistema operativo.
+[**Node.js**](https://it.wikipedia.org/wiki/Node.js) è un ambiente di esecuzione (*runtime*) open source che permette di eseguire codice [**JavaScript**](https://it.wikipedia.org/wiki/JavaScript) fuori dal browser — ad esempio su un server o direttamente sul proprio computer — basato sul motore [V8](https://it.wikipedia.org/wiki/V8_(motore_JavaScript)) di Google e dotato di moduli integrati per lavorare con file, rete e sistema operativo.
 </AsideTip>
 
-A differenza degli script eseguiti nel browser — che interagiscono con il `DOM` e con `window` — uno script **Node.js** viene eseguito direttamente nel runtime del sistema operativo e può accedere a moduli integrati come `node:os`.
+A differenza degli script eseguiti nel browser — che interagiscono con il [DOM](https://it.wikipedia.org/wiki/Document_Object_Model) e con `window` — uno script **Node.js** viene eseguito direttamente nel runtime del sistema operativo e può accedere a moduli integrati come `node:os`.
 
 <AsideTip title="Perché iniziare con uno script Node.js minimale?">
 Eseguire prima un piccolo script permette di verificare l'installazione di `node`, prendere confidenza con il terminale e usare `"type": "module"` con la sintassi `import` prima di gestire connessioni di rete ed eventi in `server.js`.
@@ -73,12 +68,20 @@ Crea una cartella dedicata per questa esercitazione preparatoria, così da tener
    npm init -y
    ```
 
-2. Abilita gli ES Modules in package.json
+    <AsideTip title="Cosa fa npm init -y?">
+    [**npm**](https://it.wikipedia.org/wiki/Npm_(software)) è il gestore di pacchetti di Node.js. Il comando `npm init` crea il file `package.json`, che contiene le informazioni e le impostazioni del progetto. L'opzione `-y` accetta automaticamente i valori predefiniti, senza chiederti di rispondere alle domande una alla volta.
+    </AsideTip>
 
-    Assicurati che in package.json sia presente una sola volta "type": "module", così da poter usare la sintassi standard import al posto del vecchio require() (CommonJS).
+2. **Abilita gli ES Modules in `package.json`**
 
-3. Crea ed esegui app.js
-    Crea il file app.js con il codice riportato qui sotto;
+    Assicurati che in `package.json` sia presente una sola volta `"type": "module"`. Questa impostazione dichiara che il progetto usa gli ES Modules: è quindi coerente con la modalità moderna di `import` ed `export`, che userai nel successivo `app.js`, invece del vecchio `require()` (CommonJS).
+
+    <AsideTip title="Cosa sono gli ES Modules?">
+    Gli **ES Modules (ESM)** sono il sistema standard di JavaScript per organizzare il codice in moduli riutilizzabili. Un modulo può rendere disponibili funzioni o valori con `export`, che altri moduli possono utilizzare tramite `import`. In **Node.js**, l'impostazione `"type": "module"` abilita questa sintassi nei file `.js` del progetto.
+    </AsideTip>
+
+3. **Crea ed esegui `app.js`**
+    Crea il file `app.js` con il codice riportato qui sotto;
     
     ```javascript title="app.js"
     import os from 'node:os';
@@ -87,12 +90,23 @@ Crea una cartella dedicata per questa esercitazione preparatoria, così da tener
     const platform = `${os.platform()} (${os.arch()})`;
     const currentTime = new Date().toLocaleTimeString('it-IT');
 
-    console.log(`Ciao ${username}! Node.js è attivo su ${platform} alle ${currentTime}.`);  ```
+    console.log(`Ciao ${username}! Node.js è attivo su ${platform} alle ${currentTime}.`);
     ```
-    poi avvialo dal terminale:
+
+    <AsideTip title="Come funziona app.js?">
+    Lo script importa `node:os`, un modulo già incluso in Node.js. `os.userInfo().username` legge il nome dell'utente corrente; `os.platform()` e `os.arch()` restituiscono rispettivamente il sistema operativo e l'architettura. `new Date().toLocaleTimeString('it-IT')` ottiene l'ora locale nel formato italiano, e `console.log()` stampa il messaggio nel terminale.
+    </AsideTip>
+
+    Poi avvialo dal terminale:
     ```bash
    node app.js
    ```
+    <AsideTip title="Il comando 'node app.js'">
+
+    `node` è il comando che avvia l'eseguibile di **Node.js**, cioè il *runtime* che esegue JavaScript fuori dal browser. Quando gli passi `app.js`, Node.js carica il file e ne esegue il codice: non si tratta semplicemente di un interprete che legge ogni istruzione una alla volta. Il motore **V8** analizza e compila il JavaScript, anche durante l'esecuzione (*compilazione JIT*), trasformandolo in codice eseguibile dalla macchina.
+   </AsideTip>
+   
+
 4. Vedrai sul terminale un testo tipo:
     ```text
     Ciao ilTuoNome! Node.js è attivo su win32 (x64) alle 17:49:10.

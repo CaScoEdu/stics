@@ -1,6 +1,6 @@
 ---
 title: First script with Node.js
-description: A short practical exercise to run your first JavaScript file with Node.js before building the WebSocket chat.
+description: A short hands-on exercise to run your first JavaScript file with Node.js before building the WebSocket chat.
 sidebar:
     order: 49
 ---
@@ -10,26 +10,21 @@ import {
     Steps
 } from "@astrojs/starlight/components";
 import AsideTip from '@/components/AsideTip.astro';
-import AsideCaution from '@/components/AsideCaution.astro';
-import IconInline from "@/components/IconInline.astro";
-import Mermaid from "@/components/Mermaid.astro";
 import { Quiz, QuizIntro, QuizResults } from 'starlight-quiz/components';
 import ExpectedResults from "@/components/ExpectedResults.astro"
-import KeyConcepts from "@/components/KeyConcepts.astro"
 import Prerequisites from "@/components/Prerequisites.astro"
-import TocAsideHint from '@/components/TocAsideHint.astro';
 import Tools from "@/components/Tools.astro";
 
-Before building the real-time chat with **WebSocket** and `ws`, it's useful to check that [**Node.js**](https://en.wikipedia.org/wiki/Node.js) works correctly on your computer and see how JavaScript runs on the server rather than inside a browser tab.
+Before building the real-time chat with [**WebSocket**](https://en.wikipedia.org/wiki/WebSocket) and `ws`, it is useful to check that [**Node.js**](https://en.wikipedia.org/wiki/Node.js) works correctly on your computer and see how JavaScript runs on the server rather than inside a browser tab.
 
 <AsideTip title="What is Node.js?">
-[**Node.js**](https://en.wikipedia.org/wiki/Node.js) is an open-source runtime environment that lets you run **JavaScript** code outside the browser—for example, on a server or directly on your computer. It is based on Google's V8 engine and includes built-in modules for working with files, networks, and the operating system.
+[**Node.js**](https://en.wikipedia.org/wiki/Node.js) is an open-source runtime environment that lets you run [**JavaScript**](https://en.wikipedia.org/wiki/JavaScript) code outside the browser—for example, on a server or directly on your computer. It is based on Google's [V8](https://en.wikipedia.org/wiki/V8_(JavaScript_engine)) engine and includes built-in modules for working with files, networks, and the operating system.
 </AsideTip>
 
-Unlike scripts running in a browser—which interact with the `DOM` and `window`—a **Node.js** script runs directly in the operating system's runtime and can access built-in modules such as `node:os`.
+Unlike scripts running in a browser—which interact with the [DOM](https://en.wikipedia.org/wiki/Document_Object_Model) and `window`—a **Node.js** script runs directly in the operating system's runtime and can access built-in modules such as `node:os`.
 
 <AsideTip title="Why start with a minimal Node.js script?">
-Running a small script first lets you check that `node` is installed, get comfortable with the terminal, and use `"type": "module"` with `import` syntax before handling network connections and events in `server.js`.
+Running a small script first lets you check your `node` installation, get comfortable with the terminal, and use `"type": "module"` with `import` syntax before handling network connections and events in `server.js`.
 </AsideTip>
 
 ## Introduction
@@ -43,9 +38,9 @@ Running a small script first lets you check that `node` is installed, get comfor
 <Tools vscode node json npm />
 
 <Prerequisites>
-- avere installato [Node.js](https://it.wikipedia.org/wiki/Node.js) sul computer
-- saper aprire e usare il terminale (anche quello integrato in Visual Studio Code)
-- conoscere le basi di [**JavaScript**](https://it.wikipedia.org/wiki/JavaScript) (variabili, stringhe e `console.log()`)
+- have [Node.js](https://en.wikipedia.org/wiki/Node.js) installed on your computer
+- know how to open and use a terminal (including the one built into Visual Studio Code)
+- know the basics of [**JavaScript**](https://en.wikipedia.org/wiki/JavaScript) (variables, strings, and `console.log()`)
 </Prerequisites>
 
 ## Project structure
@@ -73,11 +68,19 @@ Create a dedicated folder for this preparatory exercise to keep it separate from
    npm init -y
    ```
 
-2. Enable ES modules in package.json
+    <AsideTip title="What does npm init -y do?">
+    [**npm**](https://en.wikipedia.org/wiki/Npm_(software)) is the Node.js package manager. The `npm init` command creates the `package.json` file, which contains the project's information and settings. The `-y` option automatically accepts the default values, so you don't have to answer the prompts one by one.
+    </AsideTip>
 
-    Make sure `"type": "module"` appears only once in `package.json`, so you can use the standard `import` syntax instead of the older `require()` (CommonJS).
+2. **Enable ES modules in `package.json`**
 
-3. Create and run app.js
+    Make sure `"type": "module"` appears only once in `package.json`. This setting declares that the project uses ES modules, which enables the modern `import` and `export` syntax that you'll use in `app.js` instead of the older `require()` (CommonJS).
+
+    <AsideTip title="What are ES modules?">
+    **ES modules (ESM)** are JavaScript's standard system for organizing code into reusable modules. A module can make functions or values available with `export`, which other modules can use with `import`. In **Node.js**, the `"type": "module"` setting enables this syntax in the project's `.js` files.
+    </AsideTip>
+
+3. **Create and run `app.js`**
     Create the `app.js` file with the code below:
     
     ```javascript title="app.js"
@@ -85,23 +88,34 @@ Create a dedicated folder for this preparatory exercise to keep it separate from
 
     const username = os.userInfo().username;
     const platform = `${os.platform()} (${os.arch()})`;
-    const currentTime = new Date().toLocaleTimeString('en-US');
+    const currentTime = new Date().toLocaleTimeString('it-IT');
 
-    console.log(`Hello ${username}! Node.js is running on ${platform} at ${currentTime}.`);  ```
+    console.log(`Ciao ${username}! Node.js è attivo su ${platform} alle ${currentTime}.`);
     ```
+
+    <AsideTip title="How does app.js work?">
+    The script imports `node:os`, a module included with Node.js. `os.userInfo().username` reads the current user's name; `os.platform()` and `os.arch()` return the operating system and architecture, respectively. `new Date().toLocaleTimeString('it-IT')` gets the local time in the Italian format, and `console.log()` prints the message in the terminal.
+    </AsideTip>
+
     Then run it from the terminal:
     ```bash
    node app.js
    ```
-4. You will see output like this in the terminal:
+    <AsideTip title="The 'node app.js' command">
+
+    `node` is the command that starts the **Node.js** executable, the *runtime* that runs JavaScript outside the browser. When you pass it `app.js`, Node.js loads the file and executes its code; it is not simply an interpreter that reads each instruction one at a time. The **V8** engine analyzes and compiles JavaScript, including during execution (*JIT compilation*), transforming it into machine-executable code.
+   </AsideTip>
+   
+
+4. You will see text like this in the terminal:
     ```text
-    Hello yourName! Node.js is running on win32 (x64) at 5:49:10 PM.
+    Ciao ilTuoNome! Node.js è attivo su win32 (x64) alle 17:49:10.
     ```
 
-    <AsideTip title="What the terminal message means">
+    <AsideTip title="What does the terminal message mean?">
     - **`yourName`**: the name of the user currently signed in to the computer, read from `os.userInfo().username`.
     - **`win32 (x64)`** *(or `linux (x64)` / `darwin (arm64)`)*: the operating system (`os.platform()`, where `win32` identifies Windows, `darwin` macOS, and `linux` Linux) and the processor architecture (`os.arch()`, such as `x64` for 64-bit processors or `arm64` for Apple Silicon/ARM).
-    - **`5:49:10 PM`**: the computer's local time when the script runs, formatted according to US English conventions (`en-US`).
+    - **`17:49:10`**: the computer's local time when the script runs, formatted according to Italian conventions (`it-IT`).
     </AsideTip>
 </Steps>
 
@@ -109,7 +123,7 @@ Create a dedicated folder for this preparatory exercise to keep it separate from
 
 <QuizIntro 
 resetLabel="Reset all answers"
-textLabel="Your answers to this page's quizzes are saved in your browser's local storage and remain saved between visits."
+textLabel="Your answers to the quizzes on this page are saved in your browser's local storage and remain saved between visits."
 />
 
 <Quiz id="quiz-node-os-userinfo">
@@ -117,7 +131,7 @@ Which property or method from the `node:os` module did we use to read the curren
 
 - [ ] `os.platform()`
 - [x] `os.userInfo().username`
-    > Correct: `os.userInfo()` returns information about the current user, and `.username` extracts their name.
+    > Correct: `os.userInfo()` returns information about the current user, and `.username` extracts the name.
 - [ ] `os.arch()`
 </Quiz>
 
@@ -126,7 +140,7 @@ In the message printed in the terminal, what do `os.platform()` and `os.arch()` 
 
 - [ ] The Node.js version and the project folder name.
 - [x] The operating system (e.g. `win32`, `darwin`, `linux`) and processor architecture (e.g. `x64`, `arm64`).
-    > Correct: `os.platform()` identifies the operating system platform, and `os.arch()` identifies the hardware architecture on which the runtime is running.
+    > Correct: `os.platform()` identifies the operating system platform, and `os.arch()` identifies the hardware architecture on which the runtime runs.
 - [ ] The local IP address and network port.
 </Quiz>
 
@@ -135,7 +149,7 @@ Why do we set `"type": "module"` in `package.json` for the `app.js` script?
 
 - [x] To allow the modern `import` syntax instead of the older `require()` (`CommonJS`).
 - [ ] To automatically run the file in a browser using `Live Server`.
-- [ ] To disable `console.log()` while the script runs.
+- [ ] To disable `console.log()` during execution.
 </Quiz>
 
 <QuizResults 
