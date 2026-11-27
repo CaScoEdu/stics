@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Concurrent Operations</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <h1>Concurrent Operations with Web Workers</h1>
+    <button id="resetButton" type="button">Reset and recalculate</button>
+    <div id="results">
+        <p>A = 25 = <span id="resultA">--</span></p>
+        <p>B = A + 3 = <span id="resultB">--</span></p>
+        <p>C = A + 5 = <span id="resultC">--</span></p>
+        <p>D = B + C = <span id="resultD">--</span></p>
+        <p>E = F + D + J = <span id="resultE">--</span></p>
+        <p>F = 12 + C = <span id="resultF">--</span></p>
+        <p>G = 15 + J = <span id="resultG">--</span></p>
+        <p>H = F + E + G = <span id="resultH">--</span></p>
+        <p>I = 8 + H = <span id="resultI">--</span></p>
+        <p>J = A + 17 = <span id="resultJ">--</span></p>
+    </div>
+    <script src="app.js"></script>
+</body>
+</html>

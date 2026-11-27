@@ -1,0 +1,283 @@
+---
+title: "Introduction to Concurrent Programming"
+description: "Introduction to Concurrent Programming"
+sidebar:
+    order: 1
+---
+
+import {
+    Card
+} from "@astrojs/starlight/components";
+import { Quiz, QuizIntro, QuizResults } from 'starlight-quiz/components';
+import AsideCaution from "@/components/AsideCaution.astro";
+import AsideNote from "@/components/AsideNote.astro";
+import AsideToDo from "@/components/AsideToDo.astro";
+import ExpectedResults from "@/components/ExpectedResults.astro"
+import KeyConcepts from "@/components/KeyConcepts.astro"
+import Mermaid from "@/components/Mermaid.astro";
+import Prerequisites from "@/components/Prerequisites.astro"
+
+In this lesson, we introduce some basic concepts related to [**concurrent programming**](https://en.wikipedia.org/wiki/Concurrent_computing).
+
+## Introduction
+
+<ExpectedResults>
+- Distinguish concurrent execution from other forms of program execution.
+- Explain the difference between overlapping and interleaving.
+- Recognize the role of processors or cores in the simultaneous execution of tasks.
+- Understand why concurrency requires coordination between processes that share data or resources.
+</ExpectedResults>
+
+<Prerequisites>
+- Basic distinction between process and program
+- Basic knowledge of how a CPU works
+- Understanding of the activities performed by a program
+</Prerequisites>
+
+## Why Concurrent Programming Is Important
+
+[**Concurrent programming**](https://en.wikipedia.org/wiki/Concurrent_computing) allows a program to manage multiple tasks within the same interval of time. Tasks can take turns or, if multiple **processors** are available, can proceed truly in parallel. This helps make better use of **resources** and keeps programs responsive while some operations are waiting, for example for data from the network.
+
+It is used in many contexts:
+- **Servers and web services**: to handle multiple user requests without completing one before starting the next.
+- **Graphical interfaces**: to keep the interface responsive while performing long operations, such as loading a file.
+- **Operating systems**: to manage multiple processes and services, alternating CPU use and coordinating access to resources.
+- **Network communications**: to send and receive data while other tasks continue to execute.
+- **Data processing**: to divide work into tasks that can proceed concurrently when dependencies allow it.
+- **Simulations and video games**: to coordinate tasks such as physics updates, input handling, and rendering.
+
+<AsideCaution>
+**Concurrency** requires coordinating activities that share data or **resources**, so that dependencies are respected and inconsistent results are avoided.
+</AsideCaution>
+
+## Key Concepts
+
+- **Program**: a set of instructions that describes operations to perform.
+- **Process**: an executing instance of a program, with its own state and resources.
+- **Processor**: a hardware component that executes instructions; a system can have multiple processors or cores.
+- **Resource**: an element required by a process to perform its work, such as memory, files, devices, or shared data.
+
+## Overlapping and Interleaving
+
+With a **multiprocessor** system (multiple processors or cores), two processes can make progress at the same instant: their executions overlap in time (**overlapping**). With a **single processor**, [**multitasking**](https://en.wikipedia.org/wiki/Computer_multitasking) gives processes short turns on the CPU: executions alternate (**interleaving**), so only one process runs at a given instant, even if rapid switching creates the appearance of simultaneity.
+
+<Card>
+
+### Overlapping
+
+Two processes make progress during the same interval of time on different processors.
+
+<Mermaid chart={`
+gantt
+    title Overlapping: two processes in the same interval
+    dateFormat X
+    axisFormat %s
+
+    section Processor 1
+    Process A :a1, 0, 4
+
+    section Processor 2
+    Process B :b1, 0, 4
+`} />
+
+### Interleaving
+
+On a single processor, the two processes take turns: only one process is executed at a time in each interval.
+
+<Mermaid chart={`
+gantt
+    title Interleaving: alternation on a single processor
+    dateFormat X
+    axisFormat %s
+
+    section Single processor
+    Process A :a1, 0, 1
+    Process B :b1, 1, 2
+    Process A :a2, 2, 3
+    Process B :b2, 3, 4
+`} />
+
+</Card>
+
+## Processes and Resources: Examples
+
+In these examples, the cars represent **processes**, while the roads or intersection represent the **resources** that can be used.
+
+
+
+### Separate Resources: Two Cars on Parallel Roads
+
+Each car uses a separate road: the **resources** are not shared, and the **processes** can proceed independently.
+
+<svg viewBox="0 0 480 240" role="img" aria-labelledby="parallele-title parallele-desc" style="display: block; max-width: 100%; height: auto; margin: 1.5rem auto;">
+    <title id="parallele-title">Two cars on parallel roads</title>
+    <desc id="parallele-desc">Two cars travel to the right on separate, parallel roads.</desc>
+    <rect width="480" height="240" rx="16" fill="#f1f5f9" />
+    <rect x="0" y="42" width="480" height="64" fill="#475569" />
+    <rect x="0" y="134" width="480" height="64" fill="#475569" />
+    <path d="M0 74h480M0 166h480" stroke="#f8fafc" stroke-width="3" stroke-dasharray="14 12" />
+    <g stroke="#0f172a" stroke-width="2">
+        <g transform="translate(150 74)">
+            <rect x="-28" y="-15" width="56" height="30" rx="8" fill="#38bdf8" />
+            <rect x="-12" y="-11" width="22" height="22" rx="4" fill="#e0f2fe" />
+            <path d="M-21-16v5M21-16v5M-21 11v5M21 11v5" stroke-width="4" />
+        </g>
+        <g transform="translate(310 166)">
+            <rect x="-28" y="-15" width="56" height="30" rx="8" fill="#4ade80" />
+            <rect x="-12" y="-11" width="22" height="22" rx="4" fill="#dcfce7" />
+            <path d="M-21-16v5M21-16v5M-21 11v5M21 11v5" stroke-width="4" />
+        </g>
+    </g>
+</svg>
+
+### Shared Resource: Two Cars at an Intersection
+
+Two cars arrive from perpendicular directions and require the same **resource**, the intersection. If one is crossing it, the other must wait until it is clear.
+Without rules, an accident could occur.
+
+<svg viewBox="0 0 480 280" role="img" aria-labelledby="incrocio-due-title incrocio-due-desc" style="display: block; max-width: 100%; height: auto; margin: 1.5rem auto;">
+    <title id="incrocio-due-title">Two cars approach an intersection from perpendicular directions</title>
+    <desc id="incrocio-due-desc">One car arrives from the north and one from the west; both move toward the same intersection.</desc>
+    <rect width="480" height="280" rx="16" fill="#f1f5f9" />
+    <rect x="190" y="0" width="100" height="280" fill="#475569" />
+    <rect x="0" y="90" width="480" height="100" fill="#475569" />
+    <path d="M240 0v90M240 190v90M0 140h190M290 140h190" stroke="#f8fafc" stroke-width="4" stroke-dasharray="12 10" />
+    <g fill="none" stroke="#fbbf24" stroke-width="5" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M240 40v28m0 0-8-8m8 8 8-8" />
+        <path d="M70 140h28m0 0-8-8m8 8-8 8" />
+    </g>
+    <g stroke="#0f172a" stroke-width="2">
+        <g transform="translate(240 42) rotate(90)">
+            <rect x="-23" y="-13" width="46" height="26" rx="7" fill="#38bdf8" />
+            <rect x="-9" y="-9" width="18" height="18" rx="4" fill="#e0f2fe" />
+            <path d="M-18-14v5M18-14v5M-18 9v5M18 9v5" stroke-width="4" />
+        </g>
+        <g transform="translate(105 140)">
+            <rect x="-23" y="-13" width="46" height="26" rx="7" fill="#fb923c" />
+            <rect x="-9" y="-9" width="18" height="18" rx="4" fill="#ffedd5" />
+            <path d="M-18-14v5M18-14v5M-18 9v5M18 9v5" stroke-width="4" />
+        </g>
+    </g>
+</svg>
+
+### Deadlock: Four Cars at an Intersection
+
+If each car occupies a section of the intersection and waits for the section occupied by the next car, a **circular wait** is created. No car can proceed and release its **resource**: a [**deadlock**](https://en.wikipedia.org/wiki/Deadlock) occurs.
+
+<svg viewBox="0 0 480 320" role="img" aria-labelledby="incrocio-title incrocio-desc" style="display: block; max-width: 100%; height: auto; margin: 1.5rem auto;">
+    <title id="incrocio-title">Simplified representation of cars and an intersection</title>
+    <desc id="incrocio-desc">Four colored cars approach an intersection formed by two roads from different directions.</desc>
+    <rect width="480" height="320" rx="16" fill="#f1f5f9" />
+    <rect x="190" y="0" width="100" height="320" fill="#475569" />
+    <rect x="0" y="110" width="480" height="100" fill="#475569" />
+    <path d="M240 0v110M240 210v110M0 160h190M290 160h190" stroke="#f8fafc" stroke-width="4" stroke-dasharray="12 10" />
+    <g stroke="#0f172a" stroke-width="2">
+        <g transform="translate(215 70) rotate(90)">
+            <rect x="-24" y="-14" width="48" height="28" rx="8" fill="#38bdf8" />
+            <rect x="-10" y="-10" width="20" height="20" rx="4" fill="#e0f2fe" />
+            <path d="M-19-15v5M19-15v5M-19 10v5M19 10v5" stroke="#0f172a" stroke-width="4" />
+        </g>
+        <g transform="translate(340 135) rotate(180)">
+            <rect x="-24" y="-14" width="48" height="28" rx="8" fill="#fb923c" />
+            <rect x="-10" y="-10" width="20" height="20" rx="4" fill="#ffedd5" />
+            <path d="M-19-15v5M19-15v5M-19 10v5M19 10v5" stroke="#0f172a" stroke-width="4" />
+        </g>
+        <g transform="translate(265 250) rotate(-90)">
+            <rect x="-24" y="-14" width="48" height="28" rx="8" fill="#a78bfa" />
+            <rect x="-10" y="-10" width="20" height="20" rx="4" fill="#ede9fe" />
+            <path d="M-19-15v5M19-15v5M-19 10v5M19 10v5" stroke="#0f172a" stroke-width="4" />
+        </g>
+        <g transform="translate(140 185)">
+            <rect x="-24" y="-14" width="48" height="28" rx="8" fill="#4ade80" />
+            <rect x="-10" y="-10" width="20" height="20" rx="4" fill="#dcfce7" />
+            <path d="M-19-15v5M19-15v5M-19 10v5M19 10v5" stroke="#0f172a" stroke-width="4" />
+        </g>
+    </g>
+</svg>
+
+## Summary
+
+<KeyConcepts>
+- [**Process**](https://en.wikipedia.org/wiki/Process_(computing)): an executing program together with its state and resources.
+- [**Processor**](https://en.wikipedia.org/wiki/Central_processing_unit): the component that executes program instructions.
+- [**Resource**](https://en.wikipedia.org/wiki/System_resource): a hardware or software element used by a process, such as memory, files, or input/output devices.
+- [**Program**](https://en.wikipedia.org/wiki/Computer_program): a set of instructions that describes operations to perform.
+- [**Concurrency**](https://en.wikipedia.org/wiki/Concurrency_(computer_science)): the management of multiple activities within the same interval of time, by alternating or executing them in parallel.
+- [**Overlapping**](https://en.wikipedia.org/wiki/Parallel_computing): simultaneous progress by processes on distinct processors or cores.
+- [**Interleaving**](https://en.wikipedia.org/wiki/Concurrent_computing): alternation of the execution of multiple processes on a single processor.
+- [**Multiprocessor**](https://en.wikipedia.org/wiki/Multiprocessing): a system with multiple processors or cores that can execute activities simultaneously.
+- [**Coordination**](https://en.wikipedia.org/wiki/Concurrency_(computer_science)): management of dependencies and shared access to data or resources to prevent inconsistent results.
+</KeyConcepts>
+
+## Knowledge Check
+
+<QuizIntro 
+resetLabel="Reset all answers"
+textLabel="The answers to the quizzes on this page are saved in local storage in your browser and remain stored between visits"
+/>
+
+<Quiz id="quiz-processo">
+What is a **process**?
+
+- [ ] A physical component that executes instructions.
+- [x] An executing program with its own state.
+    > Correct: a process is an active instance of a program.
+- [ ] A resource shared by multiple programs.
+</Quiz>
+
+<Quiz id="quiz-freccia-precedenza">
+What is the difference between **overlapping** and **interleaving**?
+
+- [x] In overlapping, activities make progress in the same interval on distinct processors; in interleaving, they take turns on a single processor.
+    > Correct: overlapping is simultaneous, whereas interleaving alternates execution.
+- [ ] In overlapping, processes take turns; in interleaving, they make progress simultaneously.
+- [ ] They are two names for the sequential execution of a single process.
+</Quiz>
+
+<Quiz id="quiz-risorsa">
+Which of these is an example of a **resource** that processes can share?
+
+- [ ] An instruction that has already completed.
+- [x] A file or a shared section of memory.
+    > Correct: processes may need to coordinate access to files or memory.
+- [ ] The time elapsed since the computer started.
+</Quiz>
+
+<Quiz id="quiz-esecuzione-esempio">
+On a single-processor system, how many processes are executed at the same instant?
+
+- [x] One: processes take turns using the CPU.
+    > Correct: alternation can create the appearance of simultaneity, but the CPU executes only one process at any instant.
+- [ ] Two, as long as they are interleaved.
+- [ ] Any number, regardless of the number of processors.
+</Quiz>
+
+<Quiz id="quiz-stallo">
+When does a **deadlock** occur between processes?
+
+- [ ] When a process finishes earlier than expected.
+- [x] When processes wait for resources held by one another and cannot proceed.
+    > Correct: each process waits for a resource that another process must release.
+- [ ] When multiple processes use distinct processors at the same time.
+</Quiz>
+
+<Quiz id="quiz-esempio-interleaving">
+Which situation describes **interleaving**?
+
+- [ ] Two processes make progress at the same instant on two distinct cores.
+- [x] On a single processor, the CPU alternates the execution of two processes.
+    > Correct: in interleaving, processes take turns using a single processor.
+- [ ] Two processes use separate resources without interacting.
+</Quiz>
+
+<Quiz id="quiz-completa-definizione">
+With multiple processors or cores, two processes can make progress at the same instant: their executions [[overlap]] in time (*overlapping*).
+</Quiz>
+
+<QuizResults 
+titleLabel="Your score"
+progressLabel="Quiz progress"
+answeredLabel="questions answered"
+correctLabel="correct answers"
+resetLabel="Reset all answers"
+/>

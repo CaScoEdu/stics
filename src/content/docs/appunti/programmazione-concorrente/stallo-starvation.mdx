@@ -1,0 +1,272 @@
+---
+title: "Stallo e Starvation"
+description: "Stallo e starvation"
+sidebar:
+    order: 15
+---
+
+import {
+    Card
+} from "@astrojs/starlight/components";
+import { Quiz, QuizIntro, QuizResults } from 'starlight-quiz/components';
+import AsideNote from "@/components/AsideNote.astro";
+import AsideToDo from "@/components/AsideToDo.astro";
+import AsideTip from "@/components/AsideTip.astro";
+import ExpectedResults from "@/components/ExpectedResults.astro"
+import KeyConcepts from "@/components/KeyConcepts.astro"
+import Prerequisites from "@/components/Prerequisites.astro"
+
+Introduzione allo stallo e alla starvation.
+
+## Introduzione
+
+<ExpectedResults>
+- Definire deadlock e starvation e distinguerli in base al progresso del sistema.
+- Riconoscere le quattro condizioni di Coffman necessarie perché si verifichi un deadlock.
+- Descrivere le principali strategie di prevenzione, evitamento, rilevamento e recupero dei deadlock.
+- Spiegare come priorità non eque possano causare starvation e come l'*aging* possa ridurla.
+- Analizzare esempi di sincronizzazione per individuare stallo o attesa indefinita.
+</ExpectedResults>
+
+<Prerequisites>
+- Nozioni di base su processi o thread e programmazione concorrente
+- Comprensione delle risorse condivise, dell'attesa e della sincronizzazione
+</Prerequisites>
+
+## I Rischi della Sincronizzazione: [Deadlock](https://it.wikipedia.org/wiki/Deadlock) e [Starvation](https://it.wikipedia.org/wiki/Starvation_(informatica))
+
+La gestione della **sincronizzazione** e dell'**attesa delle risorse** può esporre il
+sistema a due importanti problematiche critiche:
+
+## Deadlock (Stallo)
+
+<svg viewBox="0 0 480 320" role="img" aria-labelledby="incrocio-title incrocio-desc" style="display: block; max-width: 100%; height: auto; margin: 1.5rem auto;">
+    <title id="incrocio-title">Rappresentazione semplificata di auto e incrocio</title>
+    <desc id="incrocio-desc">Quattro auto colorate si avvicinano da direzioni diverse a un incrocio formato da due strade.</desc>
+    <rect width="480" height="320" rx="16" fill="#f1f5f9" />
+    <rect x="190" y="0" width="100" height="320" fill="#475569" />
+    <rect x="0" y="110" width="480" height="100" fill="#475569" />
+    <path d="M240 0v110M240 210v110M0 160h190M290 160h190" stroke="#f8fafc" stroke-width="4" stroke-dasharray="12 10" />
+    <g stroke="#0f172a" stroke-width="2">
+        <g transform="translate(215 70) rotate(90)">
+            <rect x="-24" y="-14" width="48" height="28" rx="8" fill="#38bdf8" />
+            <rect x="-10" y="-10" width="20" height="20" rx="4" fill="#e0f2fe" />
+            <path d="M-19-15v5M19-15v5M-19 10v5M19 10v5" stroke="#0f172a" stroke-width="4" />
+        </g>
+        <g transform="translate(340 135) rotate(180)">
+            <rect x="-24" y="-14" width="48" height="28" rx="8" fill="#fb923c" />
+            <rect x="-10" y="-10" width="20" height="20" rx="4" fill="#ffedd5" />
+            <path d="M-19-15v5M19-15v5M-19 10v5M19 10v5" stroke="#0f172a" stroke-width="4" />
+        </g>
+        <g transform="translate(265 250) rotate(-90)">
+            <rect x="-24" y="-14" width="48" height="28" rx="8" fill="#a78bfa" />
+            <rect x="-10" y="-10" width="20" height="20" rx="4" fill="#ede9fe" />
+            <path d="M-19-15v5M19-15v5M-19 10v5M19 10v5" stroke="#0f172a" stroke-width="4" />
+        </g>
+        <g transform="translate(140 185)">
+            <rect x="-24" y="-14" width="48" height="28" rx="8" fill="#4ade80" />
+            <rect x="-10" y="-10" width="20" height="20" rx="4" fill="#dcfce7" />
+            <path d="M-19-15v5M19-15v5M-19 10v5M19 10v5" stroke="#0f172a" stroke-width="4" />
+        </g>
+    </g>
+</svg>
+Il [**deadlock**](https://it.wikipedia.org/wiki/Deadlock) si verifica quando due o più processi si **bloccano permanentemente** in attesa di una risorsa che è attualmente trattenuta da un altro processo del gruppo.
+* **Esempio tipico**: Il processo `P1` **possiede** la risorsa `A` e chiede la `B`;
+    il processo `P2` possiede la risorsa `B` e chiede la `A`. Nessuno dei due può
+    proseguire.
+* È una condizione bloccante da cui il sistema non può uscire autonomamente se
+    non tramite interventi esterni (come il riavvio o l'interruzione forzata dei
+    processi).
+
+
+<Card title="Diagramma di Holt">
+Il diagramma mostra due processi e due risorse in un ciclo di attesa: P1 possiede A e richiede B, mentre P2 possiede B e richiede A. Nessun processo può proseguire perché attende una risorsa trattenuta dall'altro: si tratta quindi di un deadlock.
+
+<svg
+    viewBox="0 0 720 360"
+    role="img"
+    aria-labelledby="holt-title holt-description"
+    style="display: block; width: 100%; max-width: 720px; height: auto; margin: 2rem auto;"
+>
+    <title id="holt-title">Diagramma di Holt del deadlock</title>
+    <desc id="holt-description">La risorsa A è assegnata a P1, che richiede B. B è assegnata a P2, che richiede A. Le richieste e le assegnazioni formano un ciclo di attesa.</desc>
+    <defs>
+        <marker id="holt-assignment-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+            <path d="M 0 0 L 10 5 L 0 10 z" fill="#2457a7" />
+        </marker>
+        <marker id="holt-request-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+            <path d="M 0 0 L 10 5 L 0 10 z" fill="#c0392b" />
+        </marker>
+    </defs>
+
+    <path d="M 402 94 L 518 153" fill="none" stroke="#2457a7" stroke-width="3" marker-end="url(#holt-assignment-arrow)" />
+    <path d="M 518 207 L 402 266" fill="none" stroke="#c0392b" stroke-width="3" stroke-dasharray="7 6" marker-end="url(#holt-request-arrow)" />
+    <path d="M 318 266 L 202 207" fill="none" stroke="#2457a7" stroke-width="3" marker-end="url(#holt-assignment-arrow)" />
+    <path d="M 202 153 L 318 94" fill="none" stroke="#c0392b" stroke-width="3" stroke-dasharray="7 6" marker-end="url(#holt-request-arrow)" />
+
+    <g fill="#172b4d" font-family="Arial, sans-serif" font-size="14" font-weight="600" text-anchor="middle">
+        <text x="470" y="106">assegnata a</text>
+        <text x="470" y="263" fill="#9c2f25">richiede</text>
+        <text x="250" y="263">assegnata a</text>
+        <text x="250" y="106" fill="#9c2f25">richiede</text>
+    </g>
+
+    <g fill="#e8f1ff" stroke="#2457a7" stroke-width="2">
+        <rect x="310" y="34" width="100" height="72" rx="8" />
+        <rect x="310" y="254" width="100" height="72" rx="8" />
+    </g>
+    <g fill="#fff0d9" stroke="#a65d00" stroke-width="2">
+        <circle cx="565" cy="180" r="50" />
+        <circle cx="155" cy="180" r="50" />
+    </g>
+    <g fill="#172b4d" font-family="Arial, sans-serif" font-size="16" font-weight="600" text-anchor="middle">
+        <text x="360" y="64">Risorsa A</text>
+        <text x="360" y="87" font-size="13" font-weight="400">1 istanza</text>
+        <text x="360" y="284">Risorsa B</text>
+        <text x="360" y="307" font-size="13" font-weight="400">1 istanza</text>
+        <text x="565" y="185">Processo P1</text>
+        <text x="155" y="185">Processo P2</text>
+    </g>
+</svg>
+</Card>
+
+
+### Il problema dei 5 filosofi
+Vediamo in pratica un altro esempio di deadlock con il problema dei 5 filosofi.
+
+Il **problema dei cinque filosofi** è un esempio classico di sincronizzazione tra processi che condividono risorse, introdotto da Edsger W. Dijkstra nel 1965. Cinque filosofi siedono attorno a un tavolo; tra ogni coppia di vicini c'è una forchetta. Ciascun filosofo alterna momenti di riflessione e di pasto, ma per mangiare deve ottenere entrambe le forchette ai propri lati.
+
+Se tutti prendono una sola forchetta e aspettano quella del vicino, nessuno può iniziare a mangiare: si crea un **deadlock**. Anche senza uno stallo generale, una strategia di assegnazione poco equa può costringere un filosofo ad aspettare indefinitamente, causando **starvation**.
+
+Il simulatore seguente permette di osservare queste situazioni e di vedere come le decisioni di sincronizzazione influenzano l'accesso alle forchette.
+
+<div class="iframe-container" style="margin: 2rem 0; text-align: center;">
+    <iframe
+        src="/simulatore-5-filosofi.html"
+        width="100%"
+        style="height: 2000px !important; border: 1px solid #30363d; border-radius: 8px; background: #f4f4f4; overflow: hidden; display: block;"
+    ></iframe>
+</div>
+
+### Condizioni Necessarie per il Deadlock
+
+Un **deadlock** (stallo) si verifica quando un insieme di processi o thread resta bloccato in modo permanente perché ciascuno attende una risorsa assegnata a un altro partecipante dello stesso insieme. Affinché lo stallo possa presentarsi, devono valere **contemporaneamente** quattro condizioni note come **condizioni di Coffman**:
+
+* **Mutua esclusione:** almeno una risorsa è disponibile in modalità non condivisibile; può essere usata da un solo processo o thread alla volta.
+* **Possesso e attesa (*Hold and Wait*):** un processo trattiene almeno una risorsa già acquisita mentre attende il rilascio di altre risorse assegnate ad altri processi.
+* **Assenza di prelazione (*No Preemption*):** le risorse non possono essere sottratte forzatamente a chi le detiene; devono essere rilasciate volontariamente dal processo che le ha ottenute.
+* **Attesa circolare (*Circular Wait*):** esiste una catena chiusa di processi (P0, P1, ..., Pn) in cui P0 attende una risorsa detenuta da P1, P1 attende una risorsa di P2, e così via fino a Pn che attende una risorsa detenuta da P0.
+
+
+### Strategie per Gestire i Deadlock
+
+In sistemi operativi e programmazione concorrente, le strategie per affrontare il problema si dividono in quattro approcci principali:
+
+| Strategia | Idea di base | Vantaggi e limiti |
+| --- | --- | --- |
+| **Prevenzione (*Deadlock Prevention*)** | Impedisce che si verifichi almeno una delle quattro condizioni di Coffman (ad esempio imponendo un ordine totale nell'acquisizione delle risorse per rompere l'attesa circolare o richiedendo tutte le risorse in anticipo). | Garantisce l'assenza di deadlock, ma riduce l'utilizzo delle risorse e può causare *starvation* o minore concorrenza. |
+| **Evitamento (*Deadlock Avoidance*)** | Valuta dinamicamente ogni richiesta di risorsa prima di concederla, mantenendo il sistema in uno **stato sicuro** (tramite algoritmi come l'algoritmo del banchiere). | Evita stati non sicuri in modo dinamico, ma richiede informazioni preventive sul fabbisogno massimo di risorse e ha un costo computazionale maggiore. |
+| **Rilevamento e recupero (*Detection and Recovery*)** | Lascia che il deadlock avvenga, lo individua tramite analisi periodica dei grafi di attesa o di allocazione e interviene (terminando processi o revocando risorse). | Non impone vincoli rigidi all'acquisizione delle risorse, ma introduce overhead di controllo e può comportare perdita di lavoro o inconsistenze da ripristinare. |
+| **Ignoranza (*Ostrich Algorithm*)** | Il sistema non adotta meccanismi specifici contro il deadlock e lascia la gestione all'applicazione o al riavvio del sistema. | Molto semplice e senza overhead a runtime; è la scelta pratica in molti sistemi operativi general-purpose quando gli stalli sono rari rispetto al costo di prevenzione o rilevamento. |
+
+<AsideTip title="Ti è mai capitato che il computer sia impallato?">
+Quando il sistema smette di rispondere e resti bloccato, cosa fai? Spesso chiudi l'applicazione bloccata o fai un reset riavviando la macchina: è esattamente la logica del **detection e recovery**, cioè accorgersi dello stallo e intervenire per sbloccare il sistema.
+</AsideTip>
+
+### L'Algoritmo del Banchiere (*Banker's Algorithm*)
+
+L'**algoritmo del banchiere**, formulato da Edsger Dijkstra, è un algoritmo di **evitamento del deadlock** (*deadlock avoidance*) che decide in modo dinamico se concedere o rimandare la richiesta di risorse di un processo. Il nome deriva dall'analogia con una banca che non presta mai tutta la liquidità disponibile se questo rischia di impedirle di soddisfare le richieste massime dichiarate dai clienti: allo stesso modo, il sistema concede risorse solo se rimane in uno **stato sicuro** (*safe state*), cioè se esiste almeno una sequenza di esecuzione in cui tutti i processi possono ottenere il massimo delle risorse dichiarate, completare il proprio lavoro e rilasciarle. Per funzionare richiede che ogni processo dichiari in anticipo il proprio fabbisogno massimo di risorse e traccia le risorse disponibili, quelle già assegnate e quelle ancora necessarie; se l'assegnazione porterebbe a uno stato non sicuro, la richiesta viene messa in attesa finché altre risorse non si liberano.
+
+## Starvation (Inedia)
+### La Starvation (Blocco per Fame / Attesa Indefinita)
+
+La **starvation** (o *indefinite blocking*) si verifica quando un processo pronto ad avanzare non ottiene mai (o ottiene con un ritardo indefinito) le risorse o la CPU necessarie per completare la propria esecuzione, pur non essendoci un deadlock. A differenza del deadlock, in cui un intero ciclo di processi è bloccato in modo permanente, nella starvation il sistema continua a fare progresso su altri processi, ma uno o più processi vengono sistematicamente scavalcati o messi in secondo piano.
+
+<AsideNote title="Esempio pratico">
+Pensa allo **scheduling con priorità**. 
+Se lo scheduler assegna sempre la CPU prima ai processi ad alta 
+priorità e continuano ad arrivare nuovi processi ad alta priorità
+ (senza meccanismi di *aging* che aumentano nel tempo la priorità di chi aspetta), un processo a bassa priorità può restare in attesa indefinitamente: la CPU continua a lavorare e il sistema non è in deadlock, ma quel processo non riesce mai a essere eseguito.
+</AsideNote>
+
+<div class="iframe-container" style="margin: 2rem 0; text-align: center;">
+    <iframe
+        src="/interactive_simulation_starvation_in_priority_scheduling.html"
+        width="100%"
+        style="height: 2000px !important; border: 1px solid #30363d; border-radius: 8px; background: #f4f4f4; overflow: hidden; display: block;"
+    ></iframe>
+</div>
+
+
+## Riepilogo
+
+<KeyConcepts>
+- [**Deadlock**](https://it.wikipedia.org/wiki/Deadlock): blocco permanente di processi che attendono risorse detenute l'uno dall'altro.
+- **Condizioni di Coffman**: mutua esclusione, possesso e attesa, assenza di prelazione e attesa circolare; devono coesistere perché si verifichi un deadlock.
+- **Prevenzione del deadlock**: elimina almeno una delle condizioni di Coffman, per esempio imponendo un ordine nell'acquisizione delle risorse.
+- **Evitamento del deadlock**: concede risorse solo se l'allocazione mantiene il sistema in uno stato sicuro.
+- **Rilevamento e recupero**: individua uno stallo già avvenuto e interviene per interromperlo.
+- [**Starvation**](https://it.wikipedia.org/wiki/Starvation_(informatica)): attesa indefinita di un processo mentre altri continuano a progredire.
+- **Aging**: aumenta gradualmente la priorità dei processi in attesa per limitarne la starvation.
+</KeyConcepts>
+
+## Verifica dell'Apprendimento
+
+<QuizIntro 
+resetLabel="Reimposta tutte le risposte"
+textLabel="Le risposte ai quiz di questa pagina vengono salvate nella memoria locale (local storage) del tuo browser e rimangono memorizzate tra una visita e l'altra"
+/>
+
+<Quiz id="quiz-deadlock-definizione">
+Che cosa caratterizza un deadlock?
+
+- [ ] Un processo attende mentre tutti gli altri sono terminati.
+- [x] Più processi restano bloccati attendendo risorse detenute gli uni dagli altri.
+    > Esatto: l'attesa circolare impedisce ai processi coinvolti di proseguire e rilasciare le risorse.
+- [ ] Un processo viene eseguito lentamente, ma continua a ricevere la CPU.
+</Quiz>
+
+<Quiz id="quiz-condizioni-coffman">
+Quale insieme descrive correttamente le quattro condizioni di Coffman?
+
+- [ ] Priorità, parallelismo, prelazione e terminazione.
+- [x] Mutua esclusione, possesso e attesa, assenza di prelazione e attesa circolare.
+    > Esatto: tutte e quattro devono verificarsi contemporaneamente perché possa presentarsi un deadlock.
+- [ ] Mutua esclusione, aging, attesa circolare e condivisione delle risorse.
+</Quiz>
+
+<Quiz id="quiz-deadlock-strategia">
+Quale strategia evita il deadlock concedendo una richiesta solo se il sistema resta in uno stato sicuro?
+
+- [ ] Rilevamento e recupero.
+- [x] Evitamento.
+    > Esatto: l'evitamento valuta dinamicamente le richieste e mantiene il sistema in uno stato sicuro.
+- [ ] Ignoranza del problema.
+</Quiz>
+
+<Quiz id="quiz-starvation">
+Quale situazione è un esempio di starvation?
+
+- [ ] Tutti i processi attendono risorse in un ciclo e nessuno può proseguire.
+- [x] Un processo a bassa priorità continua ad aspettare mentre altri processi vengono eseguiti.
+    > Esatto: il sistema progredisce, ma quel processo viene continuamente scavalcato.
+- [ ] Un processo termina e rilascia le risorse che utilizzava.
+</Quiz>
+
+<Quiz id="quiz-aging">
+Come può l'*aging* ridurre la starvation causata dallo scheduling a priorità?
+
+- [x] Aumentando nel tempo la priorità dei processi che restano in attesa.
+    > Esatto: così un processo continuamente scavalcato può infine ottenere la CPU.
+- [ ] Riducendo la priorità dei processi che attendono da più tempo.
+- [ ] Impedendo a tutti i processi di usare la CPU contemporaneamente.
+</Quiz>
+
+<QuizResults 
+titleLabel="Il tuo punteggio"
+progressLabel="Avanzamento Quiz"
+answeredLabel="risposte alle domande"
+correctLabel="risposte corrette"
+resetLabel="Reimposta tutte le risposte"
+ />
+

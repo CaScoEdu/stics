@@ -1,0 +1,1108 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Problema dei 5 Filosofi a Cena — Simulazione Concorrente</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet" />
+  <style>
+    body {
+      font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    }
+    .font-mono-code {
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    /* Transizioni fluide per elementi SVG */
+    .phil-group {
+      cursor: pointer;
+      transition: transform 0.25s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+    .phil-group:hover .phil-halo {
+      opacity: 0.35;
+    }
+    .phil-circle {
+      transition: fill 0.3s ease, stroke 0.3s ease, stroke-width 0.25s ease;
+    }
+    .fork-group {
+      transition: transform 0.38s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+    .fork-shape {
+      transition: fill 0.25s ease, stroke 0.25s ease;
+    }
+
+    /* Animazione pulsazione quando il filosofo sta mangiando */
+    @keyframes eatPulse {
+      0%, 100% {
+        transform: scale(1);
+        opacity: 0.35;
+      }
+      50% {
+        transform: scale(1.16);
+        opacity: 0.7;
+      }
+    }
+    .eating-ring {
+      transform-box: fill-box;
+      transform-origin: center;
+      animation: eatPulse 1.3s ease-in-out infinite;
+    }
+
+    /* Animazione allarme deadlock */
+    @keyframes deadlockPulse {
+      0%, 100% {
+        box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.45);
+      }
+      50% {
+        box-shadow: 0 0 0 10px rgba(239, 68, 68, 0);
+      }
+    }
+    .deadlock-banner {
+      animation: deadlockPulse 1.6s infinite;
+    }
+
+    /* Scrollbar discreta per il log */
+    .custom-scroll::-webkit-scrollbar {
+      width: 6px;
+    }
+    .custom-scroll::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    .custom-scroll::-webkit-scrollbar-thumb {
+      background: #cbd5e1;
+      border-radius: 9999px;
+    }
+    .dark .custom-scroll::-webkit-scrollbar-thumb {
+      background: #475569;
+    }
+  </style>
+</head>
+<body class="bg-slate-50 text-slate-800 dark:bg-slate-950 dark:text-slate-100 min-h-screen transition-colors">
+
+  <!-- Header Didattico -->
+  <header class="bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 sticky top-0 z-20">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 py-3.5 flex flex-wrap items-center justify-between gap-3">
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-xl bg-indigo-600 text-white flex items-center justify-center font-bold text-lg shadow-sm">
+          5F
+        </div>
+        <div>
+          <h1 class="text-lg sm:text-xl font-bold tracking-tight text-slate-900 dark:text-white">
+            Il Problema dei 5 Filosofi a Cena
+          </h1>
+          <p class="text-xs sm:text-sm text-slate-500 dark:text-slate-400">
+            Simulatore interattivo di concorrenza, mutua esclusione, deadlock e starvation (E. W. Dijkstra, 1965)
+          </p>
+        </div>
+      </div>
+
+      <!-- Legenda compatta stati -->
+      <div class="flex flex-wrap items-center gap-2 text-xs font-medium">
+        <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-sky-100 text-sky-800 dark:bg-sky-950 dark:text-sky-300 border border-sky-200 dark:border-sky-800">
+          <span class="w-2.5 h-2.5 rounded-full bg-sky-500"></span> Pensando
+        </span>
+        <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300 border border-amber-200 dark:border-amber-800">
+          <span class="w-2.5 h-2.5 rounded-full bg-amber-500"></span> Affamato
+        </span>
+        <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800">
+          <span class="w-2.5 h-2.5 rounded-full bg-emerald-500"></span> Mangiando
+        </span>
+        <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-rose-100 text-rose-800 dark:bg-rose-950 dark:text-rose-300 border border-rose-200 dark:border-rose-800">
+          <span class="w-2.5 h-2.5 rounded-full bg-rose-600"></span> Deadlock
+        </span>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <main class="max-w-7xl mx-auto px-4 sm:px-6 py-6">
+    <!-- Banner Alert Deadlock (visibile solo in stallo) -->
+    <div id="deadlock-alert" class="hidden mb-5 rounded-2xl bg-rose-600 text-white p-4 shadow-lg deadlock-banner flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+      <div class="flex items-start gap-3">
+        <svg class="w-6 h-6 shrink-0 mt-0.5" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" />
+        </svg>
+        <div>
+          <h2 class="font-bold text-base">DEADLOCK RILEVATO — Stallo Circolare!</h2>
+          <p class="text-sm text-rose-100">
+            Tutti e 5 i filosofi possiedono esattamente una forchetta e attendono indefinitamente la seconda forchetta tenuta dal vicino. Nessun thread può avanzare.
+          </p>
+        </div>
+      </div>
+      <button id="btn-deadlock-reset" class="px-4 py-2 rounded-xl bg-white text-rose-700 font-semibold text-sm hover:bg-rose-50 transition shrink-0 shadow">
+        Ripristina Tavolo
+      </button>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+      <!-- Colonna Sinistra: Controlli + Tavolo Interattivo SVG (7 colonne su desktop) -->
+      <section class="lg:col-span-7 flex flex-col gap-5">
+        <!-- Barra Controlli e Strategia -->
+        <div class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-4 sm:p-5 shadow-sm">
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4 items-end">
+            <!-- Selettore Strategia -->
+            <div>
+              <label for="strategy-select" class="block text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-1.5">
+                Strategia / Algoritmo di Sincronizzazione
+              </label>
+              <select id="strategy-select" class="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 px-3.5 py-2.5 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                <option value="naive">1. Ingenua (Rischio Deadlock)</option>
+                <option value="force-deadlock">2. Forza Deadlock (Acquisizione Sincrona)</option>
+                <option value="asymmetric">3. Asimmetrica (Soluzione Dijkstra / Gerarchia)</option>
+                <option value="waiter">4. Cameriere / Arbitro (Max 4 a tavola)</option>
+              </select>
+            </div>
+
+            <!-- Controlli Riproduzione -->
+            <div class="flex flex-wrap items-center gap-2">
+              <button id="btn-play-pause" class="flex-1 sm:flex-none inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-sm transition shadow-sm">
+                <span id="play-icon">▶</span>
+                <span id="play-label">Avvia</span>
+              </button>
+              <button id="btn-step" class="inline-flex items-center justify-center gap-1.5 px-3.5 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 font-semibold text-sm transition border border-slate-200 dark:border-slate-700" title="Esegui un singolo tick di simulazione">
+                ⏭ Passo
+              </button>
+              <button id="btn-reset" class="inline-flex items-center justify-center gap-1.5 px-3.5 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 font-semibold text-sm transition border border-slate-200 dark:border-slate-700" title="Azzera stati e statistiche">
+                ↺ Reset
+              </button>
+            </div>
+          </div>
+
+          <!-- Slider Velocità + Contatore Tick -->
+          <div class="mt-4 pt-3.5 border-t border-slate-100 dark:border-slate-800 flex flex-wrap items-center justify-between gap-4">
+            <div class="flex items-center gap-3 flex-1 min-w-[220px]">
+              <label for="speed-slider" class="text-xs font-semibold text-slate-600 dark:text-slate-400 whitespace-nowrap">
+                Velocità:
+              </label>
+              <input id="speed-slider" type="range" min="1" max="10" value="5" class="w-full accent-indigo-600 cursor-pointer" />
+              <span id="speed-label" class="text-xs font-mono-code font-semibold px-2 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300">
+                1.0x
+              </span>
+            </div>
+
+            <div class="flex items-center gap-3 text-xs text-slate-500 dark:text-slate-400">
+              <span>Tick: <strong id="tick-counter" class="font-mono-code text-slate-800 dark:text-slate-200">0</strong></span>
+              <span class="hidden sm:inline">•</span>
+              <span class="hidden sm:inline text-indigo-600 dark:text-indigo-400 font-medium">
+                💡 Clicca su un filosofo (F0–F4) per renderlo Affamato
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Canvas Tavolo Rotondo SVG -->
+        <div class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-4 shadow-sm flex flex-col items-center">
+          <div class="w-full max-w-[540px] aspect-square relative">
+            <svg id="table-svg" viewBox="0 0 560 560" class="w-full h-full select-none" role="img" aria-label="Tavolo rotondo con 5 filosofi e 5 forchette">
+              <defs>
+                <radialGradient id="tableWood" cx="50%" cy="50%" r="50%">
+                  <stop offset="0%" stop-color="#f8fafc" />
+                  <stop offset="82%" stop-color="#e2e8f0" />
+                  <stop offset="100%" stop-color="#cbd5e1" />
+                </radialGradient>
+                <radialGradient id="tableWoodDark" cx="50%" cy="50%" r="50%">
+                  <stop offset="0%" stop-color="#1e293b" />
+                  <stop offset="85%" stop-color="#0f172a" />
+                  <stop offset="100%" stop-color="#334155" />
+                </radialGradient>
+                <filter id="softShadow" x="-20%" y="-20%" width="140%" height="140%">
+                  <feDropShadow dx="0" dy="4" stdDeviation="6" flood-color="#0f172a" flood-opacity="0.12" />
+                </filter>
+              </defs>
+
+              <!-- Sfondo Tavolo Rotondo -->
+              <circle cx="280" cy="280" r="158" fill="url(#tableWood)" stroke="#94a3b8" stroke-width="3" filter="url(#softShadow)" class="dark:hidden" />
+              <circle cx="280" cy="280" r="158" fill="url(#tableWoodDark)" stroke="#475569" stroke-width="3" filter="url(#softShadow)" class="hidden dark:block" />
+              <circle cx="280" cy="280" r="144" fill="none" stroke="#cbd5e1" stroke-width="1" stroke-dasharray="4 4" class="dark:stroke-slate-700" />
+
+              <!-- Centro Tavolo: Indicatore Stato / Cameriere -->
+              <g id="table-center-badge" transform="translate(280, 280)">
+                <circle r="46" fill="#ffffff" stroke="#cbd5e1" stroke-width="2" class="dark:fill-slate-800 dark:stroke-slate-600" />
+                <text id="center-title" y="-6" text-anchor="middle" font-size="11" font-weight="700" fill="#475569" class="dark:fill-slate-300">
+                  TAVOLO
+                </text>
+                <text id="center-subtitle" y="12" text-anchor="middle" font-size="10" font-weight="600" fill="#64748b" class="dark:fill-slate-400">
+                  5 Risorse
+                </text>
+              </g>
+
+              <!-- Layer Piatti, Forchette, Filosofi e Connessioni (popolato via JS) -->
+              <g id="layer-plates"></g>
+              <g id="layer-links"></g>
+              <g id="layer-forks"></g>
+              <g id="layer-philosophers"></g>
+            </svg>
+          </div>
+          <p class="text-xs text-slate-500 dark:text-slate-400 text-center mt-1 sm:hidden">
+            💡 Tocca un filosofo (F0–F4) per farlo passare da Pensando ad Affamato
+          </p>
+        </div>
+      </section>
+
+      <!-- Colonna Destra: Pannello Didattico (5 colonne su desktop) -->
+      <aside class="lg:col-span-5 flex flex-col gap-5">
+        <!-- Scheda Spiegazione Teorica Dinamica -->
+        <div class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-4 sm:p-5 shadow-sm">
+          <div class="flex items-center justify-between gap-2 mb-2">
+            <span class="inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-indigo-600 dark:text-indigo-400">
+              📚 Analisi Teorica della Strategia
+            </span>
+            <span id="deadlock-risk-badge" class="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-rose-100 text-rose-700 dark:bg-rose-950 dark:text-rose-300">
+              Rischio Deadlock: Alto
+            </span>
+          </div>
+          <h2 id="theory-title" class="text-base font-bold text-slate-900 dark:text-white mb-1.5">
+            Strategia Ingenua (Acquisizione Simmetrica)
+          </h2>
+          <p id="theory-desc" class="text-sm text-slate-600 dark:text-slate-300 leading-relaxed mb-3">
+            Ogni filosofo <code class="font-mono-code text-xs bg-slate-100 dark:bg-slate-800 px-1 py-0.5 rounded">Fi</code> esegue lo stesso codice: acquisisce prima la forchetta alla sua sinistra (<code class="font-mono-code text-xs bg-slate-100 dark:bg-slate-800 px-1 py-0.5 rounded">Bi</code>) e poi quella alla sua destra (<code class="font-mono-code text-xs bg-slate-100 dark:bg-slate-800 px-1 py-0.5 rounded">B(i+1)%5</code>).
+          </p>
+          <div id="coffman-box" class="rounded-xl bg-slate-50 dark:bg-slate-800/70 border border-slate-200 dark:border-slate-700 p-3 text-xs text-slate-600 dark:text-slate-300 space-y-1">
+            <!-- Popolato dinamicamente -->
+          </div>
+        </div>
+
+        <!-- Tabella Stato in Tempo Reale -->
+        <div class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-4 sm:p-5 shadow-sm">
+          <div class="flex items-center justify-between mb-3">
+            <h2 class="text-sm font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300">
+              Stato dei Filosofi & Equità
+            </h2>
+            <span class="text-xs text-slate-500 dark:text-slate-400">
+              Pasti totali: <strong id="total-meals" class="text-slate-800 dark:text-slate-200 font-mono-code">0</strong>
+            </span>
+          </div>
+
+          <div class="overflow-x-auto">
+            <table class="w-full text-left border-collapse text-xs sm:text-sm">
+              <thead>
+                <tr class="border-b border-slate-200 dark:border-slate-800 text-slate-500 dark:text-slate-400 text-xs">
+                  <th class="py-2 pr-2 font-semibold">Filosofo</th>
+                  <th class="py-2 px-2 font-semibold">Stato</th>
+                  <th class="py-2 px-2 font-semibold">Forchette</th>
+                  <th class="py-2 pl-2 text-right font-semibold">Pasti</th>
+                </tr>
+              </thead>
+              <tbody id="status-table-body" class="divide-y divide-slate-100 dark:divide-slate-800/80">
+                <!-- Popolato via JS -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Log Eventi in Tempo Reale -->
+        <div class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-4 sm:p-5 shadow-sm flex flex-col">
+          <div class="flex items-center justify-between mb-2.5">
+            <h2 class="text-sm font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300">
+              Log Concorrenza (Tempo Reale)
+            </h2>
+            <button id="btn-clear-log" class="text-xs text-slate-500 hover:text-slate-800 dark:hover:text-slate-200 underline">
+              Pulisci log
+            </button>
+          </div>
+          <div id="event-log" class="h-52 overflow-y-auto custom-scroll rounded-xl bg-slate-950 text-slate-200 p-3 font-mono-code text-xs space-y-1.5">
+            <!-- Popolato via JS -->
+          </div>
+        </div>
+      </aside>
+    </div>
+  </main>
+
+  <script>
+    /**
+     * SIMULATORE DEL PROBLEMA DEI 5 FILOSOFI A CENA (DINING PHILOSOPHERS)
+     * -------------------------------------------------------------------
+     * Convenzione topologica attorno al tavolo (in senso orario):
+     * - Filosofo Fi si trova all'angolo theta_i = -90° + i * 72°
+     * - Alla sua SINISTRA (guardando il centro del tavolo) si trova la forchetta B_i
+     *   posta tra F_i e F_{(i+1)%5}.
+     * - Alla sua DESTRA si trova la forchetta B_{(i+4)%5}
+     *   posta tra F_{(i+4)%5} e F_i.
+     */
+
+    const NUM_PHILOSOPHERS = 5;
+
+    // Stati possibili di un filosofo
+    const STATE = {
+      THINKING: 'THINKING',
+      HUNGRY: 'HUNGRY',
+      EATING: 'EATING',
+      DEADLOCK: 'DEADLOCK'
+    };
+
+    // Configurazione visuale per ogni stato
+    const STATE_META = {
+      [STATE.THINKING]: {
+        label: 'Pensando',
+        fill: '#0ea5e9',      // sky-500
+        stroke: '#0369a1',    // sky-700
+        badgeBg: 'bg-sky-100 text-sky-800 dark:bg-sky-950 dark:text-sky-300',
+        dot: 'bg-sky-500'
+      },
+      [STATE.HUNGRY]: {
+        label: 'Affamato',
+        fill: '#f59e0b',      // amber-500
+        stroke: '#b45309',    // amber-700
+        badgeBg: 'bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300',
+        dot: 'bg-amber-500'
+      },
+      [STATE.EATING]: {
+        label: 'Mangiando',
+        fill: '#10b981',      // emerald-500
+        stroke: '#047857',    // emerald-700
+        badgeBg: 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300',
+        dot: 'bg-emerald-500'
+      },
+      [STATE.DEADLOCK]: {
+        label: 'Bloccato',
+        fill: '#e11d48',      // rose-600
+        stroke: '#9f1239',    // rose-800
+        badgeBg: 'bg-rose-100 text-rose-800 dark:bg-rose-950 dark:text-rose-300',
+        dot: 'bg-rose-600'
+      }
+    };
+
+    // Contenuto didattico per le 4 strategie
+    const STRATEGIES = {
+      'naive': {
+        title: 'Strategia Ingenua (Acquisizione Simmetrica)',
+        riskLabel: 'Rischio Deadlock: Alto',
+        riskClass: 'bg-rose-100 text-rose-700 dark:bg-rose-950 dark:text-rose-300',
+        desc: 'Ogni filosofo Fi esegue lo stesso algoritmo: quando ha fame prende prima la forchetta sinistra (Bi) e successivamente tenta di prendere la destra (B(i+4)%5).',
+        coffman: [
+          '<strong>Condizioni di Coffman tutte attive:</strong>',
+          '1. <em>Mutua esclusione</em>: ogni forchetta è usata da un solo filosofo.',
+          '2. <em>Hold & Wait</em>: chi ha la sinistra la trattiene mentre aspetta la destra.',
+          '3. <em>No Preemption</em>: le forchette non vengono sottratte a forza.',
+          '4. <em>Attesa Circolare</em>: F0 → B4 → F4 → ... → F0 può chiudersi in ciclo.'
+        ]
+      },
+      'force-deadlock': {
+        title: 'Forza Deadlock (Scenario Deterministico)',
+        riskLabel: 'Deadlock Garantito',
+        riskClass: 'bg-rose-600 text-white',
+        desc: 'Simula una schedulazione sfortunata (interleaving critico): tutti e 5 i filosofi diventano affamati nello stesso istante e acquisiscono simultaneamente la propria forchetta sinistra.',
+        coffman: [
+          '<strong>Dimostrazione pratica dello stallo:</strong>',
+          '• Al passo 1 tutti passano allo stato <em>Affamato</em>.',
+          '• Al passo 2 ciascun Fi acquisisce la forchetta sinistra Bi.',
+          '• Al passo 3 tutti richiedono la destra (già occupata) → <strong>Stallo immediato</strong>.'
+        ]
+      },
+      'asymmetric': {
+        title: 'Soluzione Asimmetrica (Gerarchia delle Risorse)',
+        riskLabel: 'Deadlock-Free ✓',
+        riskClass: 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300',
+        desc: 'Rompe la simmetria: i filosofi con indice PARI (F0, F2, F4) prendono prima la forchetta sinistra e poi la destra; i DISPARI (F1, F3) prendono prima la destra e poi la sinistra.',
+        coffman: [
+          '<strong>Condizione di Coffman negata: Attesa Circolare</strong>',
+          '• Imponendo un ordine diverso ad almeno un thread, non può mai formarsi un ciclo chiuso di dipendenze.',
+          '• Almeno un filosofo tra due adiacenti riuscirà sempre ad acquisire entrambe le forchette.'
+        ]
+      },
+      'waiter': {
+        title: 'Cameriere / Arbitro (Semaforo Contatore N-1)',
+        riskLabel: 'Deadlock-Free ✓',
+        riskClass: 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300',
+        desc: 'Un "cameriere" centrale (semaforo inizializzato a 4) autorizza al massimo 4 filosofi contemporaneamente a competere per le forchette sul tavolo.',
+        coffman: [
+          '<strong>Condizione di Coffman negata: Attesa Circolare / Hold & Wait</strong>',
+          '• Con 5 forchette e al massimo 4 filosofi autorizzati, per il <em>Principio dei cassetti (Pigeonhole)</em> almeno un filosofo trova entrambe le forchette libere.',
+          '• Il 5° filosofo attende fuori dalla sala finché qualcuno non libera un posto.'
+        ]
+      }
+    };
+
+    // Stato globale della simulazione
+    let philosophers = [];
+    let forks = [];
+    let tickCount = 0;
+    let isRunning = false;
+    let timerId = null;
+    let speedMultiplier = 1.0;
+    let isDeadlocked = false;
+
+    // Elementi DOM principali
+    const svgPlates = document.getElementById('layer-plates');
+    const svgLinks = document.getElementById('layer-links');
+    const svgForks = document.getElementById('layer-forks');
+    const svgPhilosophers = document.getElementById('layer-philosophers');
+    const strategySelect = document.getElementById('strategy-select');
+    const btnPlayPause = document.getElementById('btn-play-pause');
+    const playIcon = document.getElementById('play-icon');
+    const playLabel = document.getElementById('play-label');
+    const btnStep = document.getElementById('btn-step');
+    const btnReset = document.getElementById('btn-reset');
+    const btnDeadlockReset = document.getElementById('btn-deadlock-reset');
+    const speedSlider = document.getElementById('speed-slider');
+    const speedLabel = document.getElementById('speed-label');
+    const tickCounterEl = document.getElementById('tick-counter');
+    const deadlockAlert = document.getElementById('deadlock-alert');
+    const statusTableBody = document.getElementById('status-table-body');
+    const totalMealsEl = document.getElementById('total-meals');
+    const eventLogEl = document.getElementById('event-log');
+    const btnClearLog = document.getElementById('btn-clear-log');
+    const centerTitle = document.getElementById('center-title');
+    const centerSubtitle = document.getElementById('center-subtitle');
+
+    /**
+     * Calcola le coordinate cartesiane dato centro (280, 280), raggio e angolo in gradi
+     */
+    function polarToCartesian(cx, cy, radius, angleDeg) {
+      const rad = (angleDeg * Math.PI) / 180;
+      return {
+        x: cx + radius * Math.cos(rad),
+        y: cy + radius * Math.sin(rad)
+      };
+    }
+
+    /**
+     * Restituisce l'indice della forchetta sinistra e destra per il filosofo i
+     */
+    function getAdjacentForks(i) {
+      const left = i;
+      const right = (i + NUM_PHILOSOPHERS - 1) % NUM_PHILOSOPHERS;
+      return { left, right };
+    }
+
+    /**
+     * Aggiunge una riga al log degli eventi in tempo reale
+     */
+    function logEvent(message, type = 'info') {
+      const colorMap = {
+        info: 'text-slate-300',
+        hungry: 'text-amber-400',
+        fork: 'text-indigo-300',
+        eat: 'text-emerald-400',
+        deadlock: 'text-rose-400 font-bold'
+      };
+      const entry = document.createElement('div');
+      entry.className = `leading-snug ${colorMap[type] || 'text-slate-300'}`;
+      const tickStr = String(tickCount).padStart(3, '0');
+      entry.innerHTML = `<span class="text-slate-500">[t=${tickStr}]</span> ${message}`;
+      eventLogEl.appendChild(entry);
+
+      // Limita a 80 righe per fluidità
+      while (eventLogEl.children.length > 80) {
+        eventLogEl.removeChild(eventLogEl.firstChild);
+      }
+      eventLogEl.scrollTop = eventLogEl.scrollHeight;
+    }
+
+    /**
+     * Aggiorna il pannello teorico in base alla strategia selezionata
+     */
+    function updateTheoryPanel() {
+      const key = strategySelect.value;
+      const info = STRATEGIES[key];
+      document.getElementById('theory-title').textContent = info.title;
+      document.getElementById('theory-desc').textContent = info.desc;
+
+      const badge = document.getElementById('deadlock-risk-badge');
+      badge.textContent = info.riskLabel;
+      badge.className = `text-xs font-semibold px-2.5 py-0.5 rounded-full ${info.riskClass}`;
+
+      const coffmanBox = document.getElementById('coffman-box');
+      coffmanBox.innerHTML = info.coffman.map(line => `<p>${line}</p>`).join('');
+    }
+
+    /**
+     * Inizializza o resetta lo stato della simulazione
+     */
+    function resetSimulation() {
+      stopLoop();
+      tickCount = 0;
+      isDeadlocked = false;
+      deadlockAlert.classList.add('hidden');
+
+      philosophers = Array.from({ length: NUM_PHILOSOPHERS }, (_, i) => ({
+        id: i,
+        name: `F${i}`,
+        state: STATE.THINKING,
+        timer: 2 + Math.floor(Math.random() * 4), // tick prima di avere fame
+        hasLeft: false,
+        hasRight: false,
+        hasPermission: false, // usato dalla strategia Cameriere
+        meals: 0
+      }));
+
+      forks = Array.from({ length: NUM_PHILOSOPHERS }, (_, i) => ({
+        id: i,
+        name: `B${i}`,
+        owner: null // null = libera sul tavolo, altrimenti id filosofo (0..4)
+      }));
+
+      eventLogEl.innerHTML = '';
+      logEvent(`Simulazione inizializzata. Strategia: "${STRATEGIES[strategySelect.value].title}".`, 'info');
+
+      // Se l'utente ha scelto "Forza Deadlock", prepariamo subito lo scenario sincrono
+      if (strategySelect.value === 'force-deadlock') {
+        philosophers.forEach(p => {
+          p.timer = 1;
+        });
+        logEvent('Modalità Forza Deadlock attiva: al prossimo passo tutti i filosofi avranno fame insieme.', 'hungry');
+      }
+
+      renderAll();
+    }
+
+    /**
+     * Costruisce gli elementi SVG statici e i contenitori dinamici una sola volta
+     */
+    function buildSvgScene() {
+      svgPlates.innerHTML = '';
+      svgLinks.innerHTML = '';
+      svgForks.innerHTML = '';
+      svgPhilosophers.innerHTML = '';
+
+      const cx = 280;
+      const cy = 280;
+      const philRadius = 212;
+      const plateRadius = 112;
+      const forkRadius = 112;
+
+      for (let i = 0; i < NUM_PHILOSOPHERS; i++) {
+        const angle = -90 + i * 72;
+        const pPos = polarToCartesian(cx, cy, philRadius, angle);
+        const platePos = polarToCartesian(cx, cy, plateRadius, angle);
+
+        // 1. Piatto sul tavolo
+        const plateG = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+        plateG.setAttribute('transform', `translate(${platePos.x.toFixed(1)}, ${platePos.y.toFixed(1)})`);
+        plateG.innerHTML = `
+          <circle r="24" fill="#ffffff" stroke="#cbd5e1" stroke-width="2" class="dark:fill-slate-800 dark:stroke-slate-600" />
+          <circle r="16" fill="none" stroke="#e2e8f0" stroke-width="1.5" class="dark:stroke-slate-700" />
+          <circle id="pasta-${i}" r="11" fill="#fbbf24" opacity="0" style="transition: opacity 0.3s ease;" />
+        `;
+        svgPlates.appendChild(plateG);
+
+        // 2. Linee di possesso/attesa tra filosofo e forchette adiacenti
+        const { left, right } = getAdjacentForks(i);
+        const linkLeft = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+        linkLeft.setAttribute('id', `link-${i}-left`);
+        linkLeft.setAttribute('stroke-width', '2.5');
+        linkLeft.setAttribute('stroke-linecap', 'round');
+        linkLeft.setAttribute('opacity', '0');
+        svgLinks.appendChild(linkLeft);
+
+        const linkRight = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+        linkRight.setAttribute('id', `link-${i}-right`);
+        linkRight.setAttribute('stroke-width', '2.5');
+        linkRight.setAttribute('stroke-linecap', 'round');
+        linkRight.setAttribute('opacity', '0');
+        svgLinks.appendChild(linkRight);
+
+        // 3. Forchetta B_i (posta a +36° rispetto al filosofo F_i)
+        const forkAngle = angle + 36;
+        const fPos = polarToCartesian(cx, cy, forkRadius, forkAngle);
+        const forkG = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+        forkG.setAttribute('id', `fork-${i}`);
+        forkG.setAttribute('class', 'fork-group');
+        forkG.dataset.baseX = fPos.x.toFixed(1);
+        forkG.dataset.baseY = fPos.y.toFixed(1);
+        forkG.dataset.baseAngle = (forkAngle + 90).toFixed(1);
+        forkG.setAttribute('transform', `translate(${fPos.x.toFixed(1)}, ${fPos.y.toFixed(1)}) rotate(${(forkAngle + 90).toFixed(1)})`);
+
+        // Disegno stilizzato della forchetta + etichetta B_i
+        forkG.innerHTML = `
+          <rect x="-14" y="-24" width="28" height="48" rx="8" fill="transparent" />
+          <g class="fork-shape" id="fork-shape-${i}" fill="#64748b" stroke="#475569" stroke-width="1">
+            <!-- Manico -->
+            <rect x="-2.2" y="2" width="4.4" height="18" rx="2" />
+            <!-- Base rebbi -->
+            <rect x="-6" y="-3" width="12" height="5" rx="1.5" />
+            <!-- Rebbi -->
+            <rect x="-6" y="-17" width="2.2" height="15" rx="1" />
+            <rect x="-1.1" y="-17" width="2.2" height="15" rx="1" />
+            <rect x="3.8" y="-17" width="2.2" height="15" rx="1" />
+          </g>
+          <g transform="rotate(${-(forkAngle + 90).toFixed(1)})">
+            <rect x="-13" y="13" width="26" height="15" rx="4" fill="#f1f5f9" stroke="#cbd5e1" stroke-width="1" class="dark:fill-slate-800 dark:stroke-slate-600" />
+            <text id="fork-label-${i}" y="23.5" text-anchor="middle" font-size="9.5" font-weight="700" fill="#334155" class="font-mono-code dark:fill-slate-200">
+              B${i}
+            </text>
+          </g>
+        `;
+        svgForks.appendChild(forkG);
+
+        // 4. Filosofo F_i
+        const philG = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+        philG.setAttribute('id', `phil-${i}`);
+        philG.setAttribute('class', 'phil-group');
+        philG.setAttribute('transform', `translate(${pPos.x.toFixed(1)}, ${pPos.y.toFixed(1)})`);
+        philG.dataset.x = pPos.x.toFixed(1);
+        philG.dataset.y = pPos.y.toFixed(1);
+
+        // Interazione click manuale per far passare da Pensando ad Affamato
+        philG.addEventListener('click', () => handlePhilosopherClick(i));
+
+        philG.innerHTML = `
+          <title>Clicca per far passare F${i} da Pensando ad Affamato</title>
+          <circle id="phil-eating-ring-${i}" class="eating-ring hidden" r="39" fill="none" stroke="#10b981" stroke-width="3" />
+          <circle class="phil-halo" r="37" fill="#6366f1" opacity="0" style="transition: opacity 0.2s;" />
+          <circle id="phil-circle-${i}" class="phil-circle" r="31" fill="#0ea5e9" stroke="#0369a1" stroke-width="3" filter="url(#softShadow)" />
+          <text y="-3" text-anchor="middle" font-size="14" font-weight="700" fill="#ffffff" class="font-mono-code">
+            F${i}
+          </text>
+          <text id="phil-state-short-${i}" y="12" text-anchor="middle" font-size="8.5" font-weight="600" fill="#f8fafc">
+            PENSA
+          </text>
+          <!-- Badge stato esterno -->
+          <g transform="translate(0, 44)">
+            <rect x="-36" y="-9" width="72" height="18" rx="9" fill="#ffffff" stroke="#cbd5e1" stroke-width="1" class="dark:fill-slate-800 dark:stroke-slate-700" />
+            <text id="phil-badge-${i}" y="3" text-anchor="middle" font-size="9" font-weight="600" fill="#334155" class="dark:fill-slate-200">
+              Pensando
+            </text>
+          </g>
+        `;
+        svgPhilosophers.appendChild(philG);
+      }
+    }
+
+    /**
+     * Gestisce il click manuale su un filosofo per renderlo affamato
+     */
+    function handlePhilosopherClick(id) {
+      if (isDeadlocked) {
+        logEvent(`Impossibile interagire con F${id}: il sistema è in Deadlock. Premi Reset.`, 'deadlock');
+        return;
+      }
+      const p = philosophers[id];
+      if (p.state === STATE.THINKING) {
+        p.state = STATE.HUNGRY;
+        p.timer = 0;
+        logEvent(`👆 Intervento utente: <strong>F${id}</strong> passa manualmente a <strong>Affamato</strong>.`, 'hungry');
+        renderAll();
+      } else {
+        logEvent(`F${id} è già nello stato "${STATE_META[p.state].label}".`, 'info');
+      }
+    }
+
+    /**
+     * Tenta di acquisire una forchetta fId per il filosofo pId
+     * Restituisce true se acquisita con successo, false se già occupata
+     */
+    function tryAcquireFork(pId, fId) {
+      if (forks[fId].owner === null) {
+        forks[fId].owner = pId;
+        return true;
+      }
+      return forks[fId].owner === pId;
+    }
+
+    /**
+     * Rilascia entrambe le forchette di un filosofo
+     */
+    function releaseForks(p) {
+      const { left, right } = getAdjacentForks(p.id);
+      if (forks[left].owner === p.id) forks[left].owner = null;
+      if (forks[right].owner === p.id) forks[right].owner = null;
+      p.hasLeft = false;
+      p.hasRight = false;
+      p.hasPermission = false;
+    }
+
+    /**
+     * Esegue un singolo passo (tick) della simulazione concorrente
+     */
+    function stepSimulation() {
+      if (isDeadlocked) return;
+
+      tickCount++;
+      const strategy = strategySelect.value;
+
+      // In modalità "Forza Deadlock", al tick 1 tutti diventano affamati contemporaneamente
+      if (strategy === 'force-deadlock' && tickCount === 1) {
+        philosophers.forEach(p => {
+          p.state = STATE.HUNGRY;
+          p.timer = 0;
+        });
+        logEvent('⚡ Tutti e 5 i filosofi diventano <strong>Affamati</strong> nello stesso istante!', 'hungry');
+        renderAll();
+        return;
+      }
+
+      // Ordine di schedulazione: mescolato nelle strategie normali per simulare interleaving reale,
+      // deterministico in "force-deadlock"
+      const order = [0, 1, 2, 3, 4];
+      if (strategy !== 'force-deadlock') {
+        for (let i = order.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1));
+          [order[i], order[j]] = [order[j], order[i]];
+        }
+      }
+
+      for (const id of order) {
+        const p = philosophers[id];
+        const { left, right } = getAdjacentForks(id);
+
+        // 1. STATO: PENSANDO
+        if (p.state === STATE.THINKING) {
+          p.timer--;
+          if (p.timer <= 0) {
+            p.state = STATE.HUNGRY;
+            logEvent(`<strong>F${id}</strong> ha smesso di pensare ed è ora <strong>Affamato</strong>.`, 'hungry');
+          }
+          continue;
+        }
+
+        // 2. STATO: MANGIANDO
+        if (p.state === STATE.EATING) {
+          p.timer--;
+          if (p.timer <= 0) {
+            releaseForks(p);
+            p.state = STATE.THINKING;
+            p.timer = 3 + Math.floor(Math.random() * 4);
+            logEvent(`<strong>F${id}</strong> ha finito di mangiare e posa <strong>B${left}</strong> e <strong>B${right}</strong>.`, 'info');
+          }
+          continue;
+        }
+
+        // 3. STATO: AFFAMATO (logica specifica per strategia)
+        if (p.state === STATE.HUNGRY) {
+          if (strategy === 'naive' || strategy === 'force-deadlock') {
+            // Prende prima sinistra, poi al tick successivo (o subito se già ce l'ha) la destra
+            if (!p.hasLeft) {
+              if (tryAcquireFork(id, left)) {
+                p.hasLeft = true;
+                logEvent(`<strong>F${id}</strong> prende la forchetta sinistra <strong>B${left}</strong>.`, 'fork');
+              }
+            } else if (!p.hasRight) {
+              if (tryAcquireFork(id, right)) {
+                p.hasRight = true;
+                p.state = STATE.EATING;
+                p.timer = 3 + Math.floor(Math.random() * 2);
+                p.meals++;
+                logEvent(`🍝 <strong>F${id}</strong> prende anche la destra <strong>B${right}</strong> e inizia a <strong>Mangiare</strong> (pasto #${p.meals}).`, 'eat');
+              }
+            }
+          } else if (strategy === 'asymmetric') {
+            // Pari: prima sinistra poi destra | Dispari: prima destra poi sinistra
+            const isEven = id % 2 === 0;
+            const firstFork = isEven ? left : right;
+            const secondFork = isEven ? right : left;
+            const firstKey = isEven ? 'hasLeft' : 'hasRight';
+            const secondKey = isEven ? 'hasRight' : 'hasLeft';
+            const firstSideLabel = isEven ? 'sinistra' : 'destra';
+            const secondSideLabel = isEven ? 'destra' : 'sinistra';
+
+            if (!p[firstKey]) {
+              if (tryAcquireFork(id, firstFork)) {
+                p[firstKey] = true;
+                logEvent(`<strong>F${id}</strong> (${isEven ? 'pari' : 'dispari'}) prende prima la ${firstSideLabel} <strong>B${firstFork}</strong>.`, 'fork');
+              }
+            } else if (!p[secondKey]) {
+              if (tryAcquireFork(id, secondFork)) {
+                p[secondKey] = true;
+                p.state = STATE.EATING;
+                p.timer = 3 + Math.floor(Math.random() * 2);
+                p.meals++;
+                logEvent(`🍝 <strong>F${id}</strong> prende anche la ${secondSideLabel} <strong>B${secondFork}</strong> e <strong>Mangia</strong> (pasto #${p.meals}).`, 'eat');
+              }
+            }
+          } else if (strategy === 'waiter') {
+            // Cameriere: massimo 4 filosofi possono essere autorizzati contemporaneamente
+            const activeCount = philosophers.filter(other => other.hasPermission).length;
+            if (!p.hasPermission) {
+              if (activeCount < NUM_PHILOSOPHERS - 1) {
+                p.hasPermission = true;
+                logEvent(`🤵 Il Cameriere autorizza <strong>F${id}</strong> a sedersi per prendere le forchette (${activeCount + 1}/4 posti).`, 'info');
+              } else {
+                // Attende il permesso del cameriere prima di toccare qualsiasi forchetta
+                continue;
+              }
+            }
+
+            if (!p.hasLeft) {
+              if (tryAcquireFork(id, left)) {
+                p.hasLeft = true;
+                logEvent(`<strong>F${id}</strong> prende la sinistra <strong>B${left}</strong>.`, 'fork');
+              }
+            } else if (!p.hasRight) {
+              if (tryAcquireFork(id, right)) {
+                p.hasRight = true;
+                p.state = STATE.EATING;
+                p.timer = 3 + Math.floor(Math.random() * 2);
+                p.meals++;
+                logEvent(`🍝 <strong>F${id}</strong> prende anche la destra <strong>B${right}</strong> e <strong>Mangia</strong> (pasto #${p.meals}).`, 'eat');
+              }
+            }
+          }
+        }
+      }
+
+      // Verifica condizione di DEADLOCK:
+      // Tutti e 5 i filosofi sono affamati e ciascuno possiede esattamente 1 forchetta (nessuna libera sul tavolo)
+      const allHungryWithOneFork = philosophers.every(
+        p => p.state === STATE.HUNGRY && ((p.hasLeft && !p.hasRight) || (!p.hasLeft && p.hasRight))
+      );
+      const noFreeForks = forks.every(f => f.owner !== null);
+
+      if (allHungryWithOneFork && noFreeForks) {
+        isDeadlocked = true;
+        philosophers.forEach(p => {
+          p.state = STATE.DEADLOCK;
+        });
+        stopLoop();
+        deadlockAlert.classList.remove('hidden');
+        logEvent('🚨 DEADLOCK! Tutti e 5 i filosofi tengono una forchetta e attendono il vicino in ciclo chiuso.', 'deadlock');
+      }
+
+      renderAll();
+    }
+
+    /**
+     * Aggiorna tutta la grafica SVG, la tabella laterale e i contatori
+     */
+    function renderAll() {
+      tickCounterEl.textContent = tickCount;
+
+      // Aggiorna centro tavolo in base alla strategia
+      if (isDeadlocked) {
+        centerTitle.textContent = 'STALLO';
+        centerTitle.setAttribute('fill', '#e11d48');
+        centerSubtitle.textContent = 'Deadlock 5/5';
+      } else if (strategySelect.value === 'waiter') {
+        const permitted = philosophers.filter(p => p.hasPermission).length;
+        centerTitle.textContent = 'CAMERIERE';
+        centerTitle.setAttribute('fill', '#4f46e5');
+        centerSubtitle.textContent = `Posti: ${permitted}/4`;
+      } else {
+        centerTitle.textContent = 'TAVOLO';
+        centerTitle.setAttribute('fill', '#475569');
+        const freeCount = forks.filter(f => f.owner === null).length;
+        centerSubtitle.textContent = `Libere: ${freeCount}/5`;
+      }
+
+      // 1. Aggiorna i 5 Filosofi
+      philosophers.forEach((p, i) => {
+        const meta = STATE_META[p.state];
+        const circle = document.getElementById(`phil-circle-${i}`);
+        const shortText = document.getElementById(`phil-state-short-${i}`);
+        const badgeText = document.getElementById(`phil-badge-${i}`);
+        const eatingRing = document.getElementById(`phil-eating-ring-${i}`);
+        const pasta = document.getElementById(`pasta-${i}`);
+
+        circle.setAttribute('fill', meta.fill);
+        circle.setAttribute('stroke', meta.stroke);
+
+        const shortMap = {
+          [STATE.THINKING]: 'PENSA',
+          [STATE.HUNGRY]: 'FAME',
+          [STATE.EATING]: 'MANGIA',
+          [STATE.DEADLOCK]: 'STALLO'
+        };
+        shortText.textContent = shortMap[p.state];
+        badgeText.textContent = meta.label;
+
+        if (p.state === STATE.EATING) {
+          eatingRing.classList.remove('hidden');
+          pasta.setAttribute('opacity', '1');
+        } else {
+          eatingRing.classList.add('hidden');
+          pasta.setAttribute('opacity', '0');
+        }
+      });
+
+      // 2. Aggiorna le 5 Forchette (posizione, rotazione verso il proprietario e colore)
+      forks.forEach((fork, fId) => {
+        const forkG = document.getElementById(`fork-${fId}`);
+        const forkShape = document.getElementById(`fork-shape-${fId}`);
+        const baseX = parseFloat(forkG.dataset.baseX);
+        const baseY = parseFloat(forkG.dataset.baseY);
+        const baseAngle = parseFloat(forkG.dataset.baseAngle);
+
+        if (fork.owner === null) {
+          // Forchetta libera al centro tra due piatti
+          forkG.setAttribute('transform', `translate(${baseX}, ${baseY}) rotate(${baseAngle})`);
+          forkShape.setAttribute('fill', '#64748b');
+          forkShape.setAttribute('stroke', '#475569');
+        } else {
+          // Sposta e orienta la forchetta verso il filosofo proprietario
+          const ownerPhil = document.getElementById(`phil-${fork.owner}`);
+          const px = parseFloat(ownerPhil.dataset.x);
+          const py = parseFloat(ownerPhil.dataset.y);
+
+          // Interpolazione al 48% verso il filosofo che la possiede
+          const nx = baseX + (px - baseX) * 0.48;
+          const ny = baseY + (py - baseY) * 0.48;
+
+          // Calcola angolo verso il filosofo
+          const angleToPhil = (Math.atan2(py - ny, px - nx) * 180) / Math.PI + 90;
+          forkG.setAttribute('transform', `translate(${nx.toFixed(1)}, ${ny.toFixed(1)}) rotate(${angleToPhil.toFixed(1)})`);
+
+          const ownerState = philosophers[fork.owner].state;
+          if (ownerState === STATE.EATING) {
+            forkShape.setAttribute('fill', '#10b981');
+            forkShape.setAttribute('stroke', '#047857');
+          } else if (ownerState === STATE.DEADLOCK) {
+            forkShape.setAttribute('fill', '#e11d48');
+            forkShape.setAttribute('stroke', '#9f1239');
+          } else {
+            forkShape.setAttribute('fill', '#f59e0b');
+            forkShape.setAttribute('stroke', '#b45309');
+          }
+        }
+      });
+
+      // 3. Aggiorna linee tratteggiate di attesa / linee continue di possesso
+      philosophers.forEach((p, i) => {
+        const { left, right } = getAdjacentForks(i);
+        const philEl = document.getElementById(`phil-${i}`);
+        const px = parseFloat(philEl.dataset.x);
+        const py = parseFloat(philEl.dataset.y);
+
+        updateLinkLine(`link-${i}-left`, px, py, left, p.hasLeft, p.state === STATE.HUNGRY || p.state === STATE.DEADLOCK);
+        updateLinkLine(`link-${i}-right`, px, py, right, p.hasRight, p.hasLeft && (p.state === STATE.HUNGRY || p.state === STATE.DEADLOCK));
+      });
+
+      // 4. Aggiorna Tabella Stato Laterale
+      let totalMeals = 0;
+      statusTableBody.innerHTML = philosophers
+        .map(p => {
+          totalMeals += p.meals;
+          const meta = STATE_META[p.state];
+          const { left, right } = getAdjacentForks(p.id);
+
+          const heldForks = [];
+          if (p.hasLeft) heldForks.push(`B${left} (sx)`);
+          if (p.hasRight) heldForks.push(`B${right} (dx)`);
+
+          const forksHtml =
+            heldForks.length > 0
+              ? `<span class="font-mono-code text-xs font-semibold text-slate-700 dark:text-slate-200">${heldForks.join(', ')}</span>`
+              : `<span class="text-slate-400 text-xs">Nessuna</span>`;
+
+          return `
+            <tr class="hover:bg-slate-50 dark:hover:bg-slate-800/40 transition">
+              <td class="py-2 pr-2 font-mono-code font-bold text-slate-800 dark:text-slate-100">
+                ${p.name}
+              </td>
+              <td class="py-2 px-2">
+                <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-xs font-semibold ${meta.badgeBg}">
+                  <span class="w-1.5 h-1.5 rounded-full ${meta.dot}"></span>
+                  ${meta.label}
+                </span>
+              </td>
+              <td class="py-2 px-2">${forksHtml}</td>
+              <td class="py-2 pl-2 text-right font-mono-code font-bold text-slate-800 dark:text-slate-200">
+                ${p.meals}
+              </td>
+            </tr>
+          `;
+        })
+        .join('');
+
+      totalMealsEl.textContent = totalMeals;
+    }
+
+    /**
+     * Disegna una linea tra filosofo e forchetta se posseduta (continua) o attesa (tratteggiata)
+     */
+    function updateLinkLine(lineId, px, py, forkId, isOwned, isWaiting) {
+      const line = document.getElementById(lineId);
+      const forkEl = document.getElementById(`fork-${forkId}`);
+      const fx = parseFloat(forkEl.dataset.baseX);
+      const fy = parseFloat(forkEl.dataset.baseY);
+
+      if (isOwned) {
+        line.setAttribute('x1', px);
+        line.setAttribute('y1', py);
+        line.setAttribute('x2', fx);
+        line.setAttribute('y2', fy);
+        line.setAttribute('stroke', isDeadlocked ? '#e11d48' : '#10b981');
+        line.removeAttribute('stroke-dasharray');
+        line.setAttribute('opacity', '0.45');
+      } else if (isWaiting) {
+        line.setAttribute('x1', px);
+        line.setAttribute('y1', py);
+        line.setAttribute('x2', fx);
+        line.setAttribute('y2', fy);
+        line.setAttribute('stroke', isDeadlocked ? '#e11d48' : '#f59e0b');
+        line.setAttribute('stroke-dasharray', '4 4');
+        line.setAttribute('opacity', '0.65');
+      } else {
+        line.setAttribute('opacity', '0');
+      }
+    }
+
+    /**
+     * Avvia o mette in pausa il timer di simulazione
+     */
+    function startLoop() {
+      if (isDeadlocked) resetSimulation();
+      if (isRunning) return;
+      isRunning = true;
+      playIcon.textContent = '⏸';
+      playLabel.textContent = 'Pausa';
+      scheduleNextTick();
+    }
+
+    function stopLoop() {
+      isRunning = false;
+      playIcon.textContent = '▶';
+      playLabel.textContent = 'Avvia';
+      if (timerId) {
+        clearTimeout(timerId);
+        timerId = null;
+      }
+    }
+
+    function scheduleNextTick() {
+      if (!isRunning) return;
+      const intervalMs = Math.round(900 / speedMultiplier);
+      timerId = setTimeout(() => {
+        stepSimulation();
+        if (isRunning) scheduleNextTick();
+      }, intervalMs);
+    }
+
+    // Event Listeners Controlli UI
+    btnPlayPause.addEventListener('click', () => {
+      if (isRunning) {
+        stopLoop();
+      } else {
+        startLoop();
+      }
+    });
+
+    btnStep.addEventListener('click', () => {
+      stopLoop();
+      stepSimulation();
+    });
+
+    btnReset.addEventListener('click', () => {
+      resetSimulation();
+    });
+
+    btnDeadlockReset.addEventListener('click', () => {
+      resetSimulation();
+    });
+
+    strategySelect.addEventListener('change', () => {
+      updateTheoryPanel();
+      resetSimulation();
+    });
+
+    speedSlider.addEventListener('input', (e) => {
+      const val = Number(e.target.value);
+      speedMultiplier = Number((val / 5).toFixed(1));
+      speedLabel.textContent = `${speedMultiplier.toFixed(1)}x`;
+    });
+
+    btnClearLog.addEventListener('click', () => {
+      eventLogEl.innerHTML = '';
+    });
+
+    // Avvio iniziale al caricamento pagina
+    window.addEventListener('DOMContentLoaded', () => {
+      buildSvgScene();
+      updateTheoryPanel();
+      resetSimulation();
+    });
+  </script>
+</body>
+</html>

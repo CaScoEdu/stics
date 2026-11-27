@@ -68,13 +68,17 @@ Crea una cartella dedicata per questa esercitazione preparatoria, così da tener
    npm init -y
    ```
 
+    nota bene:
+    - usa `mkdir` e `cd` per creare la sottocartella di progetto
+    - se hai già creato la sottocartella e l'hai aperta in VSC, non eseguire `mkdir` e `cd`
     <AsideTip title="Cosa fa npm init -y?">
     [**npm**](https://it.wikipedia.org/wiki/Npm_(software)) è il gestore di pacchetti di Node.js. Il comando `npm init` crea il file `package.json`, che contiene le informazioni e le impostazioni del progetto. L'opzione `-y` accetta automaticamente i valori predefiniti, senza chiederti di rispondere alle domande una alla volta.
     </AsideTip>
 
 2. **Abilita gli ES Modules in `package.json`**
 
-    Assicurati che in `package.json` sia presente una sola volta `"type": "module"`. Questa impostazione dichiara che il progetto usa gli ES Modules: è quindi coerente con la modalità moderna di `import` ed `export`, che userai nel successivo `app.js`, invece del vecchio `require()` (CommonJS).
+    - Assicurati che in `package.json` sia presente una sola volta `"type": "module"`. Questa impostazione dichiara che il progetto usa gli ES Modules: è quindi coerente con la modalità moderna di `import` ed `export`, che userai nel successivo `app.js`, invece del vecchio `require()` (CommonJS).
+    - Assicurati che in `package.json` ci sia "main": "app.js"
 
     <AsideTip title="Cosa sono gli ES Modules?">
     Gli **ES Modules (ESM)** sono il sistema standard di JavaScript per organizzare il codice in moduli riutilizzabili. Un modulo può rendere disponibili funzioni o valori con `export`, che altri moduli possono utilizzare tramite `import`. In **Node.js**, l'impostazione `"type": "module"` abilita questa sintassi nei file `.js` del progetto.

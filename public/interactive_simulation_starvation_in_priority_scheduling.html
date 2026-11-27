@@ -1,0 +1,873 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive Simulation: Process Starvation & Aging in CPU Scheduling</title>
+    <!-- Load Tailwind CSS for responsive, high-contrast styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Inter font for crisp legibility on classroom projectors and whiteboards -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f1f5f9;
+            color: #0f172a;
+        }
+
+        /* Pulse animation for Starvation Alert */
+        @keyframes pulseGlow {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(225, 29, 72, 0.45); }
+            50% { box-shadow: 0 0 0 10px rgba(225, 29, 72, 0); }
+        }
+
+        .starvation-alert {
+            animation: pulseGlow 1.8s infinite;
+        }
+
+        /* Custom scrollbar for the live Gantt chart */
+        .gantt-scroll::-webkit-scrollbar {
+            height: 10px;
+        }
+        .gantt-scroll::-webkit-scrollbar-track {
+            background: #e2e8f0;
+            border-radius: 9999px;
+        }
+        .gantt-scroll::-webkit-scrollbar-thumb {
+            background: #64748b;
+            border-radius: 9999px;
+        }
+        .gantt-scroll::-webkit-scrollbar-thumb:hover {
+            background: #475569;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col">
+
+    <!-- Main Header -->
+    <header class="bg-slate-950 text-white py-5 px-4 sm:px-8 shadow-lg border-b border-slate-800">
+        <div class="max-w-7xl mx-auto flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+            <div>
+                <div class="flex items-center gap-2 text-amber-400 text-sm font-extrabold uppercase tracking-wider mb-1">
+                    <span>Operating Systems &bull; CPU Process Scheduling</span>
+                </div>
+                <h1 class="text-2xl sm:text-3xl font-black tracking-tight">
+                    Process Starvation &amp; Aging Technique
+                </h1>
+            </div>
+            <div class="flex flex-wrap items-center gap-3 bg-slate-900 px-4 py-3 rounded-xl border border-slate-700">
+                <div class="text-sm text-slate-200">
+                    <span class="font-extrabold text-amber-400">Priority Rule:</span> Lower number = Higher priority (<strong class="text-white">1 = Highest</strong>, <strong class="text-white">10 = Lowest</strong>)
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Dynamic Status Banner (Prominent for Classroom Projector) -->
+    <div id="global-status-banner" class="bg-amber-100 border-b-2 border-amber-300 text-amber-950 py-3 px-4 sm:px-8 transition-colors duration-300">
+        <div class="max-w-7xl mx-auto flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+            <div class="flex items-center gap-3">
+                <span id="banner-dot" class="w-3.5 h-3.5 rounded-full bg-amber-600 shrink-0"></span>
+                <span id="banner-title" class="font-black text-base sm:text-lg tracking-tight uppercase">
+                    OBSERVING QUEUE: P_low waiting for CPU access
+                </span>
+            </div>
+            <span id="banner-subtitle" class="text-sm font-semibold opacity-90">
+                High-priority processes are currently ahead of P_low in the Ready Queue.
+            </span>
+        </div>
+    </div>
+
+    <!-- Non-blocking Toast Notification Container (replaces alert()) -->
+    <div id="toast-container" class="fixed bottom-5 right-5 z-50 flex flex-col gap-2 pointer-events-none"></div>
+
+    <!-- Main Content -->
+    <main class="flex-grow max-w-7xl w-full mx-auto px-4 sm:px-8 py-6 space-y-6">
+
+        <!-- Interactive Control Panel -->
+        <section class="bg-white p-5 rounded-2xl shadow-sm border-2 border-slate-200">
+            <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+                
+                <!-- Playback Controls -->
+                <div class="flex flex-wrap items-center gap-3">
+                    <button id="btn-play-pause" class="flex items-center gap-2 px-5 py-3 rounded-xl font-extrabold text-white bg-amber-600 hover:bg-amber-700 active:scale-95 transition shadow-sm cursor-pointer text-base">
+                        <svg id="icon-play" class="w-5 h-5 hidden" fill="currentColor" viewBox="0 0 20 20"><path d="M6.3 2.841A1.5 1.5 0 004 4.11V15.89a1.5 1.5 0 002.3 1.269l9.344-5.89a1.5 1.5 0 000-2.538L6.3 2.84z"/></svg>
+                        <svg id="icon-pause" class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path d="M5.75 3a.75.75 0 00-.75.75v12.5c0 .414.336.75.75.75h1.5a.75.75 0 00.75-.75V3.75A.75.75 0 007.25 3h-1.5zM12.75 3a.75.75 0 00-.75.75v12.5c0 .414.336.75.75.75h1.5a.75.75 0 00.75-.75V3.75a.75.75 0 00-.75-.75h-1.5z"/></svg>
+                        <span id="text-play-pause">Pause</span>
+                    </button>
+
+                    <button id="btn-reset" class="flex items-center gap-2 px-4 py-3 rounded-xl font-bold text-slate-800 bg-slate-100 hover:bg-slate-200 active:scale-95 transition border-2 border-slate-300 cursor-pointer text-base">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                        <span>Reset</span>
+                    </button>
+
+                    <!-- Speed Selector -->
+                    <div class="flex items-center gap-2 bg-slate-100 px-3.5 py-2.5 rounded-xl border-2 border-slate-200">
+                        <label for="speed-select" class="text-sm font-bold text-slate-700">Speed:</label>
+                        <select id="speed-select" class="bg-white text-slate-900 text-sm font-extrabold rounded-lg px-2.5 py-1.5 border border-slate-300 focus:outline-none focus:ring-2 focus:ring-indigo-600 cursor-pointer">
+                            <option value="1300">Slow (0.75x)</option>
+                            <option value="850" selected>Normal (1x)</option>
+                            <option value="420">Fast (2x)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Manual Process Injection Buttons -->
+                <div class="flex flex-wrap items-center gap-3">
+                    <button id="btn-add-high" class="flex items-center gap-2 px-4 py-3 rounded-xl font-extrabold text-white bg-rose-600 hover:bg-rose-700 active:scale-95 transition shadow-sm cursor-pointer text-sm sm:text-base">
+                        <span>+ Add High Priority Process</span>
+                    </button>
+
+                    <button id="btn-add-med" class="flex items-center gap-2 px-4 py-3 rounded-xl font-extrabold text-white bg-amber-600 hover:bg-amber-700 active:scale-95 transition shadow-sm cursor-pointer text-sm sm:text-base">
+                        <span>+ Add Medium Priority Process</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Second Row: Automated Stream & Aging Toggle Switches -->
+            <div class="mt-4 pt-4 border-t-2 border-slate-100 grid grid-cols-1 md:grid-cols-2 gap-4">
+                
+                <!-- Toggle Continuous High-Priority Stream -->
+                <label class="flex items-center justify-between gap-4 p-4 rounded-xl bg-rose-50 border-2 border-rose-200 cursor-pointer select-none hover:bg-rose-100/70 transition">
+                    <div>
+                        <span class="block font-extrabold text-rose-950 text-base">Continuous High-Priority Stream</span>
+                        <span class="block text-xs sm:text-sm font-medium text-rose-800">Automatically spawns incoming urgent processes (P_high) that preempt or enter ahead of P_low</span>
+                    </div>
+                    <div class="relative inline-flex items-center shrink-0">
+                        <input type="checkbox" id="toggle-auto-high" class="sr-only peer" checked>
+                        <div class="w-14 h-8 bg-slate-300 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[3px] after:left-[3px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-6 after:w-6 after:transition-all peer-checked:bg-rose-600"></div>
+                    </div>
+                </label>
+
+                <!-- Prominent Toggle Switch for Aging -->
+                <label class="flex items-center justify-between gap-4 p-4 rounded-xl bg-indigo-50 border-2 border-indigo-300 cursor-pointer select-none hover:bg-indigo-100/70 transition shadow-xs">
+                    <div>
+                        <span class="block font-black text-indigo-950 text-base">Enable Aging (Priority Boost)</span>
+                        <span class="block text-xs sm:text-sm font-medium text-indigo-800">Every 3 waiting ticks, a waiting process improves its priority by 1 level until it reaches the CPU</span>
+                    </div>
+                    <div class="relative inline-flex items-center shrink-0">
+                        <input type="checkbox" id="toggle-aging" class="sr-only peer">
+                        <div class="w-14 h-8 bg-slate-300 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[3px] after:left-[3px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-6 after:w-6 after:transition-all peer-checked:bg-indigo-600"></div>
+                    </div>
+                </label>
+
+            </div>
+        </section>
+
+        <!-- Center Grid: CPU Execution Slot, Live Metrics, and Sorted Ready Queue -->
+        <section class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+
+            <!-- Left Column (5 cols): CPU Status & P_low Starvation Monitor -->
+            <div class="lg:col-span-5 space-y-6">
+                
+                <!-- Active CPU Box -->
+                <div class="bg-white p-6 rounded-2xl shadow-sm border-2 border-slate-200">
+                    <div class="flex items-center justify-between gap-2 mb-4">
+                        <h2 class="text-xl font-black text-slate-900 flex items-center gap-2.5">
+                            <span id="cpu-pulse-dot" class="w-3.5 h-3.5 rounded-full bg-emerald-500 animate-ping"></span>
+                            CPU Execution Slot
+                        </h2>
+                        <span id="cpu-status-badge" class="px-3 py-1 rounded-full text-xs font-extrabold bg-emerald-100 text-emerald-900 border border-emerald-300">
+                            ACTIVE &amp; WORKING
+                        </span>
+                    </div>
+
+                    <!-- Currently Running Process Card -->
+                    <div id="cpu-slot" class="p-5 rounded-xl border-2 border-dashed border-slate-300 bg-slate-50 min-h-[155px] flex flex-col justify-center items-center text-center transition-all">
+                        <span class="text-slate-500 font-bold">No process currently executing</span>
+                    </div>
+
+                    <!-- Global Live Metrics -->
+                    <div class="grid grid-cols-2 gap-3 mt-4">
+                        <div class="bg-slate-100 p-3.5 rounded-xl border border-slate-300">
+                            <span class="block text-xs font-extrabold text-slate-600 uppercase">Current Time (t)</span>
+                            <span id="stat-total-ticks" class="text-2xl sm:text-3xl font-black text-slate-900">t = 0</span>
+                        </div>
+                        <div class="bg-slate-100 p-3.5 rounded-xl border border-slate-300">
+                            <span class="block text-xs font-extrabold text-slate-600 uppercase">Completed Processes</span>
+                            <span id="stat-completed" class="text-2xl sm:text-3xl font-black text-emerald-700">0</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Observed Process Card (P_low) -->
+                <div id="victim-monitor-card" class="bg-white p-6 rounded-2xl shadow-sm border-2 border-slate-200 transition-all">
+                    <div class="flex items-center justify-between gap-2 mb-2">
+                        <h3 class="text-lg font-black text-slate-900">Observed Process: P_low</h3>
+                        <span id="victim-state-badge" class="px-3 py-1 rounded-lg text-xs font-extrabold bg-amber-100 text-amber-900 border border-amber-300">
+                            WAITING IN QUEUE
+                        </span>
+                    </div>
+                    <p class="text-sm text-slate-700 font-medium mb-4">
+                        <strong>P_low</strong> arrived at <code class="font-bold bg-slate-100 px-1.5 py-0.5 rounded">t = 0</code> with Low Priority (<code class="font-bold bg-slate-100 px-1.5 py-0.5 rounded">10</code>). Notice how the CPU keeps executing other processes while P_low waits indefinitely unless Aging is enabled.
+                    </p>
+
+                    <div class="grid grid-cols-2 gap-3">
+                        <div class="p-3.5 rounded-xl bg-amber-50 border-2 border-amber-200">
+                            <span class="block text-xs font-extrabold text-amber-900 uppercase">P_low Wait Time</span>
+                            <span id="victim-wait-time" class="text-2xl sm:text-3xl font-black text-amber-950">0 ticks</span>
+                        </div>
+                        <div class="p-3.5 rounded-xl bg-slate-50 border-2 border-slate-200">
+                            <span class="block text-xs font-extrabold text-slate-600 uppercase">P_low Current Priority</span>
+                            <span id="victim-priority" class="text-2xl sm:text-3xl font-black text-slate-900">10 (Low)</span>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Right Column (7 cols): Priority-Sorted Ready Queue -->
+            <div class="lg:col-span-7 bg-white p-6 rounded-2xl shadow-sm border-2 border-slate-200 flex flex-col">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-4">
+                    <div>
+                        <h2 class="text-xl font-black text-slate-900">Ready Queue (Sorted by Priority)</h2>
+                        <p class="text-sm text-slate-600 font-medium">Highest priority process (position #1) is always dispatched to the CPU next.</p>
+                    </div>
+                    <span id="queue-count-badge" class="self-start sm:self-auto px-3.5 py-1.5 rounded-full text-xs font-extrabold bg-slate-900 text-white">
+                        0 waiting
+                    </span>
+                </div>
+
+                <!-- Ready Queue List -->
+                <div id="ready-queue-list" class="flex-grow space-y-3 max-h-[410px] overflow-y-auto pr-1">
+                    <!-- Dynamically populated via JavaScript -->
+                </div>
+
+                <!-- Priority Level Legend -->
+                <div class="mt-4 pt-3 border-t-2 border-slate-100 flex flex-wrap items-center gap-5 text-xs sm:text-sm font-bold text-slate-700">
+                    <span class="flex items-center gap-2">
+                        <span class="w-3.5 h-3.5 rounded-full bg-rose-600"></span> High Priority (1–3)
+                    </span>
+                    <span class="flex items-center gap-2">
+                        <span class="w-3.5 h-3.5 rounded-full bg-amber-500"></span> Medium Priority (4–7)
+                    </span>
+                    <span class="flex items-center gap-2">
+                        <span class="w-3.5 h-3.5 rounded-full bg-slate-600"></span> Low Priority (8–10)
+                    </span>
+                </div>
+            </div>
+
+        </section>
+
+        <!-- Live Scrolling Gantt Chart / CPU Execution Timeline -->
+        <section class="bg-white p-6 rounded-2xl shadow-sm border-2 border-slate-200">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-4">
+                <div>
+                    <h2 class="text-xl font-black text-slate-900">Live CPU Execution Timeline (Gantt Chart)</h2>
+                    <p class="text-sm text-slate-600 font-medium">Displays which process occupied the CPU during each time tick.</p>
+                </div>
+                <span class="text-xs font-bold text-slate-700 bg-slate-100 border border-slate-300 px-3 py-1.5 rounded-lg">
+                    Scroll horizontally to inspect full history &rarr;
+                </span>
+            </div>
+
+            <div id="gantt-container" class="gantt-scroll w-full overflow-x-auto pb-3">
+                <div id="gantt-track" class="flex items-stretch min-h-[76px] bg-slate-50 rounded-xl border-2 border-slate-200 p-2.5 gap-1.5 w-max min-w-full">
+                    <div class="text-sm text-slate-500 font-semibold italic self-center px-3">Waiting for simulation ticks...</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Didactic Comparison Cards (Classroom Summary) -->
+        <section class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div class="bg-slate-900 text-white p-6 rounded-2xl shadow-sm border border-slate-800">
+                <h3 class="text-base font-black text-amber-400 uppercase tracking-wide mb-2.5">
+                    Starvation vs. Deadlock: Key Difference
+                </h3>
+                <ul class="space-y-2.5 text-sm sm:text-base text-slate-200 leading-relaxed">
+                    <li>
+                        <strong class="text-white">&bull; Deadlock:</strong> Processes are mutually blocked waiting for each other's resources. No progress is made.
+                    </li>
+                    <li>
+                        <strong class="text-white">&bull; Starvation:</strong> The CPU <em>remains active and productive</em> executing high-priority processes, while a low-priority process (<code class="text-amber-300 font-bold">P_low</code>) is perpetually bypassed in the Ready Queue.
+                    </li>
+                </ul>
+            </div>
+
+            <div class="bg-indigo-950 text-white p-6 rounded-2xl shadow-sm border border-indigo-900">
+                <h3 class="text-base font-black text-indigo-300 uppercase tracking-wide mb-2.5">
+                    How Operating Systems Solve Starvation: Aging
+                </h3>
+                <p class="text-sm sm:text-base text-indigo-100 leading-relaxed">
+                    To prevent indefinite blocking, the scheduler applies <strong>Aging</strong>: the longer a process waits in the Ready Queue without CPU time, the higher its priority becomes. Eventually, <code class="text-indigo-200 font-bold">P_low</code> reaches High Priority (1) and is guaranteed CPU execution.
+                </p>
+            </div>
+        </section>
+
+    </main>
+
+    <script>
+        /**
+         * EDUCATIONAL SIMULATION: PROCESS STARVATION & AGING IN PRIORITY SCHEDULING
+         * Strictly models Processes and CPU Scheduling (no threads).
+         */
+
+        const STARVATION_THRESHOLD = 8; // Ticks waited before flagging Starvation
+
+        const state = {
+            isRunning: true,
+            tickDuration: 850,
+            totalTicks: 0,
+            completedCount: 0,
+            highCounter: 1,
+            medCounter: 1,
+            autoHighPriority: true,
+            agingEnabled: false,
+            agingInterval: 3, // Boosts priority by 1 every 3 waiting ticks
+            cpuProcess: null,
+            readyQueue: [],
+            ganttHistory: [],
+            victimExecuted: false,
+            victimCompleted: false,
+            victimWaitTicks: 0,
+            victimCurrentPriority: 10
+        };
+
+        let timerId = null;
+
+        // DOM References
+        const elBtnPlayPause = document.getElementById('btn-play-pause');
+        const elTextPlayPause = document.getElementById('text-play-pause');
+        const elIconPlay = document.getElementById('icon-play');
+        const elIconPause = document.getElementById('icon-pause');
+        const elBtnReset = document.getElementById('btn-reset');
+        const elSpeedSelect = document.getElementById('speed-select');
+        const elBtnAddHigh = document.getElementById('btn-add-high');
+        const elBtnAddMed = document.getElementById('btn-add-med');
+        const elToggleAutoHigh = document.getElementById('toggle-auto-high');
+        const elToggleAging = document.getElementById('toggle-aging');
+
+        const elGlobalBanner = document.getElementById('global-status-banner');
+        const elBannerDot = document.getElementById('banner-dot');
+        const elBannerTitle = document.getElementById('banner-title');
+        const elBannerSubtitle = document.getElementById('banner-subtitle');
+
+        const elCpuSlot = document.getElementById('cpu-slot');
+        const elCpuStatusBadge = document.getElementById('cpu-status-badge');
+        const elCpuPulseDot = document.getElementById('cpu-pulse-dot');
+        const elStatTotalTicks = document.getElementById('stat-total-ticks');
+        const elStatCompleted = document.getElementById('stat-completed');
+        const elReadyQueueList = document.getElementById('ready-queue-list');
+        const elQueueCountBadge = document.getElementById('queue-count-badge');
+        const elGanttTrack = document.getElementById('gantt-track');
+        const elGanttContainer = document.getElementById('gantt-container');
+
+        const elVictimCard = document.getElementById('victim-monitor-card');
+        const elVictimStateBadge = document.getElementById('victim-state-badge');
+        const elVictimWaitTime = document.getElementById('victim-wait-time');
+        const elVictimPriority = document.getElementById('victim-priority');
+
+        /**
+         * Displays a non-blocking notification toast (replaces alert())
+         */
+        function showToast(message, type = 'info') {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            
+            const colors = {
+                success: 'bg-emerald-700 text-white border-emerald-800',
+                warning: 'bg-amber-600 text-white border-amber-700',
+                danger: 'bg-rose-700 text-white border-rose-800',
+                info: 'bg-indigo-700 text-white border-indigo-800'
+            };
+
+            toast.className = `px-4 py-3 rounded-xl shadow-lg border-2 text-sm font-extrabold transition-all transform translate-y-2 opacity-0 ${colors[type] || colors.info}`;
+            toast.textContent = message;
+            container.appendChild(toast);
+
+            requestAnimationFrame(() => {
+                toast.classList.remove('translate-y-2', 'opacity-0');
+            });
+
+            setTimeout(() => {
+                toast.classList.add('opacity-0', 'translate-y-2');
+                setTimeout(() => toast.remove(), 300);
+            }, 3800);
+        }
+
+        /**
+         * Returns high-contrast Tailwind classes and category labels for a numeric priority
+         */
+        function getPriorityStyle(priority) {
+            if (priority <= 3) {
+                return {
+                    badge: 'bg-rose-100 text-rose-900 border-rose-400',
+                    border: 'border-rose-300 bg-rose-50/70',
+                    gantt: 'bg-rose-600 text-white border-rose-700',
+                    label: 'High'
+                };
+            } else if (priority <= 7) {
+                return {
+                    badge: 'bg-amber-100 text-amber-900 border-amber-400',
+                    border: 'border-amber-300 bg-amber-50/70',
+                    gantt: 'bg-amber-500 text-slate-950 border-amber-600',
+                    label: 'Medium'
+                };
+            } else {
+                return {
+                    badge: 'bg-slate-200 text-slate-900 border-slate-400',
+                    border: 'border-slate-300 bg-slate-50',
+                    gantt: 'bg-slate-700 text-white border-slate-800',
+                    label: 'Low'
+                };
+            }
+        }
+
+        /**
+         * Creates a new process and inserts it into the priority-sorted Ready Queue
+         */
+        function createProcess(options = {}) {
+            const isVictim = Boolean(options.isVictim);
+            const category = options.category || 'high';
+            let id = 'P_low';
+
+            if (!isVictim) {
+                if (category === 'high') {
+                    id = `P_high${state.highCounter++}`;
+                } else if (category === 'medium') {
+                    id = `P_med${state.medCounter++}`;
+                } else {
+                    id = `P_low${state.medCounter++}`;
+                }
+            }
+
+            const priority = options.priority !== undefined
+                ? options.priority
+                : (category === 'high' ? (Math.random() < 0.5 ? 1 : 2) : 5);
+            const burstTime = options.burstTime || 2;
+
+            const proc = {
+                id,
+                priority,
+                initialPriority: priority,
+                burstTime,
+                remainingTime: burstTime,
+                waitTicks: 0,
+                isVictim
+            };
+
+            state.readyQueue.push(proc);
+            sortReadyQueue();
+            return proc;
+        }
+
+        /**
+         * Sorts Ready Queue by priority ascending (1 = highest priority).
+         * Preserves FIFO arrival order among equal priorities.
+         */
+        function sortReadyQueue() {
+            state.readyQueue.sort((a, b) => a.priority - b.priority);
+        }
+
+        /**
+         * Resets simulation to initial state: P_low waiting from t=0 + initial high-priority stream
+         */
+        function resetSimulation() {
+            state.totalTicks = 0;
+            state.completedCount = 0;
+            state.highCounter = 1;
+            state.medCounter = 1;
+            state.cpuProcess = null;
+            state.readyQueue = [];
+            state.ganttHistory = [];
+            state.victimExecuted = false;
+            state.victimCompleted = false;
+            state.victimWaitTicks = 0;
+            state.victimCurrentPriority = 10;
+
+            // Initialize P_low at t = 0 with lowest priority (10)
+            createProcess({ isVictim: true, priority: 10, burstTime: 3 });
+            // Initialize incoming high-priority processes
+            createProcess({ category: 'high', priority: 1, burstTime: 2 });
+            createProcess({ category: 'high', priority: 2, burstTime: 2 });
+
+            renderAll();
+        }
+
+        /**
+         * Advances the CPU scheduler by 1 time tick
+         */
+        function stepSimulation() {
+            state.totalTicks++;
+
+            // 1. Continuous High-Priority Stream: spawns new urgent processes before Ready Queue empties
+            if (state.autoHighPriority && !state.victimExecuted) {
+                const highCount = state.readyQueue.filter(p => p.priority <= 2).length;
+                if (highCount < 2 && state.totalTicks % 2 === 1) {
+                    const prio = (state.totalTicks % 4 === 1) ? 1 : 2;
+                    createProcess({ category: 'high', priority: prio, burstTime: 2 });
+                }
+            }
+
+            // 2. Preemptive check or Dispatch: if Aging is active and a waiting process now strictly outranks
+            // the running process, or if CPU is idle, schedule highest-priority process
+            if (!state.cpuProcess && state.readyQueue.length > 0) {
+                sortReadyQueue();
+                state.cpuProcess = state.readyQueue.shift();
+
+                if (state.cpuProcess.isVictim && !state.victimExecuted) {
+                    state.victimExecuted = true;
+                    showToast('P_low has reached the CPU! Starvation resolved.', 'success');
+                }
+            }
+
+            // 3. Execute 1 tick of the active CPU process
+            if (state.cpuProcess) {
+                state.cpuProcess.remainingTime--;
+
+                state.ganttHistory.push({
+                    tick: state.totalTicks,
+                    id: state.cpuProcess.id,
+                    priority: state.cpuProcess.priority,
+                    isVictim: state.cpuProcess.isVictim
+                });
+
+                if (state.cpuProcess.remainingTime <= 0) {
+                    if (state.cpuProcess.isVictim) {
+                        state.victimCompleted = true;
+                    }
+                    state.completedCount++;
+                    state.cpuProcess = null;
+                }
+            } else {
+                // CPU Idle tick
+                state.ganttHistory.push({
+                    tick: state.totalTicks,
+                    id: 'IDLE',
+                    priority: 99,
+                    isVictim: false
+                });
+            }
+
+            // 4. Increment wait time for all queued processes and apply Aging if enabled
+            let reordered = false;
+            state.readyQueue.forEach(proc => {
+                proc.waitTicks++;
+
+                if (proc.isVictim) {
+                    state.victimWaitTicks = proc.waitTicks;
+                }
+
+                if (state.agingEnabled && proc.waitTicks % state.agingInterval === 0 && proc.priority > 1) {
+                    proc.priority--;
+                    reordered = true;
+                    if (proc.isVictim) {
+                        state.victimCurrentPriority = proc.priority;
+                    }
+                }
+            });
+
+            if (reordered) {
+                sortReadyQueue();
+            }
+
+            renderAll();
+        }
+
+        /**
+         * Renders all UI panels
+         */
+        function renderAll() {
+            renderStatusBanner();
+            renderCpu();
+            renderStats();
+            renderVictimMonitor();
+            renderReadyQueue();
+            renderGantt();
+        }
+
+        /**
+         * Updates the top classroom status banner based on Starvation / Aging / Execution state
+         */
+        function renderStatusBanner() {
+            const victimInCpu = state.cpuProcess && state.cpuProcess.isVictim;
+            const victimInQueue = state.readyQueue.find(p => p.isVictim);
+
+            if (victimInCpu) {
+                elGlobalBanner.className = 'bg-emerald-600 border-b-2 border-emerald-800 text-white py-3.5 px-4 sm:px-8 transition-colors duration-300';
+                elBannerDot.className = 'w-3.5 h-3.5 rounded-full bg-white animate-ping shrink-0';
+                elBannerTitle.textContent = 'P_low EXECUTING ON CPU!';
+                elBannerSubtitle.textContent = `After waiting ${state.victimWaitTicks} ticks, P_low finally acquired the CPU.`;
+            } else if (state.victimCompleted) {
+                elGlobalBanner.className = 'bg-emerald-100 border-b-2 border-emerald-400 text-emerald-950 py-3.5 px-4 sm:px-8 transition-colors duration-300';
+                elBannerDot.className = 'w-3.5 h-3.5 rounded-full bg-emerald-600 shrink-0';
+                elBannerTitle.textContent = 'P_low COMPLETED EXECUTION';
+                elBannerSubtitle.textContent = 'Click Reset to run the Starvation experiment again.';
+            } else if (state.agingEnabled && victimInQueue) {
+                elGlobalBanner.className = 'bg-indigo-600 border-b-2 border-indigo-800 text-white py-3.5 px-4 sm:px-8 transition-colors duration-300';
+                elBannerDot.className = 'w-3.5 h-3.5 rounded-full bg-amber-300 animate-pulse shrink-0';
+                elBannerTitle.textContent = `AGING ACTIVE: Priority Boosted (P_low Priority = ${victimInQueue.priority})`;
+                elBannerSubtitle.textContent = 'Waiting processes gain +1 priority every 3 ticks until P_low reaches the front of the queue.';
+            } else if (victimInQueue && victimInQueue.waitTicks >= STARVATION_THRESHOLD) {
+                elGlobalBanner.className = 'bg-rose-600 border-b-2 border-rose-800 text-white py-3.5 px-4 sm:px-8 transition-colors duration-300';
+                elBannerDot.className = 'w-3.5 h-3.5 rounded-full bg-white animate-ping shrink-0';
+                elBannerTitle.textContent = `STARVATION IN PROGRESS — P_low blocked for ${victimInQueue.waitTicks} ticks!`;
+                elBannerSubtitle.textContent = 'CPU is busy with high-priority processes, starving P_low. Toggle "Enable Aging" to resolve.';
+            } else {
+                elGlobalBanner.className = 'bg-amber-100 border-b-2 border-amber-300 text-amber-950 py-3.5 px-4 sm:px-8 transition-colors duration-300';
+                elBannerDot.className = 'w-3.5 h-3.5 rounded-full bg-amber-600 shrink-0';
+                elBannerTitle.textContent = 'SCHEDULER RUNNING: P_low waiting in Ready Queue';
+                elBannerSubtitle.textContent = 'Higher-priority processes are dispatched ahead of P_low.';
+            }
+        }
+
+        function renderCpu() {
+            if (!state.cpuProcess) {
+                elCpuStatusBadge.textContent = 'CPU IDLE';
+                elCpuStatusBadge.className = 'px-3 py-1 rounded-full text-xs font-extrabold bg-slate-200 text-slate-700 border border-slate-300';
+                elCpuPulseDot.className = 'w-3.5 h-3.5 rounded-full bg-slate-400';
+                elCpuSlot.className = 'p-5 rounded-xl border-2 border-dashed border-slate-300 bg-slate-50 min-h-[155px] flex flex-col justify-center items-center text-center transition-all';
+                elCpuSlot.innerHTML = `<span class="text-slate-500 font-bold text-base">CPU is idle — Ready Queue is empty</span>`;
+                return;
+            }
+
+            const p = state.cpuProcess;
+            const style = getPriorityStyle(p.priority);
+            const progressPercent = Math.round(((p.burstTime - p.remainingTime) / p.burstTime) * 100);
+
+            elCpuStatusBadge.textContent = 'ACTIVE & WORKING';
+            elCpuStatusBadge.className = 'px-3 py-1 rounded-full text-xs font-extrabold bg-emerald-100 text-emerald-900 border border-emerald-300';
+            elCpuPulseDot.className = 'w-3.5 h-3.5 rounded-full bg-emerald-500 animate-ping';
+
+            elCpuSlot.className = `p-5 rounded-xl border-2 ${p.isVictim ? 'border-emerald-600 bg-emerald-50' : 'border-indigo-500 bg-indigo-50/50'} min-h-[155px] flex flex-col justify-between transition-all`;
+            elCpuSlot.innerHTML = `
+                <div class="flex items-center justify-between w-full gap-2">
+                    <div class="flex items-center gap-2.5">
+                        <span class="text-2xl sm:text-3xl font-black text-slate-950">${p.id}</span>
+                        ${p.isVictim ? '<span class="px-2.5 py-0.5 text-xs font-extrabold bg-emerald-600 text-white rounded-md">Target Process!</span>' : ''}
+                    </div>
+                    <span class="px-3 py-1 rounded-lg text-xs sm:text-sm font-extrabold border-2 ${style.badge}">
+                        Priority: ${p.priority} (${style.label})
+                    </span>
+                </div>
+                <div class="w-full my-3">
+                    <div class="flex justify-between text-xs sm:text-sm font-extrabold text-slate-700 mb-1.5">
+                        <span>CPU Burst Progress</span>
+                        <span>Burst Remaining: ${p.remainingTime} / ${p.burstTime} ticks</span>
+                    </div>
+                    <div class="w-full bg-slate-200 rounded-full h-3.5 overflow-hidden border border-slate-300">
+                        <div class="bg-emerald-600 h-full rounded-full transition-all duration-300" style="width: ${progressPercent}%"></div>
+                    </div>
+                </div>
+                <div class="text-xs sm:text-sm text-slate-600 text-left font-medium">
+                    Waited in Ready Queue before dispatch: <strong class="text-slate-900">${p.waitTicks} ticks</strong>
+                </div>
+            `;
+        }
+
+        function renderStats() {
+            elStatTotalTicks.textContent = `t = ${state.totalTicks}`;
+            elStatCompleted.textContent = state.completedCount;
+        }
+
+        function renderVictimMonitor() {
+            const victimInQueue = state.readyQueue.find(p => p.isVictim);
+            const victimInCpu = state.cpuProcess && state.cpuProcess.isVictim;
+
+            elVictimWaitTime.textContent = `${state.victimWaitTicks} ticks`;
+
+            if (victimInCpu) {
+                const style = getPriorityStyle(state.cpuProcess.priority);
+                elVictimPriority.textContent = `${state.cpuProcess.priority} (${style.label})`;
+                elVictimStateBadge.textContent = 'P_low EXECUTING';
+                elVictimStateBadge.className = 'px-3 py-1 rounded-lg text-xs font-extrabold bg-emerald-600 text-white';
+                elVictimCard.className = 'bg-emerald-50 p-6 rounded-2xl shadow-sm border-2 border-emerald-600 transition-all';
+            } else if (victimInQueue) {
+                const style = getPriorityStyle(victimInQueue.priority);
+                elVictimPriority.textContent = `${victimInQueue.priority} (${style.label})`;
+
+                if (state.agingEnabled) {
+                    elVictimStateBadge.textContent = 'AGING BOOSTING PRIORITY';
+                    elVictimStateBadge.className = 'px-3 py-1 rounded-lg text-xs font-extrabold bg-indigo-600 text-white';
+                    elVictimCard.className = 'bg-indigo-50/60 p-6 rounded-2xl shadow-sm border-2 border-indigo-500 transition-all';
+                } else if (victimInQueue.waitTicks >= STARVATION_THRESHOLD) {
+                    elVictimStateBadge.textContent = 'STARVATION IN PROGRESS';
+                    elVictimStateBadge.className = 'px-3 py-1 rounded-lg text-xs font-extrabold bg-rose-600 text-white';
+                    elVictimCard.className = 'bg-rose-50/80 p-6 rounded-2xl shadow-sm border-2 border-rose-600 starvation-alert transition-all';
+                } else {
+                    elVictimStateBadge.textContent = 'WAITING IN QUEUE';
+                    elVictimStateBadge.className = 'px-3 py-1 rounded-lg text-xs font-extrabold bg-amber-100 text-amber-900 border border-amber-300';
+                    elVictimCard.className = 'bg-white p-6 rounded-2xl shadow-sm border-2 border-slate-200 transition-all';
+                }
+            } else {
+                elVictimStateBadge.textContent = 'COMPLETED';
+                elVictimStateBadge.className = 'px-3 py-1 rounded-lg text-xs font-extrabold bg-emerald-100 text-emerald-900 border border-emerald-300';
+                elVictimCard.className = 'bg-white p-6 rounded-2xl shadow-sm border-2 border-emerald-400 transition-all';
+            }
+        }
+
+        function renderReadyQueue() {
+            elQueueCountBadge.textContent = `${state.readyQueue.length} waiting`;
+
+            if (state.readyQueue.length === 0) {
+                elReadyQueueList.innerHTML = `
+                    <div class="p-10 text-center border-2 border-dashed border-slate-300 rounded-xl text-slate-500 font-bold">
+                        The Ready Queue is currently empty.
+                    </div>
+                `;
+                return;
+            }
+
+            elReadyQueueList.innerHTML = state.readyQueue.map((proc, index) => {
+                const style = getPriorityStyle(proc.priority);
+                const isNext = index === 0;
+                const agedBoost = proc.initialPriority - proc.priority;
+
+                return `
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 p-4 rounded-xl border-2 ${proc.isVictim ? 'border-indigo-600 bg-indigo-50/50' : style.border} transition-all">
+                        <div class="flex items-center gap-3.5">
+                            <span class="w-8 h-8 rounded-lg bg-slate-900 text-white text-sm font-black flex items-center justify-center shrink-0">
+                                #${index + 1}
+                            </span>
+                            <div>
+                                <div class="flex flex-wrap items-center gap-2">
+                                    <span class="font-black text-slate-950 text-base sm:text-lg">${proc.id}</span>
+                                    ${proc.isVictim ? '<span class="px-2 py-0.5 text-xs font-extrabold bg-indigo-700 text-white rounded">Target (t=0)</span>' : ''}
+                                    ${isNext ? '<span class="px-2 py-0.5 text-xs font-extrabold bg-emerald-100 text-emerald-900 rounded border border-emerald-400">Next on CPU</span>' : ''}
+                                </div>
+                                <span class="text-xs sm:text-sm text-slate-700 font-medium">
+                                    Burst: <strong>${proc.burstTime} ticks</strong> &bull; Waiting: <strong>${proc.waitTicks} ticks</strong>
+                                </span>
+                            </div>
+                        </div>
+
+                        <div class="flex items-center gap-2 self-end sm:self-center">
+                            ${agedBoost > 0 ? `<span class="text-xs font-extrabold text-indigo-800 bg-indigo-100 border border-indigo-300 px-2.5 py-1 rounded-md" title="Priority boosted via Aging">&uarr; +${agedBoost} Aging</span>` : ''}
+                            <span class="px-3 py-1 rounded-lg text-xs sm:text-sm font-extrabold border-2 ${style.badge}">
+                                Priority: ${proc.priority} (${style.label})
+                            </span>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function renderGantt() {
+            if (state.ganttHistory.length === 0) {
+                elGanttTrack.innerHTML = `<div class="text-sm text-slate-500 font-semibold italic self-center px-3">Waiting for simulation ticks...</div>`;
+                return;
+            }
+
+            elGanttTrack.innerHTML = state.ganttHistory.map(block => {
+                if (block.id === 'IDLE') {
+                    return `
+                        <div class="flex flex-col justify-between items-center min-w-[60px] px-2.5 py-2 rounded-lg bg-slate-200 text-slate-600 border-2 border-slate-300 text-xs">
+                            <span class="font-black">IDLE</span>
+                            <span class="text-[11px] font-bold">t=${block.tick}</span>
+                        </div>
+                    `;
+                }
+
+                const style = block.isVictim
+                    ? { gantt: 'bg-emerald-600 text-white border-emerald-800 ring-2 ring-emerald-300' }
+                    : getPriorityStyle(block.priority);
+
+                return `
+                    <div class="flex flex-col justify-between items-center min-w-[74px] px-2.5 py-2 rounded-lg border-2 shadow-xs ${style.gantt} text-xs transition-all">
+                        <span class="font-black tracking-tight text-sm">${block.id}</span>
+                        <span class="text-[11px] font-bold opacity-95">P:${block.priority} | t=${block.tick}</span>
+                    </div>
+                `;
+            }).join('');
+
+            // Auto-scroll right to follow live execution
+            elGanttContainer.scrollLeft = elGanttContainer.scrollWidth;
+        }
+
+        /**
+         * Simulation Loop Management
+         */
+        function startLoop() {
+            stopLoop();
+            timerId = setInterval(stepSimulation, state.tickDuration);
+        }
+
+        function stopLoop() {
+            if (timerId) {
+                clearInterval(timerId);
+                timerId = null;
+            }
+        }
+
+        function updatePlayPauseUI() {
+            if (state.isRunning) {
+                elTextPlayPause.textContent = 'Pause';
+                elIconPlay.classList.add('hidden');
+                elIconPause.classList.remove('hidden');
+                elBtnPlayPause.className = 'flex items-center gap-2 px-5 py-3 rounded-xl font-extrabold text-white bg-amber-600 hover:bg-amber-700 active:scale-95 transition shadow-sm cursor-pointer text-base';
+            } else {
+                elTextPlayPause.textContent = 'Start';
+                elIconPlay.classList.remove('hidden');
+                elIconPause.classList.add('hidden');
+                elBtnPlayPause.className = 'flex items-center gap-2 px-5 py-3 rounded-xl font-extrabold text-white bg-emerald-600 hover:bg-emerald-700 active:scale-95 transition shadow-sm cursor-pointer text-base';
+            }
+        }
+
+        // Control Event Listeners
+        elBtnPlayPause.addEventListener('click', () => {
+            state.isRunning = !state.isRunning;
+            updatePlayPauseUI();
+            if (state.isRunning) {
+                startLoop();
+            } else {
+                stopLoop();
+            }
+        });
+
+        elBtnReset.addEventListener('click', () => {
+            resetSimulation();
+            showToast('Simulation reset to t = 0 with P_low waiting.', 'info');
+        });
+
+        elSpeedSelect.addEventListener('change', (e) => {
+            state.tickDuration = Number(e.target.value);
+            if (state.isRunning) {
+                startLoop();
+            }
+        });
+
+        elBtnAddHigh.addEventListener('click', () => {
+            const prio = Math.random() < 0.5 ? 1 : 2;
+            const proc = createProcess({ category: 'high', priority: prio, burstTime: 2 });
+            renderReadyQueue();
+            showToast(`Added ${proc.id} (High Priority ${prio}) ahead of P_low!`, 'danger');
+        });
+
+        elBtnAddMed.addEventListener('click', () => {
+            const prio = Math.random() < 0.5 ? 4 : 5;
+            const proc = createProcess({ category: 'medium', priority: prio, burstTime: 2 });
+            renderReadyQueue();
+            showToast(`Added ${proc.id} (Medium Priority ${prio}) ahead of P_low.`, 'warning');
+        });
+
+        elToggleAutoHigh.addEventListener('change', (e) => {
+            state.autoHighPriority = e.target.checked;
+            showToast(
+                state.autoHighPriority
+                    ? 'Continuous High-Priority Stream enabled.'
+                    : 'Continuous High-Priority Stream paused.',
+                'info'
+            );
+        });
+
+        elToggleAging.addEventListener('change', (e) => {
+            state.agingEnabled = e.target.checked;
+            renderStatusBanner();
+            renderVictimMonitor();
+            showToast(
+                state.agingEnabled
+                    ? 'Aging enabled: waiting processes gain +1 priority every 3 ticks!'
+                    : 'Aging disabled: process priorities remain static.',
+                state.agingEnabled ? 'success' : 'warning'
+            );
+        });
+
+        // Start simulation on window load
+        window.onload = function () {
+            resetSimulation();
+            updatePlayPauseUI();
+            startLoop();
+        };
+    </script>
+</body>
+</html>

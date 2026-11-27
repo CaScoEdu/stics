@@ -1,0 +1,271 @@
+---
+title: "Deadlock and Starvation"
+description: "Deadlock and starvation"
+sidebar:
+    order: 15
+---
+
+import {
+    Card
+} from "@astrojs/starlight/components";
+import { Quiz, QuizIntro, QuizResults } from 'starlight-quiz/components';
+import AsideNote from "@/components/AsideNote.astro";
+import AsideToDo from "@/components/AsideToDo.astro";
+import AsideTip from "@/components/AsideTip.astro";
+import ExpectedResults from "@/components/ExpectedResults.astro"
+import KeyConcepts from "@/components/KeyConcepts.astro"
+import Prerequisites from "@/components/Prerequisites.astro"
+
+An introduction to deadlock and starvation.
+
+## Introduction
+
+<ExpectedResults>
+- Define deadlock and starvation and distinguish them based on system progress.
+- Recognize the four Coffman conditions required for a deadlock to occur.
+- Describe the main strategies for deadlock prevention, avoidance, detection, and recovery.
+- Explain how unfair priorities can cause starvation and how *aging* can reduce it.
+- Analyze synchronization examples to identify deadlock or indefinite waiting.
+</ExpectedResults>
+
+<Prerequisites>
+- Basic knowledge of processes or threads and concurrent programming
+- Understanding of shared resources, waiting, and synchronization
+</Prerequisites>
+
+## The Risks of Synchronization: [Deadlock](https://en.wikipedia.org/wiki/Deadlock) and [Starvation](https://en.wikipedia.org/wiki/Starvation_(computer_science))
+
+Managing **synchronization** and **resource waiting** can expose a system to two
+important issues:
+
+## Deadlock
+
+<svg viewBox="0 0 480 320" role="img" aria-labelledby="incrocio-title incrocio-desc" style="display: block; max-width: 100%; height: auto; margin: 1.5rem auto;">
+    <title id="incrocio-title">Simplified illustration of cars and an intersection</title>
+    <desc id="incrocio-desc">Four colored cars approach an intersection formed by two roads from different directions.</desc>
+    <rect width="480" height="320" rx="16" fill="#f1f5f9" />
+    <rect x="190" y="0" width="100" height="320" fill="#475569" />
+    <rect x="0" y="110" width="480" height="100" fill="#475569" />
+    <path d="M240 0v110M240 210v110M0 160h190M290 160h190" stroke="#f8fafc" stroke-width="4" stroke-dasharray="12 10" />
+    <g stroke="#0f172a" stroke-width="2">
+        <g transform="translate(215 70) rotate(90)">
+            <rect x="-24" y="-14" width="48" height="28" rx="8" fill="#38bdf8" />
+            <rect x="-10" y="-10" width="20" height="20" rx="4" fill="#e0f2fe" />
+            <path d="M-19-15v5M19-15v5M-19 10v5M19 10v5" stroke="#0f172a" stroke-width="4" />
+        </g>
+        <g transform="translate(340 135) rotate(180)">
+            <rect x="-24" y="-14" width="48" height="28" rx="8" fill="#fb923c" />
+            <rect x="-10" y="-10" width="20" height="20" rx="4" fill="#ffedd5" />
+            <path d="M-19-15v5M19-15v5M-19 10v5M19 10v5" stroke="#0f172a" stroke-width="4" />
+        </g>
+        <g transform="translate(265 250) rotate(-90)">
+            <rect x="-24" y="-14" width="48" height="28" rx="8" fill="#a78bfa" />
+            <rect x="-10" y="-10" width="20" height="20" rx="4" fill="#ede9fe" />
+            <path d="M-19-15v5M19-15v5M-19 10v5M19 10v5" stroke="#0f172a" stroke-width="4" />
+        </g>
+        <g transform="translate(140 185)">
+            <rect x="-24" y="-14" width="48" height="28" rx="8" fill="#4ade80" />
+            <rect x="-10" y="-10" width="20" height="20" rx="4" fill="#dcfce7" />
+            <path d="M-19-15v5M19-15v5M-19 10v5M19 10v5" stroke="#0f172a" stroke-width="4" />
+        </g>
+    </g>
+</svg>
+**Deadlock** occurs when two or more processes **remain permanently blocked** while waiting for a resource currently held by another process in the group.
+* **Typical example**: Process `P1` **holds** resource `A` and requests `B`;
+    process `P2` holds resource `B` and requests `A`. Neither can
+    proceed.
+* This is a blocking condition that the system cannot resolve on its own
+    without external intervention (such as restarting or forcibly terminating
+    the processes).
+
+
+<Card title="Holt Diagram">
+The diagram shows two processes and two resources in a circular wait: P1 holds A and requests B, while P2 holds B and requests A. Neither process can proceed because each is waiting for a resource held by the other, resulting in a deadlock.
+
+<svg
+    viewBox="0 0 720 360"
+    role="img"
+    aria-labelledby="holt-title holt-description"
+    style="display: block; width: 100%; max-width: 720px; height: auto; margin: 2rem auto;"
+>
+    <title id="holt-title">Holt diagram of a deadlock</title>
+    <desc id="holt-description">Resource A is assigned to P1, which requests B. B is assigned to P2, which requests A. The requests and assignments form a circular wait.</desc>
+    <defs>
+        <marker id="holt-assignment-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+            <path d="M 0 0 L 10 5 L 0 10 z" fill="#2457a7" />
+        </marker>
+        <marker id="holt-request-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+            <path d="M 0 0 L 10 5 L 0 10 z" fill="#c0392b" />
+        </marker>
+    </defs>
+
+    <path d="M 402 94 L 518 153" fill="none" stroke="#2457a7" stroke-width="3" marker-end="url(#holt-assignment-arrow)" />
+    <path d="M 518 207 L 402 266" fill="none" stroke="#c0392b" stroke-width="3" stroke-dasharray="7 6" marker-end="url(#holt-request-arrow)" />
+    <path d="M 318 266 L 202 207" fill="none" stroke="#2457a7" stroke-width="3" marker-end="url(#holt-assignment-arrow)" />
+    <path d="M 202 153 L 318 94" fill="none" stroke="#c0392b" stroke-width="3" stroke-dasharray="7 6" marker-end="url(#holt-request-arrow)" />
+
+    <g fill="#172b4d" font-family="Arial, sans-serif" font-size="14" font-weight="600" text-anchor="middle">
+        <text x="470" y="106">assigned to</text>
+        <text x="470" y="263" fill="#9c2f25">requests</text>
+        <text x="250" y="263">assigned to</text>
+        <text x="250" y="106" fill="#9c2f25">requests</text>
+    </g>
+
+    <g fill="#e8f1ff" stroke="#2457a7" stroke-width="2">
+        <rect x="310" y="34" width="100" height="72" rx="8" />
+        <rect x="310" y="254" width="100" height="72" rx="8" />
+    </g>
+    <g fill="#fff0d9" stroke="#a65d00" stroke-width="2">
+        <circle cx="565" cy="180" r="50" />
+        <circle cx="155" cy="180" r="50" />
+    </g>
+    <g fill="#172b4d" font-family="Arial, sans-serif" font-size="16" font-weight="600" text-anchor="middle">
+        <text x="360" y="64">Resource A</text>
+        <text x="360" y="87" font-size="13" font-weight="400">1 instance</text>
+        <text x="360" y="284">Resource B</text>
+        <text x="360" y="307" font-size="13" font-weight="400">1 instance</text>
+        <text x="565" y="185">Process P1</text>
+        <text x="155" y="185">Process P2</text>
+    </g>
+</svg>
+</Card>
+
+
+### The Dining Philosophers Problem
+Let's look at another practical example of deadlock: the dining philosophers problem.
+
+The **dining philosophers problem** is a classic example of synchronization between processes that share resources, introduced by Edsger W. Dijkstra in 1965. Five philosophers sit around a table, with a fork between each pair of neighbors. Each philosopher alternates between thinking and eating, but must acquire both forks beside them to eat.
+
+If everyone picks up one fork and waits for their neighbor's fork, no one can start eating: a **deadlock** occurs. Even without a system-wide deadlock, an unfair allocation strategy can force a philosopher to wait indefinitely, causing **starvation**.
+
+The simulator below lets you observe these situations and see how synchronization decisions affect access to the forks.
+
+<div class="iframe-container" style="margin: 2rem 0; text-align: center;">
+    <iframe
+        src="/simulatore-5-filosofi.html"
+        width="100%"
+        style="height: 2000px !important; border: 1px solid #30363d; border-radius: 8px; background: #f4f4f4; overflow: hidden; display: block;"
+    ></iframe>
+</div>
+
+### Necessary Conditions for Deadlock
+
+**Deadlock** occurs when a set of processes or threads remains permanently blocked because each is waiting for a resource assigned to another member of the same set. For deadlock to occur, four conditions known as the **Coffman conditions** must hold **simultaneously**:
+
+* **Mutual exclusion:** at least one resource is non-shareable; it can be used by only one process or thread at a time.
+* **Hold and wait:** a process holds at least one resource it has acquired while waiting for other resources assigned to other processes to be released.
+* **No preemption:** resources cannot be forcibly taken from their holders; they must be released voluntarily by the process that acquired them.
+* **Circular wait:** there is a closed chain of processes (P0, P1, ..., Pn) in which P0 waits for a resource held by P1, P1 waits for a resource held by P2, and so on, until Pn waits for a resource held by P0.
+
+
+### Deadlock Handling Strategies
+
+In operating systems and concurrent programming, strategies for addressing the problem fall into four main approaches:
+
+| Strategy | Basic idea | Advantages and limitations |
+| --- | --- | --- |
+| **Prevention (*Deadlock Prevention*)** | Prevents at least one of the four Coffman conditions from occurring (for example, by imposing a total order on resource acquisition to break circular wait, or by requiring all resources in advance). | Guarantees the absence of deadlocks, but reduces resource utilization and may cause *starvation* or reduce concurrency. |
+| **Avoidance (*Deadlock Avoidance*)** | Dynamically evaluates each resource request before granting it, keeping the system in a **safe state** (using algorithms such as the Banker's algorithm). | Dynamically avoids unsafe states, but requires advance information about maximum resource needs and has a higher computational cost. |
+| **Detection and recovery** | Allows deadlocks to occur, detects them through periodic analysis of wait-for or allocation graphs, and intervenes (by terminating processes or reclaiming resources). | Does not impose strict constraints on resource acquisition, but adds monitoring overhead and may result in lost work or inconsistencies that must be repaired. |
+| **Ignoring the problem (*Ostrich Algorithm*)** | The system uses no specific deadlock-handling mechanisms and leaves resolution to the application or a system restart. | Very simple and has no runtime overhead; it is a practical choice in many general-purpose operating systems when deadlocks are rare compared with the cost of prevention or detection. |
+
+<AsideTip title="Has your computer ever frozen?
+">
+What do you do when the system stops responding and becomes stuck? Often, you close the frozen application or reset the machine by restarting it: this is exactly the logic of **detection and recovery**—detecting the deadlock and intervening to unblock the system.
+</AsideTip>
+
+### The Banker's Algorithm
+
+The **Banker's algorithm**, developed by Edsger Dijkstra, is a **deadlock avoidance** algorithm that dynamically decides whether to grant or defer a process's resource request. Its name comes from the analogy with a bank that never lends all its available cash if doing so could prevent it from meeting the maximum needs declared by its customers. Similarly, the system grants resources only if it remains in a **safe state**—that is, if there is at least one execution sequence in which all processes can obtain their declared maximum resources, complete their work, and release them. The algorithm requires each process to declare its maximum resource needs in advance and tracks available, allocated, and still-needed resources. If an allocation would lead to an unsafe state, the request is deferred until other resources become available.
+
+## Starvation
+### Starvation (Indefinite Waiting)
+
+**Starvation** (or *indefinite blocking*) occurs when a process that is ready to make progress never obtains—or obtains only after an indefinite delay—the resources or CPU time needed to complete its execution, even though there is no deadlock. Unlike deadlock, in which an entire cycle of processes is permanently blocked, during starvation the system continues to make progress on other processes, while one or more processes are systematically bypassed or deprioritized.
+
+<AsideNote title="Practical example">
+Consider **priority scheduling**.
+If the scheduler always assigns the CPU to high-priority processes first and new high-priority processes keep arriving (without *aging* mechanisms that gradually increase the priority of processes that are waiting), a low-priority process may wait indefinitely. The CPU continues to work and the system is not deadlocked, but that process never gets to run.
+</AsideNote>
+
+<div class="iframe-container" style="margin: 2rem 0; text-align: center;">
+    <iframe
+        src="/interactive_simulation_starvation_in_priority_scheduling.html"
+        width="100%"
+        style="height: 2000px !important; border: 1px solid #30363d; border-radius: 8px; background: #f4f4f4; overflow: hidden; display: block;"
+    ></iframe>
+</div>
+
+
+## Summary
+
+<KeyConcepts>
+- [**Deadlock**](https://en.wikipedia.org/wiki/Deadlock): permanent blocking of processes waiting for resources held by one another.
+- **Coffman conditions**: mutual exclusion, hold and wait, no preemption, and circular wait; all must coexist for deadlock to occur.
+- **Deadlock prevention**: eliminates at least one Coffman condition, for example by imposing an order on resource acquisition.
+- **Deadlock avoidance**: grants resources only if the allocation keeps the system in a safe state.
+- **Detection and recovery**: detects an existing deadlock and intervenes to break it.
+- [**Starvation**](https://en.wikipedia.org/wiki/Starvation_(computer_science)): a process waits indefinitely while others continue to make progress.
+- **Aging**: gradually increases the priority of waiting processes to limit starvation.
+</KeyConcepts>
+
+## Knowledge Check
+
+<QuizIntro 
+resetLabel="Reset all answers"
+textLabel="Your answers to this page's quizzes are saved in your browser's local storage and will be remembered between visits."
+/>
+
+<Quiz id="quiz-deadlock-definizione">
+What characterizes a deadlock?
+
+- [ ] A process waits while all the others have terminated.
+- [x] Multiple processes remain blocked while waiting for resources held by one another.
+    > Correct: circular wait prevents the processes involved from proceeding and releasing resources.
+- [ ] A process runs slowly but continues to receive CPU time.
+</Quiz>
+
+<Quiz id="quiz-condizioni-coffman">
+Which set correctly describes the four Coffman conditions?
+
+- [ ] Priority, parallelism, preemption, and termination.
+- [x] Mutual exclusion, hold and wait, no preemption, and circular wait.
+    > Correct: all four must occur simultaneously for a deadlock to arise.
+- [ ] Mutual exclusion, aging, circular wait, and resource sharing.
+</Quiz>
+
+<Quiz id="quiz-deadlock-strategia">
+Which strategy avoids deadlock by granting a request only if the system remains in a safe state?
+
+- [ ] Detection and recovery.
+- [x] Avoidance.
+    > Correct: avoidance evaluates requests dynamically and keeps the system in a safe state.
+- [ ] Ignoring the problem.
+</Quiz>
+
+<Quiz id="quiz-starvation">
+Which situation is an example of starvation?
+
+- [ ] All processes wait for resources in a cycle and none can proceed.
+- [x] A low-priority process keeps waiting while other processes run.
+    > Correct: the system makes progress, but that process is continually bypassed.
+- [ ] A process terminates and releases the resources it was using.
+</Quiz>
+
+<Quiz id="quiz-aging">
+How can *aging* reduce starvation caused by priority scheduling?
+
+- [x] By gradually increasing the priority of processes that remain waiting.
+    > Correct: this allows a process that is continually bypassed to eventually get CPU time.
+- [ ] By lowering the priority of processes that have waited the longest.
+- [ ] By preventing all processes from using the CPU at the same time.
+</Quiz>
+
+<QuizResults 
+titleLabel="Your score"
+progressLabel="Quiz progress"
+answeredLabel="questions answered"
+correctLabel="correct answers"
+resetLabel="Reset all answers"
+ />
+

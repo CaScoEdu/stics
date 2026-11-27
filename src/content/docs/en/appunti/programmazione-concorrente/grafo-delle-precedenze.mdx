@@ -1,0 +1,248 @@
+---
+title: "Precedence Graph"
+description: "Introduction to concurrency, parallel operations, and precedence graphs"
+sidebar:
+    order: 5
+---
+
+import {
+    Card
+} from "@astrojs/starlight/components";
+import { Quiz, QuizIntro, QuizResults } from 'starlight-quiz/components';
+import AsideNote from "@/components/AsideNote.astro";
+import AsideToDo from "@/components/AsideToDo.astro";
+import ExpectedResults from "@/components/ExpectedResults.astro"
+import KeyConcepts from "@/components/KeyConcepts.astro"
+import Mermaid from "@/components/Mermaid.astro";
+import Prerequisites from "@/components/Prerequisites.astro"
+
+Introduction to **concurrent programming**
+
+## Introduction
+
+<ExpectedResults>
+- Explain what is meant by concurrent programming.
+- Distinguish sequential operations from independent operations that can proceed in parallel.
+- Interpret nodes and arrows in a precedence graph.
+- Identify when an operation is ready to execute and when it must wait.
+- Use the simulator to observe dependencies and verify operation results.
+</ExpectedResults>
+
+<Prerequisites>
+- Basic knowledge of variables and arithmetic operations
+- Ability to follow a simple sequence of actions or calculations
+</Prerequisites>
+
+During the **analysis and design** of a [**concurrent program**](https://en.wikipedia.org/wiki/Concurrent_computing), constructing a **precedence graph** is useful for making the **dependencies** between **operations** explicit. It helps determine which activities can be performed [**in parallel**](https://en.wikipedia.org/wiki/Parallel_computing) and which must wait, so that the necessary [**synchronizations**](https://en.wikipedia.org/wiki/Synchronization_(computer_science)) can be designed, premature access to data that is not yet available can be avoided, and **parallelism** can be used without compromising the program's **correctness**.
+
+<AsideNote>
+The precedence graph is presented below through simple examples
+from everyday life and mathematics.
+</AsideNote>
+
+## Sequential and parallel actions
+
+In everyday activities, some actions must be performed
+ [**sequentially**](https://en.wikipedia.org/wiki/Serializability).
+
+For example, to mail a letter, it must first be written and placed in an envelope, then stamped, and finally handed over for delivery.
+
+<Card>
+<Mermaid chart={`
+flowchart LR
+    A["Write and envelope"] --> B["Stamp"] --> C["Hand over for delivery"]
+`} />
+</Card>
+
+Other actions can proceed **in parallel** because they do not depend on one another: while the oven heats up, the ingredients can be prepared; alternatively, while one person sets the table, another can prepare drinks. If a subsequent activity requires the result of both, it can begin only when both have finished.
+<Card>
+<Mermaid chart={`
+flowchart LR
+    A["Heat the oven"] --> C["Put in the oven"]
+    B["Prepare the ingredients"] --> C
+    D["Set the table"]
+    E["Prepare drinks"]
+`} />
+</Card>
+
+## Representing a precedence graph
+
+A [**precedence graph**](https://en.wikipedia.org/wiki/Graph_(discrete_mathematics)) represents the **dependencies** between a program's **operations**. Each [**node**](https://en.wikipedia.org/wiki/Vertex_(graph_theory)) represents an operation; a [**directed arrow**](https://en.wikipedia.org/wiki/Directed_graph) from one node to another indicates that the first operation must finish before the second can begin.
+
+<Card>
+<Mermaid chart={`
+flowchart LR
+    A["A = 25"] --> B["B = A + 3"]
+`} />
+
+In this example, node **A** precedes **B**: the value of `A` must be available to calculate `B`. The arrow's direction therefore indicates the required order, not necessarily the order in which the operations are executed one after another in the program.
+</Card>
+When two operations do not depend on each other, they can be executed [in parallel](https://en.wikipedia.org/wiki/Parallel_computing). If both are required by a subsequent operation, that operation can begin only after both have completed:
+
+<Card>
+<Mermaid chart={`
+flowchart LR
+    A["A"] --> B["B"]
+    A --> C["C"]
+    B --> D["D"]
+    C --> D
+`} />
+
+After **A**, operations **B** and **C** are independent of each other; **D**, however, waits for both **B** and **C**. The graph shows which operations can proceed at the same time and which precedence constraints must be respected.
+</Card>
+
+## Precedence graph example
+
+Consider a set of operations in which the results obtained
+are reused to calculate new variables.
+
+<AsideNote title="List of operations">
+- A = 25
+- B = A + 3
+- C = A + 5
+- D = B + C
+- E = F + D + J
+- F = 12 + C
+- G = 15 + J
+- H = F + E + G
+- I = 8 + H
+- J = A + 17
+</AsideNote>
+
+<Card>
+Observe the graph: each arc indicates that the value produced by the preceding operation must be available before the next operation can be performed.
+
+<Mermaid chart={`
+flowchart TD
+    A["A = 25"] --> B["B = A + 3"]
+    A --> C["C = A + 5"]
+    A --> J["J = A + 17"]
+    B --> D["D = B + C"]
+    C --> D
+    C --> F["F = 12 + C"]
+    D --> E["E = F + D + J"]
+    F --> E
+    J --> E
+    J --> G["G = 15 + J"]
+    F --> H["H = F + E + G"]
+    E --> H
+    G --> H
+    H --> I["I = 8 + H"]
+`} />
+
+</Card>
+
+<AsideToDo>
+### Use the simulator
+
+The simulator lets you verify how the graph's dependencies affect the execution of the operations.
+
+1. Observe the graph and identify nodes that depend on other nodes.
+2. Start the simulator and follow the execution of the operations.
+3. When a node has all of its dependencies satisfied, its value can be calculated.
+4. When a node waits for other nodes, identify which operations must finish before it can begin.
+5. At the end, compare the results produced by the simulator with the expected values calculated from the equations.
+
+Use the simulator to distinguish operations ready for execution from those blocked by a precedence relationship, and to verify which operations can proceed in parallel.
+
+</AsideToDo>
+
+<div class="iframe-container" style="margin: 2rem 0; text-align: center;">
+    <iframe
+        src="/grafo-precedenze/index.html"
+        width="100%"
+        style="height: 600px !important; border: 1px solid #30363d; border-radius: 8px; background: #f4f4f4; overflow: hidden; display: block;"
+    ></iframe>
+</div>
+
+
+
+## Summary
+
+<KeyConcepts>
+- [**Concurrent programming**](https://en.wikipedia.org/wiki/Concurrent_computing): organizes multiple operations that can advance within the same time interval while respecting their dependencies.
+- [**Sequential operations**](https://en.wikipedia.org/wiki/Serializability): operations that must be executed in a constrained order.
+- [**Parallel operations**](https://en.wikipedia.org/wiki/Parallel_computing): independent operations that can be executed simultaneously.
+- [**Precedence graph**](https://en.wikipedia.org/wiki/Graph_(discrete_mathematics)): represents the dependencies and required order between a program's operations.
+- [**Node**](https://en.wikipedia.org/wiki/Vertex_(graph_theory)): identifies a single operation to execute.
+- [**Directed arc**](https://en.wikipedia.org/wiki/Directed_graph): connects two operations and indicates that the first must finish before the second begins.
+- [**Join**](https://en.wikipedia.org/wiki/Join_(SQL)): point at which an operation waits for all operations on which it depends to finish.
+</KeyConcepts>
+
+## Learning Check
+
+<QuizIntro 
+resetLabel="Reset all answers"
+textLabel="Answers to the quizzes on this page are saved in your browser's local storage and remain stored between visits"
+/>
+
+<Quiz id="quiz-nodo-grafo">
+In this lesson, what does concurrent programming describe?
+
+- [ ] The mandatory execution of every instruction one at a time.
+- [x] The execution of multiple operations that can advance simultaneously while respecting dependencies.
+    > Correct: independent operations can proceed in parallel, while dependencies impose waits.
+- [ ] Repeating the same operation until the program ends.
+</Quiz>
+
+<Quiz id="quiz-freccia-precedenza">
+What does a **node** represent in a precedence graph?
+
+- [ ] An arrow between two operations.
+- [x] An operation to execute.
+    > Correct: each node identifies a single operation in the program.
+- [ ] A shared resource used by every process.
+</Quiz>
+
+<Quiz id="quiz-operazioni-parallele">
+In the graph `A → B`, what does the arrow indicate?
+
+- [ ] A can begin only after B completes.
+- [x] B can begin only after A completes.
+    > Correct: the arrow's direction represents the precedence constraint.
+- [ ] A and B must necessarily be executed one after the other on the same processor.
+</Quiz>
+
+<Quiz id="quiz-esecuzione-esempio">
+Consider the graph `A → B`, `A → C`, `B → D`, and `C → D`. When can D begin?
+
+- [ ] Immediately after A completes.
+- [ ] After only one of B or C completes.
+- [x] After both B and C complete.
+    > Correct: D depends on both operations.
+</Quiz>
+
+<Quiz id="quiz-grafo-join">
+In the graph example, why must F wait for C?
+
+- [x] Because calculating F uses the value contained in C.
+    > Correct: F can be calculated only after C has produced its result.
+- [ ] Because F and C are identical operations.
+- [ ] Because F is the last operation in the program.
+</Quiz>
+
+<Quiz id="quiz-risposte-multiple-grafo">
+In the graph `A → B`, `A → C`, `B → D`, and `C → D`, which statements are correct? Select all correct answers.
+
+- [x] B and C can be executed in parallel.
+    > Correct: both depend on A, but not on each other.
+- [x] D can begin only after both B and C complete.
+    > Correct: D depends on both operations.
+- [ ] B can begin before A has finished.
+- [ ] D can begin after B completes, even if C has not finished.
+</Quiz>
+
+
+
+<Quiz id="quiz-completa-definizione">
+In a precedence graph, an arrow from A to B indicates that B can begin only after [[A]] has completed.
+</Quiz>
+
+<QuizResults 
+titleLabel="Your score"
+progressLabel="Quiz progress"
+answeredLabel="answers answered"
+correctLabel="correct answers"
+resetLabel="Reset all answers"
+ />
+

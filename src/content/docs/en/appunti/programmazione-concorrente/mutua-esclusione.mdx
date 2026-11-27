@@ -1,0 +1,195 @@
+---
+title: "Competition: Mutual Exclusion"
+description: "An introduction to the fundamentals of concurrent programming: competition vs. cooperation, critical sections, mutual exclusion, deadlock, and starvation."
+sidebar:
+    order: 10
+---
+
+import {
+    Aside,
+    Card,
+    Steps
+} from "@astrojs/starlight/components";
+import { Quiz, QuizIntro, QuizProgress, QuizResults } from 'starlight-quiz/components';
+import AsideCaution from "@/components/AsideCaution.astro";
+import AsideNote from "@/components/AsideNote.astro";
+import AsideTip from "@/components/AsideTip.astro";
+import AsideToDo from "@/components/AsideToDo.astro";
+import ExpectedResults from "@/components/ExpectedResults.astro"
+import KeyConcepts from "@/components/KeyConcepts.astro"
+import Mermaid from "@/components/Mermaid.astro";
+import Prerequisites from "@/components/Prerequisites.astro"
+
+An introduction to the fundamentals of **concurrent programming**: **competition** vs. **cooperation**, **critical sections**, **mutual exclusion**, **deadlock**, and **starvation**.
+
+## Introduction
+
+<ExpectedResults>
+- Distinguish [competitive](https://en.wikipedia.org/wiki/Concurrency_(computer_science)) from cooperative interactions between processes, and explain why concurrent processes may need coordination.
+- Recognize a [shared resource](https://en.wikipedia.org/wiki/Concurrency_(computer_science)) and identify its [critical section](https://en.wikipedia.org/wiki/Critical_section).
+- Understand how [mutual exclusion](https://en.wikipedia.org/wiki/Mutual_exclusion) prevents [race conditions](https://en.wikipedia.org/wiki/Race_condition), and describe the request–use–release protocol.
+</ExpectedResults>
+
+<Prerequisites>
+- basic concepts of processes
+- the distinction between sequential and concurrent execution
+- basic concepts of variables, memory, and shared resources
+</Prerequisites>
+
+## Competition and Cooperation
+When multiple [**processes**](https://en.wikipedia.org/wiki/Process_(computing)) run in a computer system, they can interact in two main ways:
+
+* **Competition**: Two or more processes need exclusive use of limited **resources** that they both need, and therefore compete to acquire them. For example, two processes may try to write to the same file at the same time.
+* **Cooperation**: Processes do not compete, but must **coordinate** and **exchange information** to perform a common task (e.g., a *producer* process that puts data into a [**buffer**](https://en.wikipedia.org/wiki/Data_buffer) and a *consumer* process that retrieves it).
+
+In this lesson, we will focus on **competition**. **Cooperation** will be covered in a later lesson on the Producer–Consumer problem.
+
+<Aside type="caution" title="The risk of disorder">
+In both cases, a **lack of coordination** can cause **serious errors**,
+**unpredictable behavior**, or **severe data corruption**.
+</Aside>
+
+## Competition: [Shared resource](https://en.wikipedia.org/wiki/Concurrency_(computer_science)), [critical section](https://en.wikipedia.org/wiki/Critical_section), and [mutual exclusion](https://en.wikipedia.org/wiki/Mutual_exclusion)
+When processes **compete** for access to common elements (such as **global variables**, **files**, or **data structures**), any reusable hardware or software element contested by processes is called a **shared resource**.
+
+<AsideNote title="Critical section">
+To avoid **conflicts**, a **critical section** is the part of a process's code that accesses a shared resource to **read or modify it**.
+</AsideNote>
+
+### Shared Resource Access Diagram
+The diagram below shows how two separate processes (`Process P1` and
+`Process P2`) execute their code and must pass through their respective critical sections to interact with the shared resource `R`:
+
+<Mermaid chart={`
+flowchart TD
+    subgraph P1 ["Process P1"]
+        CP1_start["P1 Code"] --> SCP1["P1 Critical Section"]
+        SCP1 --> CP1_end["P1 Code"]
+    end
+
+    subgraph P2 ["Process P2"]
+        CP2_start["P2 Code"] --> SCP2["P2 Critical Section"]
+        SCP2 --> CP2_end["P2 Code"]
+    end
+
+    SCP1 ==>|Exclusive access| R["Resource R"]
+    SCP2 ==>|Exclusive access| R["Resource R"]
+`} />
+
+
+### Why Mutual Exclusion Is Needed
+To preserve **data consistency** and prevent [**race conditions**](https://en.wikipedia.org/wiki/Race_condition) (situations in which the execution order unpredictably changes the result), the system must guarantee [**mutual exclusion**](https://en.wikipedia.org/wiki/Mutual_exclusion):
+
+<AsideCaution>
+At any moment, at most **one process** can be in its **critical section** and use the **shared resource**.
+</AsideCaution>
+
+## The Access Protocol (Request – Use – Release)
+To guarantee **mutual exclusion** and ensure that every process gains access in **finite time**, access to a resource must strictly follow a **standard protocol** consisting of three stages:
+
+<Card>
+<Steps>
+1. **Request the resource**: The process requests exclusive access to the resource (if it is occupied, the process must wait).
+2. **Use the resource**: The process enters the critical section and performs the required operations on the resource.
+3. **Release the resource**: The process frees the resource, allowing other waiting processes to acquire it.
+</Steps>
+</Card>
+
+## Practical Example: The [Stack](https://en.wikipedia.org/wiki/Stack_(abstract_data_type))
+
+One classic **shared data structure** subject to competition is a **stack**, managed using an **array** and a **top pointer** (`top`).
+
+Operations such as **push** (`Push`) and **pop** (`Pop`) modify the same **shared variables** (`stack[]` and `top`). If these operations run concurrently without proper **synchronization**, data may be **overwritten** or **undefined values** may be read (*[race condition](https://en.wikipedia.org/wiki/Race_condition)*).
+
+<AsideTip title="Interactive lab" >
+Use this simulator to directly observe the behavior of the stack **with or without mutual exclusion**.
+</AsideTip>
+
+
+<div class="iframe-container" style="margin: 2rem 0; text-align: center;">
+    <iframe
+        src="/simulatore-pila.html"
+        width="100%"
+        style="height: 600px !important; border: 1px solid #30363d; border-radius: 8px; background: #f4f4f4; overflow: hidden; display: block;"
+    ></iframe>
+</div>
+
+<AsideToDo title="Using the simulator">
+Use the simulator controls to perform stack operations from multiple processes.
+Compare execution without mutual exclusion with execution where access is
+coordinated: observe how the stack contents and the value of `top` change.
+This demonstrates why concurrent operations require a protected critical
+section.
+</AsideToDo>
+
+
+## Summary
+
+<KeyConcepts>
+- [**Concurrency**](https://en.wikipedia.org/wiki/Concurrency_(computer_science)): execution of multiple processes during **overlapping time intervals**.
+- [**Shared resource**](https://en.wikipedia.org/wiki/Concurrency_(computer_science)): a resource that can be used by multiple processes.
+- [**Critical section**](https://en.wikipedia.org/wiki/Critical_section): part of code that accesses a shared resource.
+- [**Mutual exclusion**](https://en.wikipedia.org/wiki/Mutual_exclusion): allows only one process at a time to access the shared resource.
+- [**Race condition**](https://en.wikipedia.org/wiki/Race_condition): a situation in which the result depends on the order of concurrent operations.
+</KeyConcepts>
+
+## Knowledge Check
+
+<QuizIntro 
+resetLabel="Reset all answers"
+textLabel="Quiz answers on this page are saved in your browser's local storage and remain saved between visits"
+/>
+
+<Quiz id="quiz-sezione-critica">
+What is a **critical section**?
+
+- [ ] A resource shared by multiple processes.
+- [x] The portion of code that accesses a shared resource.
+    > Correct: it is the code in which a process reads or modifies the shared resource.
+- [ ] A process that waits indefinitely for a resource.
+</Quiz>
+
+<Quiz id="quiz-mutua-esclusione">
+Which property does **mutual exclusion** guarantee?
+
+- [x] At most one process at a time can access the shared resource in its critical section.
+    > Correct: this prevents concurrent accesses from compromising data consistency.
+- [ ] All processes access the resource simultaneously.
+- [ ] A waiting process always gets the resource within a finite time.
+    > This is a progress guarantee, not the definition of mutual exclusion.
+</Quiz>
+
+<Quiz id="quiz-protocollo-accesso">
+What is the correct order of the stages in the shared-resource access protocol?
+
+- [ ] Use, request, release.
+- [x] Request, use, release.
+    > Correct: the process requests the resource, uses it in the critical section, and then releases it.
+- [ ] Release, use, request.
+</Quiz>
+
+<Quiz id="quiz-completamento">
+The portion of code that accesses a shared resource is the [[critical section]].
+</Quiz>
+
+<Quiz id="quiz-risorse-condivise">
+Which of the following can be examples of a **shared resource**? Select all correct answers.
+
+- [x] A global variable
+    > Correct: multiple processes can access the same variable.
+- [x] A file used by multiple processes
+    > Correct: the file is a common resource that processes may contend for.
+- [x] A shared data structure
+    > Correct: different processes can read or modify the same structure.
+- [ ] A process's private code that does not interact with other processes
+    > This is not a shared resource.
+</Quiz>
+
+<QuizResults 
+titleLabel="Your score"
+progressLabel="Quiz progress"
+answeredLabel="questions answered"
+correctLabel="correct answers"
+resetLabel="Reset all answers"
+ />
+

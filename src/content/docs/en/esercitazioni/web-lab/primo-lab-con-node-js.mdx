@@ -67,14 +67,18 @@ Create a dedicated folder for this preparatory exercise to keep it separate from
    cd lab-node-intro
    npm init -y
    ```
-
+    Note:
+    - Use `mkdir` and `cd` to create the project subfolder.
+    - If you have already created the subfolder and opened it in VS Code, do not run `mkdir` and `cd`.
+    
     <AsideTip title="What does npm init -y do?">
     [**npm**](https://en.wikipedia.org/wiki/Npm_(software)) is the Node.js package manager. The `npm init` command creates the `package.json` file, which contains the project's information and settings. The `-y` option automatically accepts the default values, so you don't have to answer the prompts one by one.
     </AsideTip>
 
 2. **Enable ES modules in `package.json`**
 
-    Make sure `"type": "module"` appears only once in `package.json`. This setting declares that the project uses ES modules, which enables the modern `import` and `export` syntax that you'll use in `app.js` instead of the older `require()` (CommonJS).
+    - Make sure `"type": "module"` appears only once in `package.json`. This setting declares that the project uses ES modules, which enables the modern `import` and `export` syntax that you'll use in `app.js` instead of the older `require()` (CommonJS).
+    - Make sure `package.json` contains "main": "app.js"
 
     <AsideTip title="What are ES modules?">
     **ES modules (ESM)** are JavaScript's standard system for organizing code into reusable modules. A module can make functions or values available with `export`, which other modules can use with `import`. In **Node.js**, the `"type": "module"` setting enables this syntax in the project's `.js` files.

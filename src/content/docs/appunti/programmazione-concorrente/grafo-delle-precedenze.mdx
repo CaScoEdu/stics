@@ -1,0 +1,248 @@
+---
+title: "Grafo delle precedenze"
+description: "Introduzione alla concorrenza, alle operazioni parallele e ai grafi delle precedenze"
+sidebar:
+    order: 5
+---
+
+import {
+    Card
+} from "@astrojs/starlight/components";
+import { Quiz, QuizIntro, QuizResults } from 'starlight-quiz/components';
+import AsideNote from "@/components/AsideNote.astro";
+import AsideToDo from "@/components/AsideToDo.astro";
+import ExpectedResults from "@/components/ExpectedResults.astro"
+import KeyConcepts from "@/components/KeyConcepts.astro"
+import Mermaid from "@/components/Mermaid.astro";
+import Prerequisites from "@/components/Prerequisites.astro"
+
+Introduzione alla **programmazione concorrente**
+
+## Introduzione
+
+<ExpectedResults>
+- Spiegare che cosa si intende per programmazione concorrente.
+- Distinguere operazioni sequenziali da operazioni indipendenti che possono procedere in parallelo.
+- Interpretare nodi e frecce di un grafo delle precedenze.
+- Individuare quando un'operazione è pronta per essere eseguita e quando deve attendere.
+- Usare il simulatore per osservare le dipendenze e verificare i risultati delle operazioni.
+</ExpectedResults>
+
+<Prerequisites>
+- Nozioni elementari di variabili e operazioni aritmetiche
+- Capacità di seguire una semplice sequenza di azioni o calcoli
+</Prerequisites>
+
+In fase di **analisi e progettazione** di un [**programma concorrente**](https://it.wikipedia.org/wiki/Concorrenza_(informatica)), costruire un **grafo delle precedenze** è utile per esplicitare le **dipendenze** tra le **operazioni**. Permette di capire quali attività possono essere eseguite [**in parallelo**](https://it.wikipedia.org/wiki/Calcolo_parallelo) e quali devono attendere, così da progettare le [**sincronizzazioni**](https://it.wikipedia.org/wiki/Sincronizzazione_(informatica)) necessarie, evitare accessi prematuri a dati non ancora disponibili e sfruttare il **parallelismo** senza compromettere la **correttezza** del programma.
+
+<AsideNote>
+Nel seguito, viene presentato il grafo delle precedenze con esempi semplici
+legati alla vita comune e alla matematica.
+</AsideNote>
+
+## Azioni in sequenza e in parallelo
+
+Nelle attività quotidiane, alcune azioni devono essere svolte
+ [**in sequenza**](https://it.wikipedia.org/wiki/Serializzazione).
+ 
+Per esempio, per spedire una lettera bisogna prima scriverla e imbustarla, poi affrancarla e infine consegnarla per la spedizione. 
+
+<Card>
+<Mermaid chart={`
+flowchart LR
+    A["Scrivere e imbustare"] --> B["Affrancare"] --> C["Consegnare per la spedizione"]
+`} />
+</Card>
+ 
+ Altre azioni possono invece procedere **in parallelo**, perché non dipendono l'una dall'altra: mentre il forno si scalda, si possono preparare gli ingredienti; oppure, mentre una persona apparecchia, un'altra può preparare da bere. Se un'attività successiva richiede il risultato di entrambe, può iniziare solo quando tutte e due sono terminate.
+<Card>
+<Mermaid chart={`
+flowchart LR
+    A["Scaldare il forno"] --> C["Infornare"]
+    B["Preparare gli ingredienti"] --> C
+    D["Apparecchiare"]
+    E["Preparare da bere"]
+`} />
+</Card>
+
+## Formalizziamo il grafo delle precedenze
+
+Un [**grafo delle precedenze**](https://it.wikipedia.org/wiki/Grafo) rappresenta le **dipendenze** tra **operazioni** di un programma. Ogni [**nodo**](https://it.wikipedia.org/wiki/Nodo_(informatica)) indica un'operazione; una [**freccia orientata**](https://it.wikipedia.org/wiki/Arco_(teoria_dei_grafi)) da un nodo a un altro indica che la prima operazione deve terminare prima che possa iniziare la seconda.
+
+<Card>
+<Mermaid chart={`
+flowchart LR
+    A["A = 25"] --> B["B = A + 3"]
+`} />
+
+In questo esempio, il nodo **A** precede **B**: il valore di `A` deve essere disponibile per calcolare `B`. La direzione della freccia indica quindi l'ordine richiesto, non necessariamente l'ordine in cui le operazioni vengono eseguite una dopo l'altra nel programma.
+</Card>
+Quando due operazioni non dipendono l'una dall'altra, possono essere eseguite [in parallelo](https://it.wikipedia.org/wiki/Calcolo_parallelo). Se entrambe sono necessarie a un'operazione successiva, quest'ultima può iniziare solo dopo il completamento di entrambe:
+
+<Card>
+<Mermaid chart={`
+flowchart LR
+    A["A"] --> B["B"]
+    A --> C["C"]
+    B --> D["D"]
+    C --> D
+`} />
+
+Dopo **A**, le operazioni **B** e **C** sono indipendenti tra loro; **D** attende invece sia **B** sia **C**. Il grafo mostra così quali operazioni possono procedere contemporaneamente e quali vincoli di precedenza devono essere rispettati.
+</Card>
+
+## Esempio di grafo delle precedenze
+
+Consideriamo un insieme di operazioni in cui i risultati ottenuti 
+vengono riutilizzati per calcolare nuove variabili. 
+
+<AsideNote title="L'elenco delle operazioni">
+- A = 25
+- B = A + 3
+- C = A + 5
+- D = B + C
+- E = F + D + J
+- F = 12 + C
+- G = 15 + J
+- H = F + E + G
+- I = 8 + H
+- J = A + 17
+</AsideNote>
+
+<Card>
+Osserva il grafo: ogni arco indica che il valore prodotto dall'operazione precedente deve essere disponibile prima di poter eseguire quella successiva.
+
+<Mermaid chart={`
+flowchart TD
+    A["A = 25"] --> B["B = A + 3"]
+    A --> C["C = A + 5"]
+    A --> J["J = A + 17"]
+    B --> D["D = B + C"]
+    C --> D
+    C --> F["F = 12 + C"]
+    D --> E["E = F + D + J"]
+    F --> E
+    J --> E
+    J --> G["G = 15 + J"]
+    F --> H["H = F + E + G"]
+    E --> H
+    G --> H
+    H --> I["I = 8 + H"]
+`} />
+
+</Card>
+
+<AsideToDo>
+### Usa il simulatore
+
+Il simulatore permette di verificare come le dipendenze del grafo influenzano l'esecuzione delle operazioni.
+
+1. Osserva il grafo e individua i nodi che dipendono da altri nodi.
+2. Avvia il simulatore e segui l'esecuzione delle operazioni.
+3. Quando un nodo ha tutte le dipendenze soddisfatte, il suo valore può essere calcolato.
+4. Quando un nodo attende altri nodi, controlla quali operazioni devono essere completate prima che possa iniziare.
+5. Al termine, confronta i risultati prodotti dal simulatore con i valori attesi calcolati dalle equazioni.
+
+Usa il simulatore per distinguere le operazioni pronte per l'esecuzione da quelle bloccate da una relazione di precedenza e per verificare quali operazioni possono procedere in parallelo.
+
+</AsideToDo>
+
+<div class="iframe-container" style="margin: 2rem 0; text-align: center;">
+    <iframe
+        src="/grafo-precedenze/index.html"
+        width="100%"
+        style="height: 600px !important; border: 1px solid #30363d; border-radius: 8px; background: #f4f4f4; overflow: hidden; display: block;"
+    ></iframe>
+</div>
+
+
+
+## Riepilogo
+
+<KeyConcepts>
+- [**Programmazione concorrente**](https://it.wikipedia.org/wiki/Concorrenza_(informatica)): organizza più operazioni che possono avanzare nello stesso intervallo di tempo, rispettando le loro dipendenze.
+- [**Operazioni sequenziali**](https://it.wikipedia.org/wiki/Serializzazione): operazioni che devono essere eseguite secondo un ordine vincolato.
+- [**Operazioni in parallelo**](https://it.wikipedia.org/wiki/Calcolo_parallelo): operazioni indipendenti che possono essere eseguite contemporaneamente.
+- [**Grafo delle precedenze**](https://it.wikipedia.org/wiki/Grafo): rappresenta le dipendenze e l'ordine richiesto tra le operazioni di un programma.
+- [**Nodo**](https://it.wikipedia.org/wiki/Nodo_(informatica)): identifica una singola operazione da eseguire.
+- [**Arco orientato**](https://it.wikipedia.org/wiki/Arco_(teoria_dei_grafi)): collega due operazioni e indica che la prima deve terminare prima dell'inizio della seconda.
+- [**Join**](https://it.wikipedia.org/wiki/Join_(informatica)): punto in cui un'operazione attende il completamento di tutte le operazioni da cui dipende.
+</KeyConcepts>
+
+## Verifica dell'Apprendimento
+
+<QuizIntro 
+resetLabel="Reimposta tutte le risposte"
+textLabel="Le risposte ai quiz di questa pagina vengono salvate nella memoria locale (local storage) del tuo browser e rimangono memorizzate tra una visita e l'altra"
+/>
+
+<Quiz id="quiz-nodo-grafo">
+In questa lezione, che cosa descrive la programmazione concorrente?
+
+- [ ] L'esecuzione obbligatoria di tutte le istruzioni una alla volta.
+- [x] L'esecuzione di più operazioni che possono avanzare contemporaneamente, rispettando le dipendenze.
+    > Esatto: le operazioni indipendenti possono procedere in parallelo, mentre le dipendenze impongono attese.
+- [ ] La ripetizione della stessa operazione fino al termine del programma.
+</Quiz>
+
+<Quiz id="quiz-freccia-precedenza">
+Che cosa rappresenta un **nodo** in un grafo delle precedenze?
+
+- [ ] Una freccia tra due operazioni.
+- [x] Un'operazione da eseguire.
+    > Esatto: ogni nodo identifica una singola operazione del programma.
+- [ ] Una risorsa condivisa utilizzata da tutti i processi.
+</Quiz>
+
+<Quiz id="quiz-operazioni-parallele">
+Nel grafo `A → B`, che cosa indica la freccia?
+
+- [ ] A può iniziare solo dopo il completamento di B.
+- [x] B può iniziare solo dopo il completamento di A.
+    > Esatto: la direzione della freccia rappresenta il vincolo di precedenza.
+- [ ] A e B devono necessariamente essere eseguite una dopo l'altra nello stesso processore.
+</Quiz>
+
+<Quiz id="quiz-esecuzione-esempio">
+Considera il grafo `A → B`, `A → C`, `B → D` e `C → D`. Quando può iniziare D?
+
+- [ ] Subito dopo il completamento di A.
+- [ ] Dopo il completamento di una sola tra B e C.
+- [x] Dopo il completamento sia di B sia di C.
+    > Esatto: D dipende da entrambe le operazioni.
+</Quiz>
+
+<Quiz id="quiz-grafo-join">
+Nell'esempio del grafo, perché F deve attendere C?
+
+- [x] Perché il calcolo di F utilizza il valore contenuto in C.
+    > Esatto: F può essere calcolata solo quando C ha prodotto il proprio risultato.
+- [ ] Perché F e C sono due operazioni uguali.
+- [ ] Perché F è l'ultima operazione del programma.
+</Quiz>
+
+<Quiz id="quiz-risposte-multiple-grafo">
+Nel grafo `A → B`, `A → C`, `B → D` e `C → D`, quali affermazioni sono corrette? Seleziona tutte le risposte corrette.
+
+- [x] B e C possono essere eseguite in parallelo.
+    > Esatto: entrambe dipendono da A, ma non dipendono l'una dall'altra.
+- [x] D può iniziare solo dopo il completamento sia di B sia di C.
+    > Esatto: D ha una dipendenza da entrambe le operazioni.
+- [ ] B può iniziare prima che A sia terminata.
+- [ ] D può iniziare dopo il completamento di B, anche se C non è terminata.
+</Quiz>
+
+
+
+<Quiz id="quiz-completa-definizione">
+In un grafo delle precedenze, una freccia da A a B indica che B può iniziare solo dopo il completamento di [[A]].
+</Quiz>
+
+<QuizResults 
+titleLabel="Il tuo punteggio"
+progressLabel="Avanzamento Quiz"
+answeredLabel="risposte alle domande"
+correctLabel="risposte corrette"
+resetLabel="Reimposta tutte le risposte"
+ />
+
