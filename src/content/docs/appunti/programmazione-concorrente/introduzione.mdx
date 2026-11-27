@@ -54,8 +54,16 @@ La **concorrenza** richiede però di coordinare le attività che condividono dat
 
 - **Programma**: insieme di istruzioni che descrivono le operazioni da svolgere.
 - **Processo**: istanza in esecuzione di un programma, con il proprio stato e le proprie risorse.
+- **Processo**: istanza in esecuzione di un programma, con il proprio stato e le proprie risorse.
+- **Thread**: flusso di esecuzione all'interno di un processo. I thread dello stesso processo condividono memoria e risorse, ma ciascuno ha il proprio stato di esecuzione.
 - **Processore**: componente hardware che esegue le istruzioni; un sistema può avere più processori o core.
 - **Risorsa**: elemento necessario a un processo per svolgere il proprio lavoro, come memoria, file, dispositivi o dati condivisi.
+
+La concorrenza può avvenire a livelli diversi:
+- più **thread**, chiamati anche *processi leggeri*, possono essere eseguiti all'interno dello stesso processo (per esempio in C o in Java). 
+- In alternativa, possono essere concorrenti più **processi**, ciascuno con il proprio spazio di memoria e le proprie risorse; per esempio, in Python si possono avviare processi con il modulo `multiprocessing`. Per comunicare o coordinarsi, i processi possono ricorrere a meccanismi di comunicazione tra processi.
+
+Ad ogni modo, indipendentemente dall'implementazione, i concetti esposti in queste lezioni rimangono sempre validi
 
 ## Overlapping e interleaving
 

@@ -13,7 +13,7 @@ export default defineConfig({
   integrations: [
     starlight({
       title: 'stics',
-      favicon: './src/assets/favicon.svg',
+      favicon: './public/images/favicon.svg',
       expressiveCode: {
         // Primo tema = dark mode, secondo tema = light mode
         themes: ['github-dark', 'github-light'],

@@ -50,12 +50,20 @@ It is used in many contexts:
 **Concurrency** requires coordinating activities that share data or **resources**, so that dependencies are respected and inconsistent results are avoided.
 </AsideCaution>
 
-## Key Concepts
+## Concetti chiave
 
-- **Program**: a set of instructions that describes operations to perform.
-- **Process**: an executing instance of a program, with its own state and resources.
-- **Processor**: a hardware component that executes instructions; a system can have multiple processors or cores.
-- **Resource**: an element required by a process to perform its work, such as memory, files, devices, or shared data.
+- **Program**: a set of instructions that describe the operations to be performed.
+- **Process**: a running instance of a program, with its own state and resources.
+- **Process**: a running instance of a program, with its own state and resources.
+- **Thread**: a flow of execution within a process. Threads in the same process share memory and resources, but each has its own execution state.
+- **Processor**: a hardware component that executes instructions; a system may have multiple processors or cores.
+- **Resource**: something a process needs to do its work, such as memory, files, devices, or shared data.
+
+Concurrency can occur at different levels:
+- multiple **threads**, also called *lightweight processes*, can run within the same process (for example, in C or Java).
+- Alternatively, multiple **processes** can run concurrently, each with its own memory space and resources; for example, in Python, processes can be started using the `multiprocessing` module. To communicate or coordinate, processes can use inter-process communication mechanisms.
+
+Ad ogni modo, indipendentemente dall'implementazione, i concetti esposti in queste lezioni rimangono sempre validi
 
 ## Overlapping and Interleaving
 
